@@ -4,7 +4,7 @@
 #ifndef SetPg_h
 #define SetPg_h
 
-#include <JuceHeader.h>
+#include "../JuceLibraryCode/JuceHeader.h"
 
 
 

@@ -15,7 +15,6 @@
 
 #include <JuceHeader.h>
 #include "PluginProcessor.h"
-#include "Visualiser.h"
 #include "Observer.h"
 #include "Orbish.h"
 #include "TrackComponent.h"

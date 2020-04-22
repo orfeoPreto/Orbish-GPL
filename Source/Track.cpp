@@ -6,7 +6,6 @@
 //  Copyright © 2019 EXU. All rights reserved.
 //
 
-#include "cpphelpers.h"
 #include "Track.h"
 
 #include <math.h>

@@ -2,7 +2,7 @@
 #ifndef MainMenu_h
 #define MainMenu_h
 
-#include <JuceHeader.h>
+#include "../JuceLibraryCode/JuceHeader.h"
 #include "MenuManager.h"
 
 class MainMenu :
