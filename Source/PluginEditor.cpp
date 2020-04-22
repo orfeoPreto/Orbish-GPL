@@ -600,7 +600,7 @@ void OrbishAudioProcessorEditor::createNewProject() {
 			, "Yes", "No");
 		if (save) { saveProject(); };
 	}
-	const juce::String title = "New Loopability Project";
+	const juce::String title = "New Orbish Project";
 	const juce::String msg = juce::String("Give your new project a name!");
 	AlertWindow* alert = new AlertWindow(title, msg, AlertWindow::AlertIconType::InfoIcon, this);
 	alert->addTextEditor("projectNameBox", "Untitled");
@@ -651,8 +651,8 @@ void OrbishAudioProcessorEditor::saveProject() {
 	if (!project.dirty && !project.newProject)return;
 	if (project.newProject || !project.directory.exists()) {
 		File dir = File(File::getSpecialLocation(File::userHomeDirectory));
-		if (dir.getChildFile("Loopability").exists()) {
-			dir = dir.getChildFile("Loopability");
+		if (dir.getChildFile("Orbish").exists()) {
+			dir = dir.getChildFile("Orbish");
 		}
 		FileChooser fc("Save As", dir,"",true);
 		if (fc.showDialog(
@@ -776,8 +776,8 @@ void OrbishAudioProcessorEditor::askUserToOpenFile() {
     groupCombo.setSelectedId(1);
 	processor.activeTrack->processResetChange();
 	File dir = File(File::getSpecialLocation(File::userHomeDirectory));
-	if (dir.getChildFile("Loopability").exists()) {
-		dir = dir.getChildFile("Loopability");
+	if (dir.getChildFile("Orbish").exists()) {
+		dir = dir.getChildFile("Orbish");
 	}
 	FileChooser fc("Open Project", dir, "*.xml");
 	if (fc.browseForFileToOpen())
@@ -1201,7 +1201,7 @@ void OrbishAudioProcessorEditor::paint (Graphics& g)
         g.setColour (Colours::white);
         g.setFont (15.0f);
 
-        g.drawFittedText ("Loopability", getLocalBounds(), Justification::top, 1);
+        g.drawFittedText ("Orbish", getLocalBounds(), Justification::top, 1);
         g.setColour(Colours::black);
         g.fillRect(toolCanvas);
         

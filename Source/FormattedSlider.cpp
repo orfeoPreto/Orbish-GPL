@@ -1,6 +1,6 @@
 //
 //  FormattedSlider.cpp
-//  Loopability
+//  Orbish
 //
 //  Created by Duke Quarcoo on 02/01/2020.
 //

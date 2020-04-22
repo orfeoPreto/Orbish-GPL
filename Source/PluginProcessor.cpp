@@ -126,7 +126,7 @@ OrbishAudioProcessor::OrbishAudioProcessor() :
         })
 {
     
-    File file = File(File::getSpecialLocation(File::userHomeDirectory)).getChildFile("Loopability").getChildFile("loopability.log");
+    File file = File(File::getSpecialLocation(File::userHomeDirectory)).getChildFile("Orbish").getChildFile("Orbish.log");
     auto result = file.create();
     if (result.wasOk()) {
         logger = std::make_shared<FileLogger>(file, "Hi");

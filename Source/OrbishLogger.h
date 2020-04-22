@@ -2,7 +2,7 @@
 
 #include "../JuceLibraryCode/JuceHeader.h"
 
-class LoopabilityLogger :
+class OrbishLogger :
 	public Logger
 {
 };

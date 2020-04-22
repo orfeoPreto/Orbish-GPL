@@ -1,6 +1,6 @@
 //
 //  Label.hpp
-//  Loopability - VST3
+//  Orbish - VST3
 //
 //  Created by Duke Quarcoo on 12/01/2020.
 //
