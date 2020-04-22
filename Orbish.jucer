@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<JUCERPROJECT id="iqI92f" name="Orbish" projectType="audioplug" jucerVersion="5.4.5"
+<JUCERPROJECT id="iqI92f" name="Orbish" projectType="audioplug" jucerVersion="5.4.7"
               headerPath="../../..&#10;../..&#10;../../JuceLibraryCode&#10;..&#10;"
               pluginManufacturer="Exu" pluginManufacturerCode="Exu" pluginCode="Orb">
   <MAINGROUP id="MOZJJ5" name="Orbish">
@@ -54,21 +54,21 @@
         <CONFIGURATION isDebug="0" name="Release"/>
       </CONFIGURATIONS>
       <MODULEPATHS>
-        <MODULEPATH id="juce_audio_basics" path="../../../../Downloads/JUCE/modules"/>
+        <MODULEPATH id="ff_meters" path="."/>
+        <MODULEPATH id="juce_gui_basics" path="../../../../Downloads/JUCE/modules"/>
         <MODULEPATH id="juce_audio_devices" path="../../../../Downloads/JUCE/modules"/>
+        <MODULEPATH id="juce_audio_basics" path="../../../../JUCE/modules"/>
         <MODULEPATH id="juce_audio_formats" path="../../../../Downloads/JUCE/modules"/>
         <MODULEPATH id="juce_audio_plugin_client" path="../../../../Downloads/JUCE/modules"/>
         <MODULEPATH id="juce_audio_processors" path="../../../../Downloads/JUCE/modules"/>
         <MODULEPATH id="juce_audio_utils" path="../../../../Downloads/JUCE/modules"/>
-        <MODULEPATH id="juce_core" path="../../../../Downloads/JUCE/modules"/>
+        <MODULEPATH id="juce_opengl" path="../../../../Downloads/JUCE/modules"/>
         <MODULEPATH id="juce_cryptography" path="../../../../Downloads/JUCE/modules"/>
         <MODULEPATH id="juce_data_structures" path="../../../../Downloads/JUCE/modules"/>
         <MODULEPATH id="juce_events" path="../../../../Downloads/JUCE/modules"/>
         <MODULEPATH id="juce_graphics" path="../../../../Downloads/JUCE/modules"/>
-        <MODULEPATH id="juce_gui_basics" path="../../../../Downloads/JUCE/modules"/>
         <MODULEPATH id="juce_gui_extra" path="../../../../Downloads/JUCE/modules"/>
-        <MODULEPATH id="juce_opengl" path="../../../../Downloads/JUCE/modules"/>
-        <MODULEPATH id="ff_meters" path="."/>
+        <MODULEPATH id="juce_core"/>
       </MODULEPATHS>
     </XCODE_MAC>
   </EXPORTFORMATS>
