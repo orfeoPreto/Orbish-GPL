@@ -131,6 +131,7 @@ public:
 
 private:
 
+    OpenGLContext openGLContext;
     int nbrTracksInARow = 4;
     SharedResourcePointer<TooltipWindow> tooltipWindow;
 	std::shared_ptr<SettingsPage> settingsPage;

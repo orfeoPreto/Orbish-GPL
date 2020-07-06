@@ -18,9 +18,8 @@ OrbishAudioProcessorEditor::OrbishAudioProcessorEditor (OrbishAudioProcessor& p,
 : AudioProcessorEditor (&p),                              // [4]
 projectXml("<project />"), processor (p), thumbnailCache (5), thumbnail (32, formatManager, thumbnailCache), valueTreeState(apvts)
 {
-	//processor.logger->logMessage("begin gui constuctor");
-
-
+	//processor.logger->logMessage("begin gui constructor");
+    openGLContext.attachTo(*getTopLevelComponent());
 	project = Project();
 	setProjectName(project.name);
 	headerComp.addAndMakeVisible(projectLabel);
@@ -110,7 +109,7 @@ projectXml("<project />"), processor (p), thumbnailCache (5), thumbnail (32, for
                  String("Beat: Snaps to the beat (bottom of time signature)");
    snapModeCombo.setTooltip(str);
     
-    activeLabel.setText("Active Track", NotificationType::dontSendNotification);
+    activeLabel.setText("Active Track - OpenGL mode", NotificationType::dontSendNotification);
     recordButton.setClickingTogglesState (true);
     recordButton.setToggleState(false, NotificationType::sendNotification);
     recordButton.addListener(this);
