@@ -36,7 +36,6 @@ projectXml("<project />"), processor (p), thumbnailCache (5), thumbnail (32, for
     getLookAndFeel().setColour(ResizableWindow::backgroundColourId, Colours::black);
     globalLnF->setColour(Label::textColourId, Colours::white);
 
-
     updateInputBuffer = &Observer::updateInputVisualiser;
     updateLoopBuffer = &Observer::updateLoopVisualiser;
     updatePlayPosition = &Observer::updatePlayHead;
@@ -1093,10 +1092,10 @@ void OrbishAudioProcessorEditor::changeSnapMode(){
 
 void OrbishAudioProcessorEditor::paintIfFileLoaded (Graphics& g, const Rectangle<int>& thumbnailBounds)
 {
-    DropShadow ds{Colour(0xFF2e2b23), 30, Point<int>(0,0)};
+    //DropShadow ds{Colour(0xFF2e2b23), 30, Point<int>(0,0)};
     Path pth{};
     pth.addRectangle(thumbnailBounds.withSizeKeepingCentre(thumbnailBounds.getWidth()+10, thumbnailBounds.getHeight()+10));
-    ds.drawForPath(g, pth);
+    //ds.drawForPath(g, pth);
     g.setColour (Colours::steelblue);
     auto audioLength (thumbnail.getTotalLength());                                      // [12]
     thumbnail.drawChannels (g,
@@ -1146,11 +1145,11 @@ void OrbishAudioProcessorEditor::paintIfFileLoaded (Graphics& g, const Rectangle
 
 void OrbishAudioProcessorEditor::paintIfNoFileLoaded (Graphics& g, const Rectangle<int>& thumbnailBounds)
 {
-    DropShadow ds{Colour(0xFF2e2b23), 30, Point<int>(0,0)};
+    //DropShadow ds{Colour(0xFF2e2b23), 30, Point<int>(0,0)};
     g.setColour (Colours::white);
     Path pth{};
     pth.addRectangle(thumbnailBounds.withSizeKeepingCentre(thumbnailBounds.getWidth()+10, thumbnailBounds.getHeight()+10));
-    ds.drawForPath(g, pth);
+    //ds.drawForPath(g, pth);
     g.setColour (Colours::white);
 
     
