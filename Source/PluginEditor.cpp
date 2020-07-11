@@ -608,7 +608,6 @@ void OrbishAudioProcessorEditor::createNewProject() {
 	alert->setBoundsRelative(0.2f, 0.2f, 0.2f, 0.2f);
 	alert->setLookAndFeel(lnf.get());
 	alert->addButton("Ok", 1, juce::KeyPress(KeyPress::returnKey));
-	alert->isDropShadowEnabled();
 	alert->enterModalState(true, nullptr, false);
 	addAndMakeVisible(alert);
 	alert->centreWithSize(300, 200);
@@ -727,7 +726,6 @@ bool OrbishAudioProcessorEditor::showDialogWindow(
 	alert->setLookAndFeel(lnf.get());
 	alert->addButton(firstButtonText, 1, juce::KeyPress(KeyPress::returnKey));
 	alert->addButton(secondButtonText, 0, juce::KeyPress(KeyPress::escapeKey));
-	alert->isDropShadowEnabled();
 	alert->enterModalState(true, nullptr, false);
 	addAndMakeVisible(alert);
 	alert->centreWithSize(400, 200);
@@ -942,7 +940,6 @@ void OrbishAudioProcessorEditor::timerCallback()
     changeTrack();
     if(tracksDirty){
        resized();
-       tracksViewport.repaint();
     }
     tracksDirty = false;
     transportInfoArea.repaint();
@@ -1008,23 +1005,10 @@ String OrbishAudioProcessorEditor::saveBufferFromLoop(int trackIdx, int loopIdx)
 
 void OrbishAudioProcessorEditor::toggleRecord(){
 	project.dirty = true;
-    if(recordButton.getToggleState() && !processor.activeTrack->isRecordingArmed()){
-        processor.activeTrack->setRecordingArmed(true);
-    }
-    if(!recordButton.getToggleState() && processor.activeTrack->isRecordingArmed()){
-        processor.activeTrack->setRecordingArmed(false);
-    }
     inputDisplay.clear();
 }
 
-void OrbishAudioProcessorEditor::togglePlay(){
-    if(playButton.getToggleState() && !processor.activeTrack->isPlayArmed()){
-        processor.activeTrack->setPlayArmed(true);
-    }
-    if(!playButton.getToggleState() && processor.activeTrack->isPlayArmed()){
-        processor.activeTrack->setPlayArmed(false);
-    }
-}
+
 
 void OrbishAudioProcessorEditor::toggleStop(){
     updatePlayHead(0, false);
@@ -1093,10 +1077,8 @@ void OrbishAudioProcessorEditor::changeSnapMode(){
 
 void OrbishAudioProcessorEditor::paintIfFileLoaded (Graphics& g, const Rectangle<int>& thumbnailBounds)
 {
-    DropShadow ds{Colour(0xFF2e2b23), 30, Point<int>(0,0)};
     Path pth{};
     pth.addRectangle(thumbnailBounds.withSizeKeepingCentre(thumbnailBounds.getWidth()+10, thumbnailBounds.getHeight()+10));
-    ds.drawForPath(g, pth);
     g.setColour (Colours::steelblue);
     auto audioLength (thumbnail.getTotalLength());                                      // [12]
     thumbnail.drawChannels (g,
@@ -1112,18 +1094,18 @@ void OrbishAudioProcessorEditor::paintIfFileLoaded (Graphics& g, const Rectangle
     g.fillRect(playHead);
     auto c1 = Colour(0x00FFFFFF);
     auto c2 = Colour(0x8FFFFF00);
-    processor.logMessage("Calculating denominator for playhead trail size");
+   // processor.logMessage("Calculating denominator for playhead trail size");
     double tmpDenom = processor.samplesToBeats(float(*processor.activeTrack->LoopDuration));
     int denominator = std::ceil(tmpDenom);
-    processor.logMessage("1st stage: " + String(denominator));
+  //  processor.logMessage("1st stage: " + String(denominator));
     denominator = denominator / (processor.context->timeSigBottom * .25) ;
-    processor.logMessage("2nd stage: " + String(denominator));
+  //  processor.logMessage("2nd stage: " + String(denominator));
     denominator = denominator / processor.context->timeSigTop * (60 / processor.context->info->bpm);
-    processor.logMessage("timesigTop: " + String(processor.context->timeSigTop));
-    processor.logMessage("timeRatio: " + String(60 / processor.context->info->bpm));
-    processor.logMessage("bpm: " + String(processor.context->info->bpm));
+ //   processor.logMessage("timesigTop: " + String(processor.context->timeSigTop));
+ //   processor.logMessage("timeRatio: " + String(60 / processor.context->info->bpm));
+  //  processor.logMessage("bpm: " + String(processor.context->info->bpm));
 
-    processor.logMessage("3rd stage: " + String(denominator));
+ //   processor.logMessage("3rd stage: " + String(denominator));
     denominator = jmin(jmax(denominator*2, 8),40);
     if(processor.activeTrack->Playing){
     if(reverseState == On){
@@ -1146,11 +1128,9 @@ void OrbishAudioProcessorEditor::paintIfFileLoaded (Graphics& g, const Rectangle
 
 void OrbishAudioProcessorEditor::paintIfNoFileLoaded (Graphics& g, const Rectangle<int>& thumbnailBounds)
 {
-    DropShadow ds{Colour(0xFF2e2b23), 30, Point<int>(0,0)};
     g.setColour (Colours::white);
     Path pth{};
     pth.addRectangle(thumbnailBounds.withSizeKeepingCentre(thumbnailBounds.getWidth()+10, thumbnailBounds.getHeight()+10));
-    ds.drawForPath(g, pth);
     g.setColour (Colours::white);
 
     
@@ -1248,7 +1228,7 @@ void OrbishAudioProcessorEditor::paint (Graphics& g)
     }
     g.setColour(Colours::greenyellow);
     highlightActiveTrack(g);
-    paintInfoSection(g);
+   paintInfoSection(g);
     if(processor.activeTrack->Recording){
         recordButton.setColour(TextButton::textColourOnId, Colours::white);
         recordButton.setColour(TextButton::buttonOnColourId, Colour(0x8FFC0B0B));
@@ -1286,15 +1266,18 @@ void OrbishAudioProcessorEditor::paint (Graphics& g)
     }
     if(processor.activeTrack->Muted != tracks[activeTrack]->isMuted()) tracksDirty = true;
     if(processor.activeTrack->Soloed != tracks[activeTrack]->isSoloed()) tracksDirty = true;
-    if(processor.activeTrack->Recording != tracks[activeTrack]->isRecording()) tracksDirty = true;
-    if(processor.activeTrack->Playing != tracks[activeTrack]->isPlaying()) tracksDirty = true;
-    if(processor.activeTrack->isPlayArmed() != tracks[activeTrack]->isPlayArmed()) tracksDirty = true;
+   // if(processor.activeTrack->Recording != tracks[activeTrack]->isRecording()) tracksDirty = true;
+    //if(processor.activeTrack->Playing != tracks[activeTrack]->isPlaying()) tracksDirty = true;
+    //if(processor.activeTrack->isPlayArmed() != tracks[activeTrack]->isPlayArmed()) tracksDirty = true;
     if(processor.activeTrack->isMuteArmed() != tracks[activeTrack]->isMutedArmed()) tracksDirty = true;
     if(processor.activeTrack->isSoloArmed() != tracks[activeTrack]->isSoloArmed()) tracksDirty = true;
-    if(processor.activeTrack->isRecordingArmed() != tracks[activeTrack]->isRecordingArmed()) tracksDirty = true;
+    //if(processor.activeTrack->isRecordingArmed() != tracks[activeTrack]->isRecordingArmed()) tracksDirty = true;
+
     if (tracksDirty) {
         repaint();
+        tracksDirty = false;
     }
+
     playButton.setColour(TextButton::textColourOffId, Colour(0xAF2ACD01));
     
 
@@ -1444,14 +1427,14 @@ void OrbishAudioProcessorEditor::resized()
     rightSide.setBounds(toolCanvas.removeFromRight(50).reduced(containerMargin));
     leftInnerSide.setBounds(toolCanvas.removeFromLeft(50).reduced(containerMargin));
     rightInnerSide.setBounds(toolCanvas.removeFromRight(50).reduced(containerMargin));
-    transportInfoArea.setBounds(toolCanvas.removeFromTop(100).reduced(containerMargin));
+   transportInfoArea.setBounds(toolCanvas.removeFromTop(100).reduced(containerMargin));
     loopDisplayArea.setBounds(toolCanvas.removeFromTop(40).reduced(containerMargin));
     auto rect = toolCanvas.removeFromTop(120).reduced(containerMargin);
     transportButtonArea.setBounds(rect);
     loopConfigArea.setBounds(rect.removeFromRight(rect.getWidth() * .33f).reduced(containerMargin,0));
     rect = toolCanvas;
     rect.removeFromBottom(containerMargin + controlMargin + 1);
-    tracksViewport.setBounds(rect.reduced(containerMargin));
+   tracksViewport.setBounds(rect.reduced(containerMargin));
 
     auto r = leftInnerSide.getLocalBounds();
     auto s = r.removeFromTop(r.getHeight()/2);
@@ -1606,11 +1589,6 @@ void OrbishAudioProcessorEditor::sliderChanged(Slider* slider) {
 void OrbishAudioProcessorEditor::buttonClicked(Button* button){
     if(button == &recordButton){
         recordButton.onClick = [this]() { toggleRecord(); };
-        tracksDirty = true;
-    }
-    if(button == &playButton){
-        playButton.onClick = [this]() { togglePlay(); };
-        tracksDirty = true;
     }
     if(button == &stopButton){
         stopButton.onClick = [this]() { toggleStop(); };

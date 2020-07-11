@@ -29,6 +29,7 @@ TrackComponent::TrackComponent(int index, std::vector<double*> progress, bool& l
         Loops.add(loop);
     }
 
+
     addAndMakeVisible(witness);
     trackNameLabel.setText(this->getName(), NotificationType::sendNotification);
     trackNameLabel.setFont(Font(10.0f));
@@ -191,10 +192,8 @@ void TrackComponent::resized(){
 void TrackComponent::paint(Graphics& g){
     auto r = getLocalBounds();
     if(active){
-            DropShadow ds{Colour(0xFF2e2b23), 30, Point<int>(0,0)};
             Path pth{};
             pth.addRectangle(r.withSizeKeepingCentre(r.getWidth()+10, r.getHeight()+10));
-            ds.drawForPath(g, pth);
     }else{
         g.setColour(Colour(0x0F262C36));
         g.fillRect(r);
