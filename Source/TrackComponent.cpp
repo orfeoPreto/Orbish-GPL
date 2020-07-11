@@ -194,6 +194,7 @@ void TrackComponent::paint(Graphics& g){
     if(active){
             Path pth{};
             pth.addRectangle(r.withSizeKeepingCentre(r.getWidth()+10, r.getHeight()+10));
+
     }else{
         g.setColour(Colour(0x0F262C36));
         g.fillRect(r);

@@ -36,7 +36,6 @@ projectXml("<project />"), processor (p), thumbnailCache (5), thumbnail (32, for
     getLookAndFeel().setColour(ResizableWindow::backgroundColourId, Colours::black);
     globalLnF->setColour(Label::textColourId, Colours::white);
 
-
     updateInputBuffer = &Observer::updateInputVisualiser;
     updateLoopBuffer = &Observer::updateLoopVisualiser;
     updatePlayPosition = &Observer::updatePlayHead;
@@ -1079,6 +1078,7 @@ void OrbishAudioProcessorEditor::paintIfFileLoaded (Graphics& g, const Rectangle
 {
     Path pth{};
     pth.addRectangle(thumbnailBounds.withSizeKeepingCentre(thumbnailBounds.getWidth()+10, thumbnailBounds.getHeight()+10));
+
     g.setColour (Colours::steelblue);
     auto audioLength (thumbnail.getTotalLength());                                      // [12]
     thumbnail.drawChannels (g,
@@ -1131,9 +1131,9 @@ void OrbishAudioProcessorEditor::paintIfNoFileLoaded (Graphics& g, const Rectang
     g.setColour (Colours::white);
     Path pth{};
     pth.addRectangle(thumbnailBounds.withSizeKeepingCentre(thumbnailBounds.getWidth()+10, thumbnailBounds.getHeight()+10));
+
     g.setColour (Colours::white);
 
-    
     g.drawFittedText ("No Loop", thumbnailBounds, Justification::centred, 1.0f);
 }
 
@@ -1176,7 +1176,6 @@ void OrbishAudioProcessorEditor::paint (Graphics& g)
     // (Our component is opaque, so we must completely fill the background with a solid colour)
     if(start){
         g.fillAll (getLookAndFeel().findColour (ResizableWindow::backgroundColourId));
-
         g.setColour (Colours::white);
         g.setFont (15.0f);
 
