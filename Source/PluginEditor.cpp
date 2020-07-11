@@ -1152,7 +1152,6 @@ void OrbishAudioProcessorEditor::paintIfNoFileLoaded (Graphics& g, const Rectang
     //ds.drawForPath(g, pth);
     g.setColour (Colours::white);
 
-    
     g.drawFittedText ("No Loop", thumbnailBounds, Justification::centred, 1.0f);
 }
 
@@ -1195,7 +1194,6 @@ void OrbishAudioProcessorEditor::paint (Graphics& g)
     // (Our component is opaque, so we must completely fill the background with a solid colour)
     if(start){
         g.fillAll (getLookAndFeel().findColour (ResizableWindow::backgroundColourId));
-
         g.setColour (Colours::white);
         g.setFont (15.0f);
 

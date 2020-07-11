@@ -11,7 +11,6 @@
 
 #include "PluginProcessor.h"
 #include "PluginEditor.h"
-#include "OpenGLUI.h"
 #include <iostream>
 #include <chrono>
 
