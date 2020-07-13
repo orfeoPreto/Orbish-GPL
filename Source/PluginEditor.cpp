@@ -1171,11 +1171,10 @@ void OrbishAudioProcessorEditor::updatePlayHead(int position, bool reverse){
 //==============================================================================
 void OrbishAudioProcessorEditor::paint (Graphics& g)
 {
-
-   // processor.logMessage(String(ms));
     // (Our component is opaque, so we must completely fill the background with a solid colour)
+    g.fillAll(getLookAndFeel().findColour(ResizableWindow::backgroundColourId));
+
     if(start){
-        g.fillAll (getLookAndFeel().findColour (ResizableWindow::backgroundColourId));
         g.setColour (Colours::white);
         g.setFont (15.0f);
 
@@ -1265,7 +1264,7 @@ void OrbishAudioProcessorEditor::paint (Graphics& g)
     }
     if(processor.activeTrack->Muted != tracks[activeTrack]->isMuted()) tracksDirty = true;
     if(processor.activeTrack->Soloed != tracks[activeTrack]->isSoloed()) tracksDirty = true;
-   // if(processor.activeTrack->Recording != tracks[activeTrack]->isRecording()) tracksDirty = true;
+    //if(processor.activeTrack->Recording != tracks[activeTrack]->isRecording()) tracksDirty = true;
     //if(processor.activeTrack->Playing != tracks[activeTrack]->isPlaying()) tracksDirty = true;
     //if(processor.activeTrack->isPlayArmed() != tracks[activeTrack]->isPlayArmed()) tracksDirty = true;
     if(processor.activeTrack->isMuteArmed() != tracks[activeTrack]->isMutedArmed()) tracksDirty = true;
@@ -1273,7 +1272,7 @@ void OrbishAudioProcessorEditor::paint (Graphics& g)
     //if(processor.activeTrack->isRecordingArmed() != tracks[activeTrack]->isRecordingArmed()) tracksDirty = true;
 
     if (tracksDirty) {
-        repaint();
+        trackArea.repaint();
         tracksDirty = false;
     }
 
