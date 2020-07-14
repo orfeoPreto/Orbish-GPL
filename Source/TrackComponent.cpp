@@ -67,9 +67,12 @@ int TrackComponent::getActiveLoop(){
 
 void TrackComponent::removeLoop(){
     Loops.removeLast();
+    resized();
 }
 void TrackComponent::addLoop(double& p){
-    Loops.add(new LoopComponent(p, Loops.size()));
+    LoopComponent* newLoop = new LoopComponent(p, Loops.size());
+    Loops.add(newLoop);
+    resized();
 }
 
 void TrackComponent::setActive(bool active){
@@ -185,12 +188,10 @@ void TrackComponent::resized(){
     }
 }
 
-//void TrackComponent::mouseDrag() {
-//    
-//}
-
 void TrackComponent::paint(Graphics& g){
     auto r = getLocalBounds();
+    g.setColour(Colours::darkgrey);
+    g.fillRect(r);
     if(active){
             Path pth{};
             pth.addRectangle(r.withSizeKeepingCentre(r.getWidth()+10, r.getHeight()+10));
