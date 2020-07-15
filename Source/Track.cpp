@@ -13,7 +13,7 @@
 
 
 
-Track::Track(unsigned int index, bool a, AudioProcessorValueTreeState& p, OrbishContext* &c, bool& gui) : guiAlive(gui)
+Track::Track(uint index, bool a, AudioProcessorValueTreeState& p, OrbishContext* &c, bool& gui) : guiAlive(gui)
                                                                                                         , params(p)
                                                                                                         , context(c){
 	Index = index;
@@ -290,13 +290,13 @@ void Track::RemoveAllLayers() {
 int Track::BounceHistory(int startCheckPoint, int endCheckPoint) {
 	int startIdx = -1;
 	AudioBuffer<float>* startBuffer = nullptr;
-	for (unsigned int i = 0; i < Layers->size(); i++) {
+	for (uint i = 0; i < Layers->size(); i++) {
 		if ((*Layers)[i]->Checkpoint == startCheckPoint) {
 			startIdx = i;
 			startBuffer = (*Layers)[i]->Buffer;
 		}
 		if (-1 < startIdx && startIdx < int(i)) {
-			for (unsigned int j = 0; j < context->audioInputsCount; j++) {
+			for (uint j = 0; j < context->audioInputsCount; j++) {
 					if (startBuffer) {
 						startBuffer->copyFrom(j, 0, *((*Layers)[i]->Buffer), j, 0, context->allocatedLength);
 					}
@@ -319,8 +319,8 @@ void Track::BounceAllHistory() {
 	if (limit < 1) {
 		return;
 	}
-	for (unsigned int i = 1; i < Layers->size(); i++) {
-		for (unsigned int j = 0; j <context->audioInputsCount; j++) {
+	for (uint i = 1; i < Layers->size(); i++) {
+		for (uint j = 0; j <context->audioInputsCount; j++) {
 			(*Layers)[0]->Buffer->addFrom(j, 0, (*Layers)[i]->Buffer->getReadPointer(j,0), *LoopDuration, 1);
 		}
 	}
@@ -365,13 +365,13 @@ void Track::StartRecordingBefore()
 	}
 	// Add a new buffer if active track doesn't have one yet
 
-	if ((Layers->size() < unsigned int(1)
+	if ((Layers->size() < uint(1)
          || (getRecordMode() < 3
-            && *CurrentTop == Layers->size() - unsigned int(1)
+            && *CurrentTop == Layers->size() - uint(1)
             && (*Layers)[*CurrentTop]->Dirty))) {
 		AddLayer(true);
 	}
-	else if (getRecordMode() < 3 && *CurrentTop < Layers->size() - unsigned int(1)) {
+	else if (getRecordMode() < 3 && *CurrentTop < Layers->size() - uint(1)) {
 		++(*CurrentTop);
 	}
 	// actually start Recording
@@ -424,7 +424,7 @@ void Track::StopRecordingAfter()
 	if (getRecordMode() != kRecPunch) {
         setRecordingArmed(false);
 	}
-    if(*CurrentTop < Layers->size() - unsigned int(1)){
+    if(*CurrentTop < Layers->size() - uint(1)){
         ++(*CurrentTop);
         RemoveTopLayer();
     }
@@ -701,7 +701,7 @@ void Track::processRecModeChange() {
 void Track::processPreviousChange() {
     if (*CurrentTop > 0) {
         if(context->maxUndoHistory > -1 && context->maxUndoHistory < Layers->size()){
-            if (*CurrentTop < Layers->size() - unsigned int(context->maxUndoHistory)) {
+            if (*CurrentTop < Layers->size() - uint(context->maxUndoHistory)) {
                 RemoveTopLayer();
             }
         }
