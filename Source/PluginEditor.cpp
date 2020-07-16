@@ -106,7 +106,7 @@ projectXml("<project />"), processor (p), thumbnailCache (5), thumbnail (32, for
     str = String("No Sync: Snap disabled, functionality goes into effect instantly\n")    +
                  String("Bar: Snaps to bar\n") +
                  String("Beat: Snaps to the beat (bottom of time signature)");
-   snapModeCombo.setTooltip(str);
+    snapModeCombo.setTooltip(str);
     
     activeLabel.setText("Active Track - OpenGL mode", NotificationType::dontSendNotification);
     recordButton.setClickingTogglesState (true);
@@ -1469,19 +1469,9 @@ int OrbishAudioProcessorEditor::getTrackRowHeight(int rowIdx) {
 void OrbishAudioProcessorEditor::makeTracks(){
     
     trackArea.setBounds(tracksViewport.getBounds());
+    updateTrackBounds();
     for (auto t : tracks) {
         auto i = t->getIndex();
-		t->horizontalLayout = tracksLayoutHorizontal;
-        if(activeTrack == t->getIndex()){
-            activeLoopLabel.setText(String(t->getActiveLoop() + 1), NotificationType::dontSendNotification);
-            loopNumberLabel.setText(String(t->getActiveLoop() + 1), NotificationType::dontSendNotification);
-        }
-		if (!tracksLayoutHorizontal) {
-			t->setBounds(5 + (i % nbrTracksInARow * (840/nbrTracksInARow)), (getTrackRowHeight(i / nbrTracksInARow)) + 5, 840/nbrTracksInARow, 20 + 18 * t->Loops.size());
-		}
-		else {
-			t->setBounds(5, i * (55) + 5, trackArea.getWidth() - 2 * 5, 50);
-		}
         auto tr = t->getAudioTrack();
 		auto grp = processor.getTrackGroup(tr);
 		String groupName = "";
@@ -1501,24 +1491,24 @@ void OrbishAudioProcessorEditor::makeTracks(){
         t->setPlayArmed(tr->isPlayArmed());
     }
     repaint(tracksViewport.getBounds());
-    tracksDirty = false;
-    
-	std::vector<int> height; int sum = 0;
-	height.reserve(20);
+    updateTrackAreaSize();
+}
+
+void OrbishAudioProcessorEditor::updateTrackAreaSize()
+{
+    std::vector<int> height; int sum = 0;
+    height.reserve(20);
     for (auto track : tracks) {
         auto i = track->getIndex();
         if (i % nbrTracksInARow == 0) { height.push_back(0); }
-        height[i / nbrTracksInARow] = jmax(height[i/nbrTracksInARow], track->getHeight());
-	}
-	for (int i = 0;i < height.size(); ++i) {
-		sum += height[i];
-	}
-
-    int totalHeight = (tracksLayoutHorizontal)
-                    ? tracks.size()*(55)+5
-                    :(sum)+5;
+        height[i / nbrTracksInARow] = jmax(height[i / nbrTracksInARow], track->getHeight());
+    }
+    for (int i = 0; i < height.size(); ++i) {
+        sum += height[i];
+    }
+    int totalHeight = (tracksLayoutHorizontal) ? tracks.size() * (55) + 5 : (sum)+5;
     int diff = trackArea.getHeight() - totalHeight;
-    if(getHeight() < 600 - diff || getHeight() > 900 - diff){
+    if (getHeight() < 600 - diff || getHeight() > 900 - diff) {
         setSize(getWidth(), std::min(std::max(getHeight() - diff, 600), 900));
     }
     trackArea.setSize(trackArea.getWidth(), std::max(tracksViewport.getHeight(), totalHeight));
@@ -1662,6 +1652,8 @@ void OrbishAudioProcessorEditor::updateNextLoopNumber(int trackNumber, int loopN
 	if (tracks.size() > trackNumber && trackNumber >= 0 && loopNumber >= 0) {
 		auto t = tracks[trackNumber];
 		t->setActiveLoop(loopNumber);
+        activeLoopLabel.setText(String(tracks[activeTrack]->getActiveLoop() + 1), NotificationType::dontSendNotification);
+        loopNumberLabel.setText(String(tracks[activeTrack]->getActiveLoop() + 1), NotificationType::dontSendNotification);
 		tracksDirty = true;
 	}
 }
@@ -1681,15 +1673,30 @@ void OrbishAudioProcessorEditor::changeTrack(){
     activeTrack=nextTrackNumber;
     activeTrackLabel.setText(String(activeTrack + 1), NotificationType::dontSendNotification);
     activeLoopLabel.setText(String(tracks[activeTrack]->getActiveLoop() + 1), NotificationType::dontSendNotification);
-    loopNumberLabel.setText(String(tracks[activeTrack]->getActiveLoop() + 1),
-                            NotificationType::dontSendNotification);
+    loopNumberLabel.setText(String(tracks[activeTrack]->getActiveLoop() + 1), NotificationType::dontSendNotification);
     trackNumberUpdated = false;
+}
+
+void OrbishAudioProcessorEditor::updateTrackBounds()
+{
+    for each (auto track in tracks)
+    {
+        track->horizontalLayout = tracksLayoutHorizontal;
+        auto index = track->getIndex();
+        if (!tracksLayoutHorizontal) {
+            track->setBounds(5 + (index % nbrTracksInARow * (840 / nbrTracksInARow)), (getTrackRowHeight(index / nbrTracksInARow)) + 5, 840 / nbrTracksInARow, 20 + 18 * track->Loops.size());
+        }
+        else {
+            track->setBounds(5, index * (55) + 5, trackArea.getWidth() - 2 * 5, 50);
+        }
+    }
 }
 
 void OrbishAudioProcessorEditor::askToCreateLoop(){
     auto currentTrack = tracks[activeTrack];
     currentTrack->addLoop(currentTrack->getAudioTrack()->loops.getLast()->Progress);
 
+    makeTracks();
 	project.dirty = true;
 }
 
@@ -1697,12 +1704,13 @@ void OrbishAudioProcessorEditor::removeLoop() {
     auto currentTrack = tracks[activeTrack];
     currentTrack->removeLoop();
 
+    makeTracks();
     project.dirty = true;
 }
 
 void OrbishAudioProcessorEditor::askToCreateTrack(){
     doCreateTrack(tracks.size());
-    resized();
+    makeTracks();
     project.dirty = true;
 }
 
@@ -1731,15 +1739,13 @@ void OrbishAudioProcessorEditor::doCreateTrack(int trackNumber) {
             tracks[trackNumber]->addLoop(l->Progress);
 		}
 	}
-    tracksDirty = true;
-    
 }
 
 void OrbishAudioProcessorEditor::removeTrack(int trackNumber){
     trackToRemove = trackNumber;
 	project.dirty = true;
     doRemoveTrack();
-    resized();
+    makeTracks();
 }
 
 
@@ -1747,7 +1753,6 @@ void OrbishAudioProcessorEditor::doRemoveTrack(){
     if(trackToRemove > 0 && trackToRemove < tracks.size()){
         if(!tracks[trackToRemove]->isActive()){
             tracks.remove(trackToRemove);
-            tracksDirty = true;
         }
     }
     trackToRemove = 0;

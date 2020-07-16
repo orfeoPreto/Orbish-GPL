@@ -164,9 +164,6 @@ void TrackComponent::resized(){
     if(!horizontalLayout){
         for(auto l: Loops){
             auto i = l->getIndex();
-            if((i+2)*loopHeight >= getHeight()){
-                break;
-            }
             l->setBounds(r.getX() + margin, r.getY() +margin+loopHeight+ (i * (loopHeight)), r.getWidth() - 2*margin, loopHeight-margin) ;
         }
         if(tempProgressBar != nullptr){
@@ -190,7 +187,14 @@ void TrackComponent::resized(){
 
 void TrackComponent::paint(Graphics& g){
     auto r = getLocalBounds();
-    g.setColour(Colours::darkgrey);
+    if (active)
+    {
+        g.setColour(Colours::darkgrey);
+    }
+    else
+    {
+        g.setColour(Colours::grey);
+    }
     g.fillRect(r);
     if(active){
             Path pth{};

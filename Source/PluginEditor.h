@@ -103,10 +103,12 @@ public:
     void timerCallback() override;
     void mouseDown(const MouseEvent &event) override;
 	void makeTracks();
+    void updateTrackAreaSize();
     void highlightActiveTrack(Graphics& g);
     void paintInfoSection(Graphics&);
     void askToCreateTrack() override;
     void askToCreateLoop() override;
+    void updateTrackBounds();
 	String saveBufferFromLoop(int, int);
 	ApplicationCommandTarget* getNextCommandTarget() override;
 	void getAllCommands(Array< CommandID >& commands) override;
