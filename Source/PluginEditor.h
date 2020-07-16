@@ -80,6 +80,7 @@ public:
     void createTrack();
     void removeTrack(int) override;
     void removeLoop() override;
+    void updatePlaying(int trackNumber) override;
     void doRemoveTrack();
     void mouseDrag(const MouseEvent& event) override;
     void updateInputVisualiser(const AudioBuffer<float>& buffer, int numSamples) override;

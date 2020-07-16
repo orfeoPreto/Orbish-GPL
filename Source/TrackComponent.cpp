@@ -210,8 +210,6 @@ void TrackComponent::paint(Graphics& g){
         ed->setColour(TextEditor::highlightedTextColourId, Colours::white);
         ed->setColour(TextEditor::highlightColourId, Colours::blue);
     }
-    
-    highlighter.setColour(Blinker::offColourId, Colour(0x6FFFFFFF));
 
     if(isSoloed() || isSoloArmed()){
         if(isSoloed()){
@@ -281,11 +279,11 @@ void TrackComponent::paint(Graphics& g){
             highlighter.state = Blinker:: kArmed;
         }
     }else {
+        highlighter.setColour(Blinker::offColourId, Colour(0x6FFFFFFF));
         highlighter.state = Blinker::kNeutral;
+        highlighter.setEnabled(false);
     }
-    if (highlighter.state != Blinker::kNeutral){
-        addAndMakeVisible(highlighter);
-    }
+    addAndMakeVisible(highlighter);
     
 	groupLabel.setText(" " + Group , NotificationType::dontSendNotification);
 	groupLabel.setColour(Label::textColourId, GroupColour);

@@ -461,6 +461,7 @@ void Track::StartPlaybackAfter()
     if(isActive() && currentPlayBuffer>=0){
         UpdateLoopVisualizer();
     }
+    playStateChanged();
 }
 
 void Track::StopPlaybackBefore()
@@ -489,6 +490,7 @@ void Track::StopPlaybackAfter()
 
     if (guiAlive && isActive()) {
         (context->observer->*(context->observer->updatePlayPosition)) (0, Reverse);
+        playStateChanged();
     }
     *Progress = 0;
 }
@@ -498,6 +500,7 @@ void Track::PausePlaybackAfter()
 	Playing = false;
     LastPlaybackBuffer = false;
     WasPlaying = true;
+    playStateChanged();
 }
 
 void Track::StartReverse()
@@ -532,6 +535,7 @@ void Track::StartMuteBefore(){
 void Track::StartMuteAfter(){
     FirstMuteBuffer = false;
     Muted = true;
+    playStateChanged();
 }
 
 void Track::StartSoloBefore(){
@@ -539,13 +543,13 @@ void Track::StartSoloBefore(){
     RunAfters.push_back(&Track::StartSoloAfter);
     setSoloArmed(true);
     logger->logMessage("start solo track " + String(Index));
-
 }
 
 void Track::StartSoloAfter(){
     FirstSoloBuffer = false;
     Soloed = true;
     logger->logMessage("stop solo track " + String(Index));
+    playStateChanged();
 }
 
 void Track::StopMuteBefore(){
@@ -559,6 +563,7 @@ void Track::StopMuteBefore(){
 
 void Track::StopMuteAfter(){
     LastMuteBuffer = false;
+    playStateChanged();
 }
 
 void Track::StopSoloBefore(){
@@ -566,13 +571,13 @@ void Track::StopSoloBefore(){
     Soloed = false;
     RunAfters.push_back(&Track::StopSoloAfter);
     setSoloArmed(false);
-
 }
 
 
 void Track::StopSoloAfter(){
     LastSoloBuffer = false;
     logger->logMessage("stop solo track " + String(Index));
+    playStateChanged();
 }
 
 void Track::ChangeLoopBefore(int newLoopIdx){
@@ -667,12 +672,18 @@ void Track::processRecordingChange() {
         if(!IsPlaying() && !isStopArmed()){
             setPlayArmed(true);
             processPlayChange();
+            playStateChanged();
         }
     }
 }
 
 void Track::processPlayChange(){
+}
 
+void Track::playStateChanged() {
+    if (guiAlive && isActive()) {
+        (context->observer->*(context->observer->playChanged)) (this->Index);
+    }
 }
 
 void Track::processStopChange() {

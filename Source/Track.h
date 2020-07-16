@@ -155,6 +155,7 @@ public:
     
     void processRecordingChange();
     void processPlayChange();
+    void playStateChanged();
     void processStopChange();
     void processReverseChange();
     void processMuteChange() ;
