@@ -50,7 +50,6 @@ projectXml("<project />"), processor (p), thumbnailCache (5), thumbnail (32, for
 
     playChanged = &Observer::updatePlaying;
 
-    
     processor.context->observer = this;
     thumbnail.addChangeListener (this);
     startTimer (20);
@@ -1154,7 +1153,6 @@ void OrbishAudioProcessorEditor::updatePlayHead(int position, bool reverse){
             playHeadPosition = ((audioPosition / thumbnail.getNumSamplesFinished()) * transportInfoArea.getWidth() + transportInfoArea.getX());
         }else{
             playHeadPosition = thumbnail.getNumSamplesFinished()-1;
-            tracks[activeTrack]->repaint();
         }
     }else{
         if(thumbnail.getTotalLength() > 0){
@@ -1162,7 +1160,6 @@ void OrbishAudioProcessorEditor::updatePlayHead(int position, bool reverse){
             playHeadPosition = ((audioPosition / thumbnail.getNumSamplesFinished()) * transportInfoArea.getWidth() + transportInfoArea.getX());
         }else{
             playHeadPosition = 0;
-            tracks[activeTrack]->repaint();
         }
     }
     playHeadPosition = jmax(playHeadPosition,.0f);
@@ -1547,10 +1544,6 @@ void OrbishAudioProcessorEditor::sliderChanged(Slider* slider) {
 void OrbishAudioProcessorEditor::buttonClicked(Button* button){
     if(button == &recordButton){
         recordButton.onClick = [this]() { toggleRecord(); };
-        tracks[activeTrack]->setRecordingArmed(tracks[activeTrack]->getAudioTrack()->isRecordingArmed());
-    }
-    if (button == &playButton){
-        tracks[activeTrack]->setPlayArmed(tracks[activeTrack]->getAudioTrack()->isPlayArmed());
     }
     if(button == &stopButton){
         stopButton.onClick = [this]() { toggleStop(); };
@@ -1559,15 +1552,9 @@ void OrbishAudioProcessorEditor::buttonClicked(Button* button){
         button->onClick = [this]() { toggleClear(); };
     }
     if(button == &muteButton){
-        tracks[activeTrack]->setMuted(tracks[activeTrack]->getAudioTrack()->Muted);
-        tracks[activeTrack]->setMutedArmed(tracks[activeTrack]->getAudioTrack()->isMuteArmed());
         muteButton.onClick = [this]() { toggleMute(); };
-        tracksDirty = true;
     }
     if(button == &soloButton){
-        tracks[activeTrack]->setSoloed(tracks[activeTrack]->getAudioTrack()->Soloed);
-        tracks[activeTrack]->setSoloArmed(tracks[activeTrack]->getAudioTrack()->isSoloArmed());
-        tracksDirty = true;
     }
     if(button == &monitorButton){
         monitorButton.onClick = [this]() { toggleMonitor(); };
@@ -1715,15 +1702,18 @@ void OrbishAudioProcessorEditor::removeLoop() {
 
 void OrbishAudioProcessorEditor::updatePlaying(int trackNumber)
 {
-        tracks[trackNumber]->setPlaying(tracks[trackNumber]->getAudioTrack()->Playing);
-        tracks[trackNumber]->setMuted(tracks[trackNumber]->getAudioTrack()->Muted);
-        tracks[trackNumber]->setSoloed(tracks[trackNumber]->getAudioTrack()->Soloed);
+    auto updatedTrack = tracks[trackNumber];
+    updatedTrack->setRecording(updatedTrack->getAudioTrack()->Recording);
+    updatedTrack->setPlaying(updatedTrack->getAudioTrack()->Playing);
+    updatedTrack->setMuted(updatedTrack->getAudioTrack()->Muted);
+    updatedTrack->setSoloed(updatedTrack->getAudioTrack()->Soloed);
 
-        tracks[trackNumber]->setPlayArmed(tracks[trackNumber]->getAudioTrack()->isPlayArmed());
-        tracks[trackNumber]->setMutedArmed(tracks[trackNumber]->getAudioTrack()->isMuteArmed());
-        tracks[trackNumber]->setSoloArmed(tracks[trackNumber]->getAudioTrack()->isSoloArmed());
+    updatedTrack->setRecordingArmed(updatedTrack->getAudioTrack()->isRecordingArmed());
+    updatedTrack->setPlayArmed(updatedTrack->getAudioTrack()->isPlayArmed());
+    updatedTrack->setMutedArmed(updatedTrack->getAudioTrack()->isMuteArmed());
+    updatedTrack->setSoloArmed(updatedTrack->getAudioTrack()->isSoloArmed());
 
-        tracks[trackNumber]->repaint();
+    updatedTrack->repaint();
 }
 
 void OrbishAudioProcessorEditor::askToCreateTrack(){

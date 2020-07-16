@@ -385,6 +385,7 @@ void Track::StartRecordingBefore()
 
 void Track::StartRecordingAfter(){
     FirstRecordingBuffer = false;
+    playStateChanged();
 }
 
 void Track::StopRecordingBefore()
@@ -435,6 +436,7 @@ void Track::StopRecordingAfter()
     setStopArmed(false);
     LastRecordingBuffer = false;
     Triggered = false;
+    playStateChanged();
 }
 
 void Track::StartPlaybackBefore()
@@ -672,12 +674,13 @@ void Track::processRecordingChange() {
         if(!IsPlaying() && !isStopArmed()){
             setPlayArmed(true);
             processPlayChange();
-            playStateChanged();
         }
     }
+    playStateChanged();
 }
 
 void Track::processPlayChange(){
+    playStateChanged();
 }
 
 void Track::playStateChanged() {
@@ -754,9 +757,11 @@ void Track::processTriggerModeChange() {
 
 void Track::processMuteChange() {
     setRecordingArmed(isRecordingArmed() && !isMuteArmed());
+    playStateChanged();
 }
 
 void Track::processSoloChange() {
+    playStateChanged();
 }
 
 void Track::processBounceChange() {
