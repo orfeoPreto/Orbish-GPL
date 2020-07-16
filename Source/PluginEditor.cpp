@@ -1303,11 +1303,11 @@ void OrbishAudioProcessorEditor::paintInfoSection(Graphics& g){
         trackNumberLabel.setText(trackNbr, NotificationType::dontSendNotification);
     }
     auto loopNbr = "Loop: "+String(tracks[activeTrack]->getActiveLoop() + 1);
-    if (loopNbr != trackNumberLabel.getText()) {
-        trackNumberLabel.setText(loopNbr, NotificationType::dontSendNotification);
+    if (loopNbr != loopNumberLabel.getText()) {
+        loopNumberLabel.setText(loopNbr, NotificationType::dontSendNotification);
     }
     auto layerNbr = "Layer: " + String(*processor.activeTrack->CurrentTop + 1);
-    if (layerNbr != trackNumberLabel.getText()) {
+    if (layerNbr != layerNumberLabel.getText()) {
         layerNumberLabel.setText(layerNbr, NotificationType::dontSendNotification);
     }
 	auto grp = processor.getTrackGroup(processor.activeTrack);

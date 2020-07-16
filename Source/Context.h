@@ -13,6 +13,8 @@
 #include "DataExchange.h"
 //#include "TrackGroup.hpp"
 
+typedef unsigned int uint;
+
 struct Layer {
 	AudioBuffer<float>* Buffer{};
 	int Checkpoint = -1;

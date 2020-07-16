@@ -25,7 +25,7 @@ class Track :public AudioProcessorValueTreeState::Listener {
 public:
 
 
-	Track(unsigned int, bool, AudioProcessorValueTreeState& params, OrbishContext*& c, bool& gui);
+	Track(uint, bool, AudioProcessorValueTreeState& params, OrbishContext*& c, bool& gui);
 
 	~Track();
 
