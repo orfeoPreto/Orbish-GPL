@@ -1671,7 +1671,7 @@ void OrbishAudioProcessorEditor::changeTrack(){
 
 void OrbishAudioProcessorEditor::updateTrackBounds()
 {
-    for each (auto track in tracks)
+    for(auto track: tracks)
     {
         track->horizontalLayout = tracksLayoutHorizontal;
         auto index = track->getIndex();
