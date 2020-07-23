@@ -22,6 +22,7 @@
 #include "CommandIDs.h"
 #include "SettingsPage.h"
 #include "../exu/Label.hpp"
+#include "OrbishLookAndFeel.h"
 
 //==============================================================================
 /**
@@ -162,7 +163,7 @@ private:
     DrawableComposite* verticalOutline;
     FlexBox generalInfoArea {};
     Component transportInfoArea {};
-    Component loopInfoArea {};
+    Component loopInfoArea{};
     Component loopDisplayArea { };
 	Array<Colour> groupColours;
 	DialogWindow* dialog;

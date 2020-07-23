@@ -28,6 +28,10 @@
             file="Source/MidiProcessor.cpp"/>
       <FILE id="IbJOCh" name="MidiProcessor.h" compile="0" resource="0" file="Source/MidiProcessor.h"/>
       <FILE id="zZiu88" name="Observer.h" compile="0" resource="0" file="Source/Observer.h"/>
+      <FILE id="XBV7Yj" name="OrbishLookAndFeel.cpp" compile="1" resource="0"
+            file="Source/OrbishLookAndFeel.cpp"/>
+      <FILE id="cmln4s" name="OrbishLookAndFeel.h" compile="0" resource="0"
+            file="Source/OrbishLookAndFeel.h"/>
       <FILE id="odi1jK" name="PluginEditor.cpp" compile="1" resource="0"
             file="Source/PluginEditor.cpp"/>
       <FILE id="NCkE4f" name="PluginEditor.h" compile="0" resource="0" file="Source/PluginEditor.h"/>
