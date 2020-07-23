@@ -18,9 +18,8 @@ OrbishAudioProcessorEditor::OrbishAudioProcessorEditor (OrbishAudioProcessor& p,
 : AudioProcessorEditor (&p),                              // [4]
 projectXml("<project />"), processor (p), thumbnailCache (5), thumbnail (32, formatManager, thumbnailCache), valueTreeState(apvts)
 {
-	//processor.logger->logMessage("begin gui constuctor");
-
-
+	//processor.logger->logMessage("begin gui constructor");
+    openGLContext.attachTo(*getTopLevelComponent());
 	project = Project();
 	setProjectName(project.name);
 	headerComp.addAndMakeVisible(projectLabel);
@@ -37,7 +36,6 @@ projectXml("<project />"), processor (p), thumbnailCache (5), thumbnail (32, for
     getLookAndFeel().setColour(ResizableWindow::backgroundColourId, Colours::black);
     globalLnF->setColour(Label::textColourId, Colours::white);
 
-
     updateInputBuffer = &Observer::updateInputVisualiser;
     updateLoopBuffer = &Observer::updateLoopVisualiser;
     updatePlayPosition = &Observer::updatePlayHead;
@@ -50,7 +48,8 @@ projectXml("<project />"), processor (p), thumbnailCache (5), thumbnail (32, for
     loopChange = &Observer::updateNextLoopNumber;
     loopRemoval = &Observer::removeLoop;
 
-    
+    playChanged = &Observer::updatePlaying;
+
     processor.context->observer = this;
     thumbnail.addChangeListener (this);
     startTimer (20);
@@ -66,7 +65,7 @@ projectXml("<project />"), processor (p), thumbnailCache (5), thumbnail (32, for
     outputMeter->setLookAndFeel (lnf.get());
     outputMeter->setMeterSource (processor.getOutputMeterSource());
     outputMeter->setMeterFlags(FFAU::LevelMeter::Minimal);
-   for (auto track : processor.tracks) {
+    for (auto track : processor.tracks) {
        doCreateTrack(track->Index);
     }
     timeSigLabel.setTooltip("Current time signature\nComes from the host");
@@ -108,9 +107,9 @@ projectXml("<project />"), processor (p), thumbnailCache (5), thumbnail (32, for
     str = String("No Sync: Snap disabled, functionality goes into effect instantly\n")    +
                  String("Bar: Snaps to bar\n") +
                  String("Beat: Snaps to the beat (bottom of time signature)");
-   snapModeCombo.setTooltip(str);
+    snapModeCombo.setTooltip(str);
     
-    activeLabel.setText("Active Track", NotificationType::dontSendNotification);
+    activeLabel.setText("Active Track - OpenGL mode", NotificationType::dontSendNotification);
     recordButton.setClickingTogglesState (true);
     recordButton.setToggleState(false, NotificationType::sendNotification);
     recordButton.addListener(this);
@@ -609,7 +608,6 @@ void OrbishAudioProcessorEditor::createNewProject() {
 	alert->setBoundsRelative(0.2f, 0.2f, 0.2f, 0.2f);
 	alert->setLookAndFeel(lnf.get());
 	alert->addButton("Ok", 1, juce::KeyPress(KeyPress::returnKey));
-	alert->isDropShadowEnabled();
 	alert->enterModalState(true, nullptr, false);
 	addAndMakeVisible(alert);
 	alert->centreWithSize(300, 200);
@@ -728,7 +726,6 @@ bool OrbishAudioProcessorEditor::showDialogWindow(
 	alert->setLookAndFeel(lnf.get());
 	alert->addButton(firstButtonText, 1, juce::KeyPress(KeyPress::returnKey));
 	alert->addButton(secondButtonText, 0, juce::KeyPress(KeyPress::escapeKey));
-	alert->isDropShadowEnabled();
 	alert->enterModalState(true, nullptr, false);
 	addAndMakeVisible(alert);
 	alert->centreWithSize(400, 200);
@@ -941,11 +938,6 @@ void OrbishAudioProcessorEditor::thumbnailChanged()
 void OrbishAudioProcessorEditor::timerCallback()
 {
     changeTrack();
-    if(tracksDirty){
-       resized();
-       tracksViewport.repaint();
-    }
-    tracksDirty = false;
     transportInfoArea.repaint();
 	BufferForVisualisation* b;
 	if (processor.context->xchange->readBufferQueue->read_available()) {
@@ -1009,23 +1001,10 @@ String OrbishAudioProcessorEditor::saveBufferFromLoop(int trackIdx, int loopIdx)
 
 void OrbishAudioProcessorEditor::toggleRecord(){
 	project.dirty = true;
-    if(recordButton.getToggleState() && !processor.activeTrack->isRecordingArmed()){
-        processor.activeTrack->setRecordingArmed(true);
-    }
-    if(!recordButton.getToggleState() && processor.activeTrack->isRecordingArmed()){
-        processor.activeTrack->setRecordingArmed(false);
-    }
     inputDisplay.clear();
 }
 
-void OrbishAudioProcessorEditor::togglePlay(){
-    if(playButton.getToggleState() && !processor.activeTrack->isPlayArmed()){
-        processor.activeTrack->setPlayArmed(true);
-    }
-    if(!playButton.getToggleState() && processor.activeTrack->isPlayArmed()){
-        processor.activeTrack->setPlayArmed(false);
-    }
-}
+
 
 void OrbishAudioProcessorEditor::toggleStop(){
     updatePlayHead(0, false);
@@ -1094,10 +1073,9 @@ void OrbishAudioProcessorEditor::changeSnapMode(){
 
 void OrbishAudioProcessorEditor::paintIfFileLoaded (Graphics& g, const Rectangle<int>& thumbnailBounds)
 {
-    DropShadow ds{Colour(0xFF2e2b23), 30, Point<int>(0,0)};
     Path pth{};
     pth.addRectangle(thumbnailBounds.withSizeKeepingCentre(thumbnailBounds.getWidth()+10, thumbnailBounds.getHeight()+10));
-    ds.drawForPath(g, pth);
+
     g.setColour (Colours::steelblue);
     auto audioLength (thumbnail.getTotalLength());                                      // [12]
     thumbnail.drawChannels (g,
@@ -1113,18 +1091,18 @@ void OrbishAudioProcessorEditor::paintIfFileLoaded (Graphics& g, const Rectangle
     g.fillRect(playHead);
     auto c1 = Colour(0x00FFFFFF);
     auto c2 = Colour(0x8FFFFF00);
-    processor.logMessage("Calculating denominator for playhead trail size");
+   // processor.logMessage("Calculating denominator for playhead trail size");
     double tmpDenom = processor.samplesToBeats(float(*processor.activeTrack->LoopDuration));
     int denominator = std::ceil(tmpDenom);
-    processor.logMessage("1st stage: " + String(denominator));
+  //  processor.logMessage("1st stage: " + String(denominator));
     denominator = denominator / (processor.context->timeSigBottom * .25) ;
-    processor.logMessage("2nd stage: " + String(denominator));
+  //  processor.logMessage("2nd stage: " + String(denominator));
     denominator = denominator / processor.context->timeSigTop * (60 / processor.context->info->bpm);
-    processor.logMessage("timesigTop: " + String(processor.context->timeSigTop));
-    processor.logMessage("timeRatio: " + String(60 / processor.context->info->bpm));
-    processor.logMessage("bpm: " + String(processor.context->info->bpm));
+ //   processor.logMessage("timesigTop: " + String(processor.context->timeSigTop));
+ //   processor.logMessage("timeRatio: " + String(60 / processor.context->info->bpm));
+  //  processor.logMessage("bpm: " + String(processor.context->info->bpm));
 
-    processor.logMessage("3rd stage: " + String(denominator));
+ //   processor.logMessage("3rd stage: " + String(denominator));
     denominator = jmin(jmax(denominator*2, 8),40);
     if(processor.activeTrack->Playing){
     if(reverseState == On){
@@ -1147,14 +1125,12 @@ void OrbishAudioProcessorEditor::paintIfFileLoaded (Graphics& g, const Rectangle
 
 void OrbishAudioProcessorEditor::paintIfNoFileLoaded (Graphics& g, const Rectangle<int>& thumbnailBounds)
 {
-    DropShadow ds{Colour(0xFF2e2b23), 30, Point<int>(0,0)};
     g.setColour (Colours::white);
     Path pth{};
     pth.addRectangle(thumbnailBounds.withSizeKeepingCentre(thumbnailBounds.getWidth()+10, thumbnailBounds.getHeight()+10));
-    ds.drawForPath(g, pth);
+
     g.setColour (Colours::white);
 
-    
     g.drawFittedText ("No Loop", thumbnailBounds, Justification::centred, 1.0f);
 }
 
@@ -1192,12 +1168,10 @@ void OrbishAudioProcessorEditor::updatePlayHead(int position, bool reverse){
 //==============================================================================
 void OrbishAudioProcessorEditor::paint (Graphics& g)
 {
-
-   // processor.logMessage(String(ms));
     // (Our component is opaque, so we must completely fill the background with a solid colour)
-    if(start){
-        g.fillAll (getLookAndFeel().findColour (ResizableWindow::backgroundColourId));
+    g.fillAll(getLookAndFeel().findColour(ResizableWindow::backgroundColourId));
 
+    if(start){
         g.setColour (Colours::white);
         g.setFont (15.0f);
 
@@ -1250,6 +1224,7 @@ void OrbishAudioProcessorEditor::paint (Graphics& g)
     g.setColour(Colours::greenyellow);
     highlightActiveTrack(g);
     paintInfoSection(g);
+
     if(processor.activeTrack->Recording){
         recordButton.setColour(TextButton::textColourOnId, Colours::white);
         recordButton.setColour(TextButton::buttonOnColourId, Colour(0x8FFC0B0B));
@@ -1287,25 +1262,15 @@ void OrbishAudioProcessorEditor::paint (Graphics& g)
     }
     if(processor.activeTrack->Muted != tracks[activeTrack]->isMuted()) tracksDirty = true;
     if(processor.activeTrack->Soloed != tracks[activeTrack]->isSoloed()) tracksDirty = true;
-    if(processor.activeTrack->Recording != tracks[activeTrack]->isRecording()) tracksDirty = true;
-    if(processor.activeTrack->Playing != tracks[activeTrack]->isPlaying()) tracksDirty = true;
-    if(processor.activeTrack->isPlayArmed() != tracks[activeTrack]->isPlayArmed()) tracksDirty = true;
     if(processor.activeTrack->isMuteArmed() != tracks[activeTrack]->isMutedArmed()) tracksDirty = true;
     if(processor.activeTrack->isSoloArmed() != tracks[activeTrack]->isSoloArmed()) tracksDirty = true;
-    if(processor.activeTrack->isRecordingArmed() != tracks[activeTrack]->isRecordingArmed()) tracksDirty = true;
+
     if (tracksDirty) {
-        repaint();
+        trackArea.repaint();
+        tracksDirty = false;
     }
+
     playButton.setColour(TextButton::textColourOffId, Colour(0xAF2ACD01));
-    
-
-    if(trackToRemove > 0){
-        doRemoveTrack();
-    }
-    if(shouldCreateTrack){
-        createTrack();
-
-    }
 	projectLabel.setColour(Label::backgroundColourId, Colour(0x50ffffff));
 	projectLabel.setFont(Font(18, Font::bold));
     projectLabel.setJustificationType(Justification::centred);
@@ -1339,11 +1304,11 @@ void OrbishAudioProcessorEditor::paintInfoSection(Graphics& g){
         trackNumberLabel.setText(trackNbr, NotificationType::dontSendNotification);
     }
     auto loopNbr = "Loop: "+String(tracks[activeTrack]->getActiveLoop() + 1);
-    if (loopNbr != trackNumberLabel.getText()) {
-        trackNumberLabel.setText(loopNbr, NotificationType::dontSendNotification);
+    if (loopNbr != loopNumberLabel.getText()) {
+        loopNumberLabel.setText(loopNbr, NotificationType::dontSendNotification);
     }
     auto layerNbr = "Layer: " + String(*processor.activeTrack->CurrentTop + 1);
-    if (layerNbr != trackNumberLabel.getText()) {
+    if (layerNbr != layerNumberLabel.getText()) {
         layerNumberLabel.setText(layerNbr, NotificationType::dontSendNotification);
     }
 	auto grp = processor.getTrackGroup(processor.activeTrack);
@@ -1504,68 +1469,40 @@ int OrbishAudioProcessorEditor::getTrackRowHeight(int rowIdx) {
 
 void OrbishAudioProcessorEditor::makeTracks(){
     
-    if(tracksDirty){
-        trackArea.setBounds(tracksViewport.getBounds());
-        for (auto t : tracks) {
-            auto i = t->getIndex();
-			t->horizontalLayout = tracksLayoutHorizontal;
-            if(activeTrack == t->getIndex()){
-                if(shouldCreateLoop && t->Loops.size() < processor.activeTrack->loops.size()){
-                    t->addLoop(t->getAudioTrack()->loops.getLast()->Progress);
-                    shouldCreateLoop = false;
-                }
-                if(shouldRemoveLoop){
-                    t->removeLoop();
-                    shouldRemoveLoop = false;
-                }
-                activeLoopLabel.setText(String(t->getActiveLoop() + 1), NotificationType::dontSendNotification);
-                loopNumberLabel.setText(String(t->getActiveLoop() + 1),
-                                        NotificationType::dontSendNotification);
-            }
-			if (!tracksLayoutHorizontal) {
-				t->setBounds(5 + (i % nbrTracksInARow * (840/nbrTracksInARow)), (getTrackRowHeight(i / nbrTracksInARow)) + 5, 840/nbrTracksInARow, 20 + 18 * t->Loops.size());
-			}
-			else {
-				t->setBounds(5, i * (55) + 5, trackArea.getWidth() - 2 * 5, 50);
-			}
-            auto tr = t->getAudioTrack();
-			auto grp = processor.getTrackGroup(tr);
-			String groupName = "";
-			Colour grpCol = Colours::black;
-			if (nullptr != grp) {
-				groupName = grp->Name;
-				grpCol = groupColours[grp->Index];
-			}
-			t->Group = groupName;
-			t->GroupColour = grpCol;
-            t->setRecordingArmed(tr->isRecordingArmed());
-            t->setMuted(tr->Muted);
-            t->setMutedArmed(tr->isMuteArmed());
-            t->setSoloed(tr->Soloed);
-            t->setSoloArmed(tr->isSoloArmed());
-            t->setPlaying(tr->Playing);
-            t->setPlayArmed(tr->isPlayArmed());
-            t->resized();
-        }
-        repaint(tracksViewport.getBounds());
-        tracksDirty = false;
+    trackArea.setBounds(tracksViewport.getBounds());
+    updateTrackBounds();
+    for (auto t : tracks) {
+        auto i = t->getIndex();
+        auto tr = t->getAudioTrack();
+		auto grp = processor.getTrackGroup(tr);
+		String groupName = "";
+		Colour grpCol = Colours::black;
+		if (nullptr != grp) {
+			groupName = grp->Name;
+			grpCol = groupColours[grp->Index];
+		}
+		t->Group = groupName;
+		t->GroupColour = grpCol;
     }
-	std::vector<int> height; int sum = 0;
-	height.reserve(20);
+    repaint(tracksViewport.getBounds());
+    updateTrackAreaSize();
+}
+
+void OrbishAudioProcessorEditor::updateTrackAreaSize()
+{
+    std::vector<int> height; int sum = 0;
+    height.reserve(20);
     for (auto track : tracks) {
         auto i = track->getIndex();
         if (i % nbrTracksInARow == 0) { height.push_back(0); }
-        height[i / nbrTracksInARow] = jmax(height[i/nbrTracksInARow], track->getHeight());
-	}
-	for (int i = 0;i < height.size(); ++i) {
-		sum += height[i];
-	}
-
-    int totalHeight = (tracksLayoutHorizontal)
-                    ? tracks.size()*(55)+5
-                    :(sum)+5;
+        height[i / nbrTracksInARow] = jmax(height[i / nbrTracksInARow], track->getHeight());
+    }
+    for (int i = 0; i < height.size(); ++i) {
+        sum += height[i];
+    }
+    int totalHeight = (tracksLayoutHorizontal) ? tracks.size() * (55) + 5 : (sum)+5;
     int diff = trackArea.getHeight() - totalHeight;
-    if(getHeight() < 600 - diff || getHeight() > 900 - diff){
+    if (getHeight() < 600 - diff || getHeight() > 900 - diff) {
         setSize(getWidth(), std::min(std::max(getHeight() - diff, 600), 900));
     }
     trackArea.setSize(trackArea.getWidth(), std::max(tracksViewport.getHeight(), totalHeight));
@@ -1607,11 +1544,6 @@ void OrbishAudioProcessorEditor::sliderChanged(Slider* slider) {
 void OrbishAudioProcessorEditor::buttonClicked(Button* button){
     if(button == &recordButton){
         recordButton.onClick = [this]() { toggleRecord(); };
-        tracksDirty = true;
-    }
-    if(button == &playButton){
-        playButton.onClick = [this]() { togglePlay(); };
-        tracksDirty = true;
     }
     if(button == &stopButton){
         stopButton.onClick = [this]() { toggleStop(); };
@@ -1621,10 +1553,8 @@ void OrbishAudioProcessorEditor::buttonClicked(Button* button){
     }
     if(button == &muteButton){
         muteButton.onClick = [this]() { toggleMute(); };
-        tracksDirty = true;
     }
     if(button == &soloButton){
-        tracksDirty = true;
     }
     if(button == &monitorButton){
         monitorButton.onClick = [this]() { toggleMonitor(); };
@@ -1646,13 +1576,11 @@ void OrbishAudioProcessorEditor::buttonClicked(Button* button){
     }
 	if (button == &addToGroupButton) {
 		button->onClick = [this] {
-			tracksDirty = true;
 			makeTracks();
 		};
 	}
 	if (button == &removeFromGroupButton) {
 		button->onClick = [this] {
-			tracksDirty = true;
 			makeTracks();
 		};
 	}
@@ -1716,6 +1644,8 @@ void OrbishAudioProcessorEditor::updateNextLoopNumber(int trackNumber, int loopN
 	if (tracks.size() > trackNumber && trackNumber >= 0 && loopNumber >= 0) {
 		auto t = tracks[trackNumber];
 		t->setActiveLoop(loopNumber);
+        activeLoopLabel.setText(String(tracks[activeTrack]->getActiveLoop() + 1), NotificationType::dontSendNotification);
+        loopNumberLabel.setText(String(tracks[activeTrack]->getActiveLoop() + 1), NotificationType::dontSendNotification);
 		tracksDirty = true;
 	}
 }
@@ -1735,27 +1665,66 @@ void OrbishAudioProcessorEditor::changeTrack(){
     activeTrack=nextTrackNumber;
     activeTrackLabel.setText(String(activeTrack + 1), NotificationType::dontSendNotification);
     activeLoopLabel.setText(String(tracks[activeTrack]->getActiveLoop() + 1), NotificationType::dontSendNotification);
-    loopNumberLabel.setText(String(tracks[activeTrack]->getActiveLoop() + 1),
-                            NotificationType::dontSendNotification);
-    //repaint();
+    loopNumberLabel.setText(String(tracks[activeTrack]->getActiveLoop() + 1), NotificationType::dontSendNotification);
     trackNumberUpdated = false;
 }
 
+void OrbishAudioProcessorEditor::updateTrackBounds()
+{
+    for(auto track: tracks)
+    {
+        track->horizontalLayout = tracksLayoutHorizontal;
+        auto index = track->getIndex();
+        if (!tracksLayoutHorizontal) {
+            track->setBounds(5 + (index % nbrTracksInARow * (840 / nbrTracksInARow)), (getTrackRowHeight(index / nbrTracksInARow)) + 5, 840 / nbrTracksInARow, 20 + 18 * track->Loops.size());
+        }
+        else {
+            track->setBounds(5, index * (55) + 5, trackArea.getWidth() - 2 * 5, 50);
+        }
+    }
+}
+
 void OrbishAudioProcessorEditor::askToCreateLoop(){
-    shouldCreateLoop = true;
-    tracksDirty = true;
+    auto currentTrack = tracks[activeTrack];
+    currentTrack->addLoop(currentTrack->getAudioTrack()->loops.getLast()->Progress);
+
+    makeTracks();
 	project.dirty = true;
 }
 
+void OrbishAudioProcessorEditor::removeLoop() {
+    auto currentTrack = tracks[activeTrack];
+    currentTrack->removeLoop();
+
+    makeTracks();
+    project.dirty = true;
+}
+
+void OrbishAudioProcessorEditor::updatePlaying(int trackNumber)
+{
+    auto updatedTrack = tracks[trackNumber];
+    updatedTrack->setRecording(updatedTrack->getAudioTrack()->Recording);
+    updatedTrack->setPlaying(updatedTrack->getAudioTrack()->Playing);
+    updatedTrack->setMuted(updatedTrack->getAudioTrack()->Muted);
+    updatedTrack->setSoloed(updatedTrack->getAudioTrack()->Soloed);
+
+    updatedTrack->setRecordingArmed(updatedTrack->getAudioTrack()->isRecordingArmed());
+    updatedTrack->setPlayArmed(updatedTrack->getAudioTrack()->isPlayArmed());
+    updatedTrack->setMutedArmed(updatedTrack->getAudioTrack()->isMuteArmed());
+    updatedTrack->setSoloArmed(updatedTrack->getAudioTrack()->isSoloArmed());
+
+    updatedTrack->repaint();
+}
+
 void OrbishAudioProcessorEditor::askToCreateTrack(){
-    shouldCreateTrack = true;
+    doCreateTrack(tracks.size());
+    makeTracks();
+    project.dirty = true;
 }
 
 
 void OrbishAudioProcessorEditor::createTrack(){
-    doCreateTrack(tracks.size());
-    shouldCreateTrack = false;
-	project.dirty = true;
+    // moved to askToCreateTrack
 }
 
 
@@ -1774,23 +1743,17 @@ void OrbishAudioProcessorEditor::doCreateTrack(int trackNumber) {
 		tracks.add(t);
 	}
 	else {
-//		}
         for(auto l : *loops){
             tracks[trackNumber]->addLoop(l->Progress);
 		}
 	}
-    tracksDirty = true;
-}
-
-void OrbishAudioProcessorEditor::removeLoop(){
-    shouldRemoveLoop = true;
-    tracksDirty = true;
-	project.dirty = true;
 }
 
 void OrbishAudioProcessorEditor::removeTrack(int trackNumber){
     trackToRemove = trackNumber;
 	project.dirty = true;
+    doRemoveTrack();
+    makeTracks();
 }
 
 
@@ -1798,7 +1761,6 @@ void OrbishAudioProcessorEditor::doRemoveTrack(){
     if(trackToRemove > 0 && trackToRemove < tracks.size()){
         if(!tracks[trackToRemove]->isActive()){
             tracks.remove(trackToRemove);
-            tracksDirty = true;
         }
     }
     trackToRemove = 0;

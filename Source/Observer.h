@@ -39,6 +39,9 @@ public:
     LoopChange loopChange;
     typedef void (Observer::*LoopRemoval) ();
     LoopRemoval loopRemoval;
+
+    typedef void (Observer::* PlayChanged)(int);
+    PlayChanged playChanged;
     
     virtual void updateInputVisualiser (const AudioBuffer<float>& buffer, int numSamples) {};
     virtual void updateLoopVisualiser (const AudioBuffer<float>& buffer, int numSamples) {};
@@ -52,6 +55,8 @@ public:
     virtual void askToCreateLoop() {};
     virtual void updateNextLoopNumber(int trackNumber, int loopNumber) {};
     virtual void removeLoop() {};
+
+    virtual void updatePlaying(int trackNumber) {};
 
 };
 #endif /* Observer_hpp */

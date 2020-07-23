@@ -29,6 +29,7 @@ TrackComponent::TrackComponent(int index, std::vector<double*> progress, bool& l
         Loops.add(loop);
     }
 
+
     addAndMakeVisible(witness);
     trackNameLabel.setText(this->getName(), NotificationType::sendNotification);
     trackNameLabel.setFont(Font(10.0f));
@@ -66,9 +67,12 @@ int TrackComponent::getActiveLoop(){
 
 void TrackComponent::removeLoop(){
     Loops.removeLast();
+    resized();
 }
 void TrackComponent::addLoop(double& p){
-    Loops.add(new LoopComponent(p, Loops.size()));
+    LoopComponent* newLoop = new LoopComponent(p, Loops.size());
+    Loops.add(newLoop);
+    resized();
 }
 
 void TrackComponent::setActive(bool active){
@@ -160,9 +164,6 @@ void TrackComponent::resized(){
     if(!horizontalLayout){
         for(auto l: Loops){
             auto i = l->getIndex();
-            if((i+2)*loopHeight >= getHeight()){
-                break;
-            }
             l->setBounds(r.getX() + margin, r.getY() +margin+loopHeight+ (i * (loopHeight)), r.getWidth() - 2*margin, loopHeight-margin) ;
         }
         if(tempProgressBar != nullptr){
@@ -184,17 +185,21 @@ void TrackComponent::resized(){
     }
 }
 
-//void TrackComponent::mouseDrag() {
-//    
-//}
-
 void TrackComponent::paint(Graphics& g){
     auto r = getLocalBounds();
+    if (active)
+    {
+        g.setColour(Colours::darkgrey);
+    }
+    else
+    {
+        g.setColour(Colours::grey);
+    }
+    g.fillRect(r);
     if(active){
-            DropShadow ds{Colour(0xFF2e2b23), 30, Point<int>(0,0)};
             Path pth{};
             pth.addRectangle(r.withSizeKeepingCentre(r.getWidth()+10, r.getHeight()+10));
-            ds.drawForPath(g, pth);
+
     }else{
         g.setColour(Colour(0x0F262C36));
         g.fillRect(r);
@@ -205,8 +210,6 @@ void TrackComponent::paint(Graphics& g){
         ed->setColour(TextEditor::highlightedTextColourId, Colours::white);
         ed->setColour(TextEditor::highlightColourId, Colours::blue);
     }
-    
-    highlighter.setColour(Blinker::offColourId, Colour(0x6FFFFFFF));
 
     if(isSoloed() || isSoloArmed()){
         if(isSoloed()){
@@ -276,11 +279,11 @@ void TrackComponent::paint(Graphics& g){
             highlighter.state = Blinker:: kArmed;
         }
     }else {
+        highlighter.setColour(Blinker::offColourId, Colour(0x6FFFFFFF));
         highlighter.state = Blinker::kNeutral;
+        highlighter.setEnabled(false);
     }
-    if (highlighter.state != Blinker::kNeutral){
-        addAndMakeVisible(highlighter);
-    }
+    addAndMakeVisible(highlighter);
     
 	groupLabel.setText(" " + Group , NotificationType::dontSendNotification);
 	groupLabel.setColour(Label::textColourId, GroupColour);

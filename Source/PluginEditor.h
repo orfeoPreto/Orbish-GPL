@@ -80,6 +80,7 @@ public:
     void createTrack();
     void removeTrack(int) override;
     void removeLoop() override;
+    void updatePlaying(int trackNumber) override;
     void doRemoveTrack();
     void mouseDrag(const MouseEvent& event) override;
     void updateInputVisualiser(const AudioBuffer<float>& buffer, int numSamples) override;
@@ -103,10 +104,12 @@ public:
     void timerCallback() override;
     void mouseDown(const MouseEvent &event) override;
 	void makeTracks();
+    void updateTrackAreaSize();
     void highlightActiveTrack(Graphics& g);
     void paintInfoSection(Graphics&);
     void askToCreateTrack() override;
     void askToCreateLoop() override;
+    void updateTrackBounds();
 	String saveBufferFromLoop(int, int);
 	ApplicationCommandTarget* getNextCommandTarget() override;
 	void getAllCommands(Array< CommandID >& commands) override;
@@ -131,6 +134,7 @@ public:
 
 private:
 
+    OpenGLContext openGLContext;
     int nbrTracksInARow = 4;
     SharedResourcePointer<TooltipWindow> tooltipWindow;
 	std::shared_ptr<SettingsPage> settingsPage;
