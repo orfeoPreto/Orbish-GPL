@@ -31,8 +31,9 @@ public:
     ~TrackComponent();
     enum ColourIds
     {
-        backgroundColourId                  = 0x1000100,
-        activeBackgroundColourId                = 0x1000101
+        backgroundColourId                  = 0x2000101,
+        activeBackgroundColourId            = 0x2000102,
+        outlineColourId                     = 0x2000103
     };
     
     static void test(){

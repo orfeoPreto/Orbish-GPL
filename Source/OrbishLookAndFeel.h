@@ -11,22 +11,12 @@
 #pragma once
 
 #include "JuceHeader.h"
+#include "TrackComponent.h"
 
 class OrbishLookAndFeel : public juce::LookAndFeel_V3
 {
 public:
     OrbishLookAndFeel();
     ~OrbishLookAndFeel();
-
-    Colour getPrimaryColour();
-    Colour getSecondaryColour();
-    Colour getAccentColour();
 private:
-    Colour primaryColour;
-    Colour secondaryColour;
-    Colour accentColour;
-
-    void setPrimaryColour(Colour &colour);
-    void setSecondaryColour(Colour& colour);
-    void setAccentColour(Colour& colour);
 };

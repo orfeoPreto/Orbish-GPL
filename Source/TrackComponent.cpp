@@ -187,22 +187,12 @@ void TrackComponent::resized(){
 
 void TrackComponent::paint(Graphics& g){
     auto r = getLocalBounds();
-    if (active)
-    {
-        g.setColour(Colours::darkgrey);
-    }
-    else
-    {
-        g.setColour(Colours::grey);
-    }
+
+    g.setColour(findColour(this->backgroundColourId));
     g.fillRect(r);
     if(active){
-            Path pth{};
-            pth.addRectangle(r.withSizeKeepingCentre(r.getWidth()+10, r.getHeight()+10));
-
-    }else{
-        g.setColour(Colour(0x0F262C36));
-        g.fillRect(r);
+        g.setColour(findColour(this->outlineColourId));
+        g.drawRect(r.getX(), r.getY(), r.getWidth(), r.getHeight(), 1);
     }
     
     auto ed = trackNameLabel.getCurrentTextEditor();
