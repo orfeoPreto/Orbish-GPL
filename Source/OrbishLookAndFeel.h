@@ -12,7 +12,7 @@
 
 #include "JuceHeader.h"
 
-class OrbishLookAndFeel : public juce::LookAndFeel_V4
+class OrbishLookAndFeel : public juce::LookAndFeel_V3
 {
 public:
     OrbishLookAndFeel();
