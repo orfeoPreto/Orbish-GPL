@@ -17,6 +17,16 @@ class OrbishLookAndFeel : public juce::LookAndFeel_V3
 public:
     OrbishLookAndFeel();
     ~OrbishLookAndFeel();
-private:
 
+    Colour getPrimaryColour();
+    Colour getSecondaryColour();
+    Colour getAccentColour();
+private:
+    Colour primaryColour;
+    Colour secondaryColour;
+    Colour accentColour;
+
+    void setPrimaryColour(Colour &colour);
+    void setSecondaryColour(Colour& colour);
+    void setAccentColour(Colour& colour);
 };
