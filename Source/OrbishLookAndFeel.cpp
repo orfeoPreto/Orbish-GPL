@@ -42,6 +42,16 @@ OrbishLookAndFeel::OrbishLookAndFeel() {
     setColour(FFAU::LevelMeter::lmMeterGradientLowColour, juce::Colours::green);
     setColour(FFAU::LevelMeter::lmBackgroundColour, darkGrey);
     setColour(FFAU::LevelMeter::lmMeterBackgroundColour, lightGrey);
+
+    // combo boxes
+    setColour(juce::ComboBox::backgroundColourId, darkGrey);
+    setColour(juce::ComboBox::arrowColourId, lightGrey);
+    setColour(juce::ComboBox::textColourId, lightGrey);
+    setColour(juce::ComboBox::focusedOutlineColourId, yellow);
+    setColour(juce::ComboBox::buttonColourId, darkGrey);
+
+
+
 }
 
 OrbishLookAndFeel::~OrbishLookAndFeel() {
