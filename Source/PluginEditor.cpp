@@ -1079,8 +1079,7 @@ void OrbishAudioProcessorEditor::paintIfNoFileLoaded (Graphics& g, const Rectang
     Path pth{};
     pth.addRectangle(thumbnailBounds.withSizeKeepingCentre(thumbnailBounds.getWidth()+10, thumbnailBounds.getHeight()+10));
 
-    g.setColour (Colours::white);
-
+    g.setColour (findColour(Label::textColourId));
     g.drawFittedText ("No Loop", thumbnailBounds, Justification::centred, 1.0f);
 }
 
