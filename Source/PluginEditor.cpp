@@ -1267,15 +1267,12 @@ void OrbishAudioProcessorEditor::paintInfoSection(Graphics& g){
     }
 	auto grp = processor.getTrackGroup(processor.activeTrack);
 	String groupName = "";
-	Colour grpCol(Colours::black);
 	if (nullptr != grp) {
 		groupName = grp->Name;
-		grpCol = groupColours[grp->Index];
 	}
     groupName = "Group: " + String(groupName);
     if (groupNumberLabel.getText() != groupName){
         groupNumberLabel.setText(groupName, NotificationType::dontSendNotification);
-	groupNumberLabel.setColour(Label::textColourId,grpCol);
     }
     if (processor.activeTrack->Playing) {
         Path path;
