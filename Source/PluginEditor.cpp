@@ -20,9 +20,19 @@ projectXml("<project />"), processor (p), thumbnailCache (5), thumbnail (32, for
 {
 	//processor.logger->logMessage("begin gui constructor");
     openGLContext.attachTo(*getTopLevelComponent());
+
+    // Define the Look and Feel of the application
+    auto editorLookAndFeel = new OrbishLookAndFeel();
+    setLookAndFeel(editorLookAndFeel);
+
+    // Setup project header
 	project = Project();
 	setProjectName(project.name);
 	headerComp.addAndMakeVisible(projectLabel);
+    projectLabel.setColour(Label::textColourId, findColour(TextButton::ColourIds::textColourOnId));
+    projectLabel.setFont(Font(18, Font::bold));
+    projectLabel.setJustificationType(Justification::centred);
+
 	initCommandManager();
 	mainMenu = std::make_unique<MainMenu>(this);
 	MenuBarModel* mm = mainMenu.get();
@@ -31,9 +41,7 @@ projectXml("<project />"), processor (p), thumbnailCache (5), thumbnail (32, for
 	addAndMakeVisible(headerComp);
     // Make sure that before the constructor has finished, you've set the
     // editor's size to whatever you need it to be.
-    auto editorLookAndFeel = new OrbishLookAndFeel();
-    setLookAndFeel(editorLookAndFeel);
-
+    
     updateInputBuffer = &Observer::updateInputVisualiser;
     updateLoopBuffer = &Observer::updateLoopVisualiser;
     updatePlayPosition = &Observer::updatePlayHead;
@@ -1220,9 +1228,6 @@ void OrbishAudioProcessorEditor::paint (Graphics& g)
     }
 
     playButton.setColour(TextButton::textColourOffId, Colour(0xAF2ACD01));
-	projectLabel.setColour(Label::backgroundColourId, Colour(0x50ffffff));
-	projectLabel.setFont(Font(18, Font::bold));
-    projectLabel.setJustificationType(Justification::centred);
 }
 
 void OrbishAudioProcessorEditor::paintInfoSection(Graphics& g){
