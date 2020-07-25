@@ -60,17 +60,18 @@ projectXml("<project />"), processor (p), thumbnailCache (5), thumbnail (32, for
     thumbnail.addChangeListener (this);
     startTimer (20);
    
-    lnf = std::make_shared<FFAU::LevelMeterLookAndFeel>();
-    lnf->setColour (FFAU::LevelMeter::lmMeterGradientLowColour, juce::Colours::green);
+    // setup level meters
     inputMeter = std::make_shared<FFAU::LevelMeter> (); // See FFAU::LevelMeter::MeterFlags for options
-    inputMeter->setLookAndFeel (lnf.get());
+    inputMeter->setLookAndFeel (editorLookAndFeel);
     inputMeter->setMeterSource (processor.getInputMeterSource());
     inputMeter->setMeterFlags(FFAU::LevelMeter::Minimal);
     
-    outputMeter = std::make_shared<FFAU::LevelMeter>(); // See FFAU::LevelMeter::MeterFlags for options
-    outputMeter->setLookAndFeel (lnf.get());
+    outputMeter = std::make_shared<FFAU::LevelMeter>();
+    outputMeter->setLookAndFeel (editorLookAndFeel);
     outputMeter->setMeterSource (processor.getOutputMeterSource());
     outputMeter->setMeterFlags(FFAU::LevelMeter::Minimal);
+
+
     for (auto track : processor.tracks) {
        doCreateTrack(track->Index);
     }
@@ -562,7 +563,6 @@ void OrbishAudioProcessorEditor::createNewProject() {
 	auto box = alert->getTextEditor("projectNameBox");
 	box->setWantsKeyboardFocus(true);
 	alert->setBoundsRelative(0.2f, 0.2f, 0.2f, 0.2f);
-	alert->setLookAndFeel(lnf.get());
 	alert->addButton("Ok", 1, juce::KeyPress(KeyPress::returnKey));
 	alert->enterModalState(true, nullptr, false);
 	addAndMakeVisible(alert);
@@ -680,7 +680,6 @@ bool OrbishAudioProcessorEditor::showDialogWindow(
 	, String secondButtonText)
 {
 	AlertWindow* alert = new AlertWindow(title, message, icon, this);
-	alert->setLookAndFeel(lnf.get());
 	alert->addButton(firstButtonText, 1, juce::KeyPress(KeyPress::returnKey));
 	alert->addButton(secondButtonText, 0, juce::KeyPress(KeyPress::escapeKey));
 	alert->enterModalState(true, nullptr, false);

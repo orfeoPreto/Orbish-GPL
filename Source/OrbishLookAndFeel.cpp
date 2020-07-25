@@ -36,6 +36,12 @@ OrbishLookAndFeel::OrbishLookAndFeel() {
     setColour(TrackComponent::ColourIds::backgroundColourId, darkGrey);
     setColour(TrackComponent::ColourIds::activeBackgroundColourId, lightGrey);
     setColour(TrackComponent::ColourIds::outlineColourId, yellow);
+
+    // level meters
+    setupDefaultMeterColours();
+    setColour(FFAU::LevelMeter::lmMeterGradientLowColour, juce::Colours::green);
+    setColour(FFAU::LevelMeter::lmBackgroundColour, darkGrey);
+    setColour(FFAU::LevelMeter::lmMeterBackgroundColour, lightGrey);
 }
 
 OrbishLookAndFeel::~OrbishLookAndFeel() {

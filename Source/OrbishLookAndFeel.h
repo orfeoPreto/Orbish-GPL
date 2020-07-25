@@ -13,10 +13,12 @@
 #include "JuceHeader.h"
 #include "TrackComponent.h"
 
-class OrbishLookAndFeel : public juce::LookAndFeel_V3
+class OrbishLookAndFeel : public juce::LookAndFeel_V3, public FFAU::LevelMeter::LookAndFeelMethods
 {
 public:
     OrbishLookAndFeel();
     ~OrbishLookAndFeel();
+
+    #include "ff_meters/ff_meters_LookAndFeelMethods.h"
 private:
 };
