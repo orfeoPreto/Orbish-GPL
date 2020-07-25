@@ -50,8 +50,11 @@ OrbishLookAndFeel::OrbishLookAndFeel() {
     setColour(juce::ComboBox::focusedOutlineColourId, yellow);
     setColour(juce::ComboBox::buttonColourId, darkGrey);
 
-
-
+    // menu bar
+    setColour(juce::PopupMenu::ColourIds::backgroundColourId, darkGrey);
+    setColour(juce::PopupMenu::ColourIds::highlightedBackgroundColourId, lightGrey);
+    setColour(juce::PopupMenu::ColourIds::textColourId, lightGrey);
+    setColour(juce::PopupMenu::ColourIds::highlightedTextColourId, yellow);
 }
 
 OrbishLookAndFeel::~OrbishLookAndFeel() {
