@@ -104,11 +104,11 @@ projectXml("<project />"), processor (p), thumbnailCache (5), thumbnail (32, for
 
     }
     recModeCombo.setSelectedId(1);
-     String str = String("Overdub: Record multiple layers within same loop\n")    +
-                  String("Repeat: Record additional layer while extending loop size repeating previous layers\n") +
-                  String("Append: Record new layer while extending without repeating previous layers") +
-                  String("Overwrite: overwrite content of current layer with new material, and extend original loop until recording ends\n") +
-                  String("Punch: Record while replacing previous material on current layer\n");
+    String str = String("Overdub: Record multiple layers within same loop\n")    +
+                 String("Repeat: Record additional layer while extending loop size repeating previous layers\n") +
+                 String("Append: Record new layer while extending without repeating previous layers") +
+                 String("Overwrite: overwrite content of current layer with new material, and extend original loop until recording ends\n") +
+                 String("Punch: Record while replacing previous material on current layer\n");
     recModeCombo.setTooltip(str);
     snapModeCombo.setSelectedId(2);
     str = String("No Sync: Snap disabled, functionality goes into effect instantly\n")    +
@@ -117,186 +117,88 @@ projectXml("<project />"), processor (p), thumbnailCache (5), thumbnail (32, for
     snapModeCombo.setTooltip(str);
     
     activeLabel.setText("Active Track - OpenGL mode", NotificationType::dontSendNotification);
-    recordButton.setClickingTogglesState (true);
-    recordButton.setToggleState(false, NotificationType::sendNotification);
-    recordButton.addListener(this);
+
+    // Track Buttons
+
     recordAttachment.reset (new ButtonAttachment (valueTreeState, "record", recordButton));
     recordButton.setTooltip("Start/Stop recording on the active track");
-    playButton.setToggleState(false, NotificationType::sendNotification);
-    playButton.setClickingTogglesState (true);
-    playButton.addListener(this);
+
     playAttachment.reset (new ButtonAttachment (valueTreeState, "play", playButton));
     playButton.setTooltip("Play/Pause the recorded material on the active track or group");
 
-    globalLabel.setText("Global", NotificationType::dontSendNotification);
-
-    muteAllButton.setToggleState(false, NotificationType::sendNotification);
-    muteAllButton.setClickingTogglesState (true);
-    muteAllButton.addListener(this);
-    muteAllAttachment.reset (new ButtonAttachment (valueTreeState, "muteAll", muteAllButton));
-    muteAllButton.setTooltip("Mute all tracks");
-
-    stopAllButton.setToggleState(false, NotificationType::sendNotification);
-    stopAllButton.setClickingTogglesState (true);
-    stopAllButton.addListener(this);
-    stopAllButton.setColour(TextButton::ColourIds::textColourOnId, findColour(TextButton::ColourIds::textColourOffId));
-    stopAllAttachment.reset (new ButtonAttachment (valueTreeState, "stopAll", stopAllButton));
-    stopAllButton.setTooltip("Stop playing on all tracks");
-
-    startAllButton.setToggleState(false, NotificationType::sendNotification);
-    startAllButton.setClickingTogglesState (true);
-    startAllButton.addListener(this);
-    startAllButton.setColour(TextButton::ColourIds::textColourOnId, findColour(TextButton::ColourIds::textColourOffId));
-    startAllAttachment.reset (new ButtonAttachment (valueTreeState, "startAll", startAllButton));
-    startAllButton.setTooltip("Start playing on all tracks");
-
-    pauseAllButton.setToggleState(false, NotificationType::sendNotification);
-    pauseAllButton.setClickingTogglesState (true);
-    pauseAllButton.addListener(this);
-    pauseAllAttachment.reset (new ButtonAttachment (valueTreeState, "pauseAll", pauseAllButton));
-    pauseAllButton.setTooltip("Pause all tracks");
-
-    clearAllButton.setToggleState(false, NotificationType::sendNotification);
-    clearAllButton.setClickingTogglesState (true);
-    clearAllButton.addListener(this);
-    clearAllButton.setColour(TextButton::ColourIds::textColourOnId, findColour(TextButton::ColourIds::textColourOffId));
-    clearAllAttachment.reset (new ButtonAttachment (valueTreeState, "resetAll", clearAllButton));
-    clearAllButton.setTooltip("Clear all tracks");
-
-	addToGroupButton.setToggleState(false, NotificationType::sendNotification);
-	addToGroupButton.setClickingTogglesState(true);
-	addToGroupButton.addListener(this);
-    addToGroupButton.setColour(TextButton::ColourIds::textColourOnId, findColour(TextButton::ColourIds::textColourOffId));
-	addToGroupAttachment.reset(new ButtonAttachment(valueTreeState, "addToGroup", addToGroupButton));
-    addToGroupButton.setTooltip("Add the active track to the selected group");
-
-	removeFromGroupButton.setToggleState(false, NotificationType::sendNotification);
-	removeFromGroupButton.setClickingTogglesState(true);
-	removeFromGroupButton.addListener(this);
-    removeFromGroupButton.setColour(TextButton::ColourIds::textColourOnId, findColour(TextButton::ColourIds::textColourOffId));
-	removeFromGroupAttachment.reset(new ButtonAttachment(valueTreeState, "removeFromGroup", removeFromGroupButton));
-    removeFromGroupButton.setTooltip("Remove the active track from the selected group");
-
-    horizontalOutline = new DrawableComposite();
-    for(int i=0;i<3;++i){
-        Path pth;
-        auto* line = new DrawablePath();
-        pth.addLineSegment(Line<float>{2,float(i) * 8,30,float(i) * 8}, 4);
-        line->setPath(pth);
-        horizontalOutline->addChildComponent(line);
-    }
-    
-    verticalOutline = new DrawableComposite();
-    for(int i=0;i<6;++i){
-        Path pth;
-        auto* block = new DrawablePath();
-        pth.addRectangle(Rectangle<int>{i%3*10,i/3 * 13,5,7});
-        block->setPath(pth);
-        verticalOutline->addChildComponent(block);
-    }
-    
-    tracksLayoutButton = new DrawableButton( "Layout", DrawableButton::ImageFitted);
-    tracksLayoutButton->setColour(DrawableButton::backgroundOnColourId, Colour(0x40FFFFFF));
-    tracksLayoutButton->setColour(DrawableButton::backgroundColourId, Colour(0x40FFFFFF));
-
-    tracksLayoutButton->setImages( horizontalOutline, horizontalOutline, horizontalOutline,nullptr, verticalOutline, verticalOutline, verticalOutline, nullptr);
-    tracksLayoutButton->setTooltip ("Toggles between horizontal and vertical layout of the tracks");
-    tracksLayoutButton->setToggleState(true, NotificationType::dontSendNotification);
-    tracksLayoutButton->setClickingTogglesState (true);
-    tracksLayoutButton->addListener(this);
-
-    stopButton.setToggleState(false, NotificationType::sendNotification);
-    stopButton.setClickingTogglesState (true);
-    stopButton.addListener(this);
-    stopButton.setColour(TextButton::ColourIds::textColourOnId, findColour(TextButton::ColourIds::textColourOffId));
-    stopAttachment.reset (new ButtonAttachment (valueTreeState, "stop", stopButton));
+    stopAttachment.reset(new ButtonAttachment(valueTreeState, "stop", stopButton));
     stopButton.setTooltip("Stop playing on the active track or group");
 
-    clearButton.setToggleState(false, NotificationType::sendNotification);
-    clearButton.setClickingTogglesState (true);
-    clearButton.setColour(TextButton::ColourIds::textColourOnId, findColour(TextButton::ColourIds::textColourOffId));
-    clearButton.addListener(this);
-    clearAttachment.reset (new ButtonAttachment (valueTreeState, "reset", clearButton));
+    clearAttachment.reset(new ButtonAttachment(valueTreeState, "reset", clearButton));
     clearButton.setTooltip("Clear the active track");
-    
-    muteButton.setToggleState(false, NotificationType::sendNotification);
-    muteButton.setClickingTogglesState (true);
-    muteButton.addListener(this);
-    muteAttachment.reset (new ButtonAttachment (valueTreeState, "mute", muteButton));
+
+    muteAttachment.reset(new ButtonAttachment(valueTreeState, "mute", muteButton));
     muteButton.setTooltip("Mute the active track or group");
-    
-    soloButton.setToggleState(false, NotificationType::sendNotification);
-    soloButton.setClickingTogglesState (true);
-    soloButton.addListener(this);
-    soloAttachment.reset (new ButtonAttachment (valueTreeState, "solo", soloButton));
+
+    soloAttachment.reset(new ButtonAttachment(valueTreeState, "solo", soloButton));
     soloButton.setTooltip("Play exclusively the active track or group");
-    
-    monitorButton.setToggleState(false, NotificationType::sendNotification);
-    monitorButton.setClickingTogglesState (true);
-    monitorButton.addListener(this);
-    monitorAttachment.reset (new ButtonAttachment (valueTreeState, "monitor", monitorButton));
+
+    monitorAttachment.reset(new ButtonAttachment(valueTreeState, "monitor", monitorButton));
     monitorButton.setTooltip("Listen to input audio when this track is active");
-    
-    reverseButton.setToggleState(false, NotificationType::sendNotification);
-    reverseButton.setClickingTogglesState (true);
-    reverseButton.addListener(this);
-    reverseAttachment.reset (new ButtonAttachment (valueTreeState, "reverse", reverseButton));
+
+    reverseAttachment.reset(new ButtonAttachment(valueTreeState, "reverse", reverseButton));
     reverseButton.setTooltip("Reverse the audio on the active track");
 
-    undoButton.setToggleState(true, NotificationType::sendNotification);
-    undoButton.setClickingTogglesState (true);
-    undoButton.addListener(this);
-    undoButton.setColour(TextButton::ColourIds::textColourOnId, findColour(TextButton::ColourIds::textColourOffId));
-    undoAttachment.reset (new ButtonAttachment (valueTreeState, "undo", undoButton));
+    undoAttachment.reset(new ButtonAttachment(valueTreeState, "undo", undoButton));
     undoButton.setTooltip("Undo latest overdub recording");
 
-    redoButton.setToggleState(true, NotificationType::sendNotification);
-    redoButton.setClickingTogglesState (true);
-    redoButton.addListener(this);
-    redoButton.setColour(TextButton::ColourIds::textColourOnId, findColour(TextButton::ColourIds::textColourOffId));
-    redoAttachment.reset (new ButtonAttachment (valueTreeState, "redo", redoButton));
+    redoAttachment.reset(new ButtonAttachment(valueTreeState, "redo", redoButton));
     redoButton.setTooltip("Redo latest overdub recording");
 
-    bounceButton.setClickingTogglesState(true);
     bounceButton.setToggleState(true, NotificationType::sendNotification);
     bounceAttachment.reset(new ButtonAttachment(valueTreeState, "bounce", bounceButton));
     bounceButton.setTooltip("Flatten all overdub layers to one");
-    
-    autoTriggerButton.setClickingTogglesState (true);
-    autoTriggerButton.setToggleState(false, NotificationType::sendNotification);
-    triggerAttachment.reset (new ButtonAttachment (valueTreeState, "trigger", autoTriggerButton));
+
+    triggerAttachment.reset(new ButtonAttachment(valueTreeState, "trigger", autoTriggerButton));
     autoTriggerButton.setTooltip("Start recording when input signal exceeds the predefined threshold");
 
+    // Global Buttons
+    globalLabel.setText("Global", NotificationType::dontSendNotification);
+
+    muteAllAttachment.reset (new ButtonAttachment (valueTreeState, "muteAll", muteAllButton));
+    muteAllButton.setTooltip("Mute all tracks");
+
+    stopAllAttachment.reset (new ButtonAttachment (valueTreeState, "stopAll", stopAllButton));
+    stopAllButton.setTooltip("Stop playing on all tracks");
+
+    startAllAttachment.reset (new ButtonAttachment (valueTreeState, "startAll", startAllButton));
+    startAllButton.setTooltip("Start playing on all tracks");
+
+    pauseAllAttachment.reset (new ButtonAttachment (valueTreeState, "pauseAll", pauseAllButton));
+    pauseAllButton.setTooltip("Pause all tracks");
+
+    clearAllAttachment.reset (new ButtonAttachment (valueTreeState, "resetAll", clearAllButton));
+    clearAllButton.setTooltip("Clear all tracks");
+
+	addToGroupAttachment.reset(new ButtonAttachment(valueTreeState, "addToGroup", addToGroupButton));
+    addToGroupButton.setTooltip("Add the active track to the selected group");
+
+	removeFromGroupAttachment.reset(new ButtonAttachment(valueTreeState, "removeFromGroup", removeFromGroupButton));
+    removeFromGroupButton.setTooltip("Remove the active track from the selected group");
+
+    createTracksLayoutButton();
+    
+    // Loop Buttons
     loopLabel.setText("Loops: ", NotificationType::dontSendNotification);
 
-    previousLoopButton.setToggleState(false, NotificationType::sendNotification);
-    previousLoopButton.setClickingTogglesState(true);
-    previousLoopButton.addListener(this);
-    previousLoopButton.setColour(TextButton::ColourIds::textColourOnId, findColour(TextButton::ColourIds::textColourOffId));
     previousLoopAttachment.reset (new ButtonAttachment (valueTreeState, "previousLoop", previousLoopButton));
     previousLoopButton.setTooltip("Go to previous loop on active track or group");
 
     activeLoopLabel.setText(String(activeLoop + 1), NotificationType::dontSendNotification);
 
-    nextLoopButton.setToggleState(false, NotificationType::sendNotification);
-    nextLoopButton.setClickingTogglesState(true);
-    nextLoopButton.addListener(this);
-    nextLoopButton.setColour(TextButton::ColourIds::textColourOnId, findColour(TextButton::ColourIds::textColourOffId));
     nextLoopAttachment.reset (new ButtonAttachment (valueTreeState, "nextLoop", nextLoopButton));
     nextLoopButton.setTooltip("Go to next loop on active track or group");
 
-    newLoopButton.setToggleState(false, NotificationType::dontSendNotification);
-    newLoopButton.setClickingTogglesState(true);
-    newLoopButton.setColour(TextButton::ColourIds::textColourOnId, findColour(TextButton::ColourIds::textColourOffId));
     newLoopAttachment.reset (new ButtonAttachment (valueTreeState, "newLoop", newLoopButton));
     newLoopButton.setTooltip("Create new loop on active track");
 
-    removeLoopButton.setToggleState(false, NotificationType::dontSendNotification);
-    removeLoopButton.setClickingTogglesState(true);
-    removeLoopButton.setColour(TextButton::ColourIds::textColourOnId, findColour(TextButton::ColourIds::textColourOffId));
     removeLoopAttachment.reset (new ButtonAttachment (valueTreeState, "removeLoop", removeLoopButton));
     removeLoopButton.setTooltip("Remove latest loop from active track");
-
     
     globalVolumeSlider.setValue(0);
     
@@ -307,37 +209,22 @@ projectXml("<project />"), processor (p), thumbnailCache (5), thumbnail (32, for
     loopConfigArea.addAndMakeVisible(newLoopButton);
     loopConfigArea.addAndMakeVisible(removeLoopButton);
     
+    // Track buttons
     trackLabel.setText("Tracks: ", NotificationType::dontSendNotification);
 
-    previousTrackButton.setToggleState(false, NotificationType::sendNotification);
-    previousTrackButton.setClickingTogglesState(true);
-    previousTrackButton.addListener(this);
-    previousTrackButton.setColour(TextButton::ColourIds::textColourOnId, findColour(TextButton::ColourIds::textColourOffId));
     previousTrackAttachment.reset (new ButtonAttachment (valueTreeState, "previousTrack", previousTrackButton));
     previousTrackButton.setTooltip("Go to previous track");
 
     activeTrackLabel.setText(String(activeTrack + 1), NotificationType::dontSendNotification);
 
-    nextTrackButton.setToggleState(false, NotificationType::sendNotification);
-    nextTrackButton.setClickingTogglesState(true);
-    nextTrackButton.addListener(this);
-    nextTrackButton.setColour(TextButton::ColourIds::textColourOnId, findColour(TextButton::ColourIds::textColourOffId));
     nextTrackAttachment.reset (new ButtonAttachment (valueTreeState, "nextTrack", nextTrackButton));
     nextTrackButton.setTooltip("Go to next track");
 
-    newTrackButton.setToggleState(false, NotificationType::dontSendNotification);
-    newTrackButton.setClickingTogglesState(true);
-    newTrackButton.setColour(TextButton::ColourIds::textColourOnId, findColour(TextButton::ColourIds::textColourOffId));
     newTrackAttachment.reset (new ButtonAttachment (valueTreeState, "newTrack", newTrackButton));
     newTrackButton.setTooltip("Create new track");
 
-    removeTrackButton.setToggleState(false, NotificationType::dontSendNotification);
-    removeTrackButton.setClickingTogglesState(true);
-    removeTrackButton.setColour(TextButton::ColourIds::textColourOnId, findColour(TextButton::ColourIds::textColourOffId));
     removeTrackAttachment.reset (new ButtonAttachment (valueTreeState, "removeTrack", removeTrackButton));
     removeTrackButton.setTooltip("Remove latest track");
-
-    globalVolumeSlider.setValue(0);
     
     transportButtonArea.addAndMakeVisible(activeLabel);
     transportButtonArea.addAndMakeVisible(recordButton);
@@ -484,6 +371,37 @@ projectXml("<project />"), processor (p), thumbnailCache (5), thumbnail (32, for
     transportButtonArea.addAndMakeVisible(snapModeLabel);
     setSize (1100, 620);
 
+}
+
+void OrbishAudioProcessorEditor::createTracksLayoutButton()
+{
+    horizontalOutline = new DrawableComposite();
+    for (int i = 0; i<3; ++i) {
+        Path pth;
+        auto* line = new DrawablePath();
+        pth.addLineSegment(Line<float>{2, float(i) * 8, 30, float(i) * 8}, 4);
+        line->setPath(pth);
+        horizontalOutline->addChildComponent(line);
+    }
+
+    verticalOutline = new DrawableComposite();
+    for (int i = 0; i<6; ++i) {
+        Path pth;
+        auto* block = new DrawablePath();
+        pth.addRectangle(Rectangle<int>{i % 3 * 10, i / 3 * 13, 5, 7});
+        block->setPath(pth);
+        verticalOutline->addChildComponent(block);
+    }
+
+    tracksLayoutButton = new DrawableButton("Layout", DrawableButton::ImageFitted);
+    tracksLayoutButton->setColour(DrawableButton::backgroundOnColourId, Colour(0x40FFFFFF));
+    tracksLayoutButton->setColour(DrawableButton::backgroundColourId, Colour(0x40FFFFFF));
+
+    tracksLayoutButton->setImages(horizontalOutline, horizontalOutline, horizontalOutline, nullptr, verticalOutline, verticalOutline, verticalOutline, nullptr);
+    tracksLayoutButton->setTooltip("Toggles between horizontal and vertical layout of the tracks");
+    tracksLayoutButton->setToggleState(true, NotificationType::dontSendNotification);
+    tracksLayoutButton->setClickingTogglesState(true);
+    tracksLayoutButton->addListener(this);
 }
 
 

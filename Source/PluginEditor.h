@@ -23,6 +23,7 @@
 #include "SettingsPage.h"
 #include "../exu/Label.hpp"
 #include "OrbishLookAndFeel.h"
+#include "CustomButton.h"
 
 //==============================================================================
 /**
@@ -56,6 +57,7 @@ class OrbishAudioProcessorEditor : public AudioProcessorEditor,
 {
 public:
     OrbishAudioProcessorEditor (OrbishAudioProcessor&, AudioProcessorValueTreeState& apvts);
+    void createTracksLayoutButton();
     ~OrbishAudioProcessorEditor();
 
     //==============================================================================
@@ -202,64 +204,64 @@ private:
     Component rightSide {};
     Grid transportButtonGrid {};
 	exu::Label projectLabel{};
-    TextButton recordButton { "Record" };
+    CustomButton recordButton { "Record", false, this };
     std::unique_ptr<ButtonAttachment> recordAttachment;
-    TextButton playButton { "Play" };
+    CustomButton playButton { "Play", false, this };
     std::unique_ptr<ButtonAttachment> playAttachment;
-    TextButton stopButton { "Stop" };
+    CustomButton stopButton { "Stop", true, this };
     std::unique_ptr<ButtonAttachment> stopAttachment;
-    TextButton clearButton { "Clear" };
+    CustomButton clearButton { "Clear", true, this };
     std::unique_ptr<ButtonAttachment> clearAttachment;
-    TextButton muteButton { "Mute" };
+    CustomButton muteButton { "Mute", false, this };
     std::unique_ptr<ButtonAttachment> muteAttachment;
-    TextButton soloButton { "Solo" };
+    CustomButton soloButton { "Solo", false, this };
     std::unique_ptr<ButtonAttachment> soloAttachment;
-    TextButton monitorButton { "Monitor" };
+    CustomButton monitorButton { "Monitor", false, this };
     std::unique_ptr<ButtonAttachment> monitorAttachment;
-    TextButton reverseButton { "Revrs" };
+    CustomButton reverseButton { "Revrs", false, this };
     std::unique_ptr<ButtonAttachment> reverseAttachment;
     ToggleState reverseState = Off;
-    TextButton undoButton { "Undo" };
+    CustomButton undoButton { "Undo", true, this };
     std::unique_ptr<ButtonAttachment> undoAttachment;
-    TextButton redoButton { "Redo" };
+    CustomButton redoButton { "Redo", true, this };
     std::unique_ptr<ButtonAttachment> redoAttachment;
-    TextButton autoTriggerButton { "Trigger" };
+    CustomButton bounceButton{ "Bounce", false, this };
+    std::unique_ptr<ButtonAttachment> bounceAttachment;
+    CustomButton autoTriggerButton { "Trigger", false, this };
     std::unique_ptr<ButtonAttachment> triggerAttachment;
     
-    TextButton previousLoopButton { "<" };
+    CustomButton previousLoopButton { "<", true, this };
     std::unique_ptr<ButtonAttachment> previousLoopAttachment;
-    TextButton nextLoopButton { ">" };
+    CustomButton nextLoopButton { ">", true, this };
     std::unique_ptr<ButtonAttachment> nextLoopAttachment;
-    TextButton newLoopButton { "+" };
+    CustomButton newLoopButton { "+", true, this };
     std::unique_ptr<ButtonAttachment> newLoopAttachment;
-    TextButton removeLoopButton { "-" };
+    CustomButton removeLoopButton { "-", true, this };
     std::unique_ptr<ButtonAttachment> removeLoopAttachment;
     
-    TextButton previousTrackButton { "<" };
+    CustomButton previousTrackButton { "<", true, this };
     std::unique_ptr<ButtonAttachment> previousTrackAttachment;
-    TextButton nextTrackButton { ">" };
+    CustomButton nextTrackButton { ">", true, this };
     std::unique_ptr<ButtonAttachment> nextTrackAttachment;
-    TextButton newTrackButton { "+" };
+    CustomButton newTrackButton { "+", true, this };
     std::unique_ptr<ButtonAttachment> newTrackAttachment;
-    TextButton removeTrackButton { "-" };
+    CustomButton removeTrackButton { "-", true, this };
     std::unique_ptr<ButtonAttachment> removeTrackAttachment;
-    TextButton muteAllButton { "Mute" };
-    std::unique_ptr<ButtonAttachment> muteAllAttachment;
-    TextButton stopAllButton { "Stop" };
-    std::unique_ptr<ButtonAttachment> stopAllAttachment;
-    TextButton startAllButton { "Start" };
-    std::unique_ptr<ButtonAttachment> startAllAttachment;
-    TextButton pauseAllButton { "Pause" };
-    std::unique_ptr<ButtonAttachment> pauseAllAttachment;
-    TextButton clearAllButton { "Clear" };
-	std::unique_ptr<ButtonAttachment> clearAllAttachment;
-	TextButton addToGroupButton{ "Group" };
-	std::unique_ptr<ButtonAttachment> addToGroupAttachment;
-	TextButton removeFromGroupButton{ "UnGroup" };
-	std::unique_ptr<ButtonAttachment> removeFromGroupAttachment;
 
-	TextButton bounceButton{ "Bounce" };
-	std::unique_ptr<ButtonAttachment> bounceAttachment;
+    CustomButton muteAllButton { "Mute", false, this };
+    std::unique_ptr<ButtonAttachment> muteAllAttachment;
+    CustomButton stopAllButton { "Stop", true, this };
+    std::unique_ptr<ButtonAttachment> stopAllAttachment;
+    CustomButton startAllButton { "Start", true, this };
+    std::unique_ptr<ButtonAttachment> startAllAttachment;
+    CustomButton pauseAllButton { "Pause", false, this };
+    std::unique_ptr<ButtonAttachment> pauseAllAttachment;
+    CustomButton clearAllButton { "Clear", true, this };
+	std::unique_ptr<ButtonAttachment> clearAllAttachment;
+    CustomButton addToGroupButton{ "Group", true, this };
+	std::unique_ptr<ButtonAttachment> addToGroupAttachment;
+    CustomButton removeFromGroupButton{ "UnGroup", true, this };
+	std::unique_ptr<ButtonAttachment> removeFromGroupAttachment;
 
     exu::Label activeTrackLabel { "1" };
     exu::Label activeLoopLabel { "1" };

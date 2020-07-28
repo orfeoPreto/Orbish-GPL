@@ -30,7 +30,7 @@ OrbishLookAndFeel::OrbishLookAndFeel() {
     setColour(juce::TextButton::ColourIds::textColourOffId, lightGrey);
     setColour(juce::TextButton::ColourIds::textColourOnId, yellow);
     setColour(juce::TextButton::ColourIds::buttonColourId, darkGrey);
-    setColour(juce::TextButton::ColourIds::buttonOnColourId, darkGrey);
+    setColour(juce::TextButton::ColourIds::buttonOnColourId, yellow);
 
     // tracks
     setColour(TrackComponent::ColourIds::backgroundColourId, darkGrey);
@@ -55,8 +55,31 @@ OrbishLookAndFeel::OrbishLookAndFeel() {
     setColour(juce::PopupMenu::ColourIds::highlightedBackgroundColourId, lightGrey);
     setColour(juce::PopupMenu::ColourIds::textColourId, lightGrey);
     setColour(juce::PopupMenu::ColourIds::highlightedTextColourId, yellow);
+
 }
 
 OrbishLookAndFeel::~OrbishLookAndFeel() {
 
+}
+
+void OrbishLookAndFeel::drawButtonBackground(juce::Graphics& g, juce::Button& button, const juce::Colour& backgroundColour, bool isHovering, bool isButtonDown) {
+    auto shadow = new DropShadow(Colours::black, 10, { 0,0 });
+    shadow->drawForRectangle(g, button.getLocalBounds().expanded(5,5));
+
+    // draw background
+    g.setColour(button.findColour(TextButton::buttonColourId));
+    g.fillRoundedRectangle(button.getLocalBounds().toFloat(), 5.0f);
+
+
+    // draw outline
+    if (button.getToggleState()){
+        g.setColour(button.findColour(TextButton::ColourIds::buttonOnColourId));
+    }
+    else{
+        g.setColour(juce::Colours::black);
+    }
+    if (isButtonDown){
+        g.setColour(juce::Colour(0xfffed70f));
+    }
+    g.drawRoundedRectangle(button.getLocalBounds().toFloat(), 5.0f, 1.0f);
 }
