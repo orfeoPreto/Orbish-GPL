@@ -61,6 +61,9 @@ OrbishLookAndFeel::OrbishLookAndFeel() {
     setColour(juce::Slider::ColourIds::trackColourId, lightGrey);
     setColour(juce::Slider::ColourIds::thumbColourId, yellow);
 
+    // progress bars
+    setColour(juce::ProgressBar::ColourIds::backgroundColourId, lightGrey);
+    setColour(juce::ProgressBar::ColourIds::foregroundColourId, yellow);
 }
 
 OrbishLookAndFeel::~OrbishLookAndFeel() {

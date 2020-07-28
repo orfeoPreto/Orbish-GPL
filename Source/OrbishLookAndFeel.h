@@ -20,7 +20,6 @@ public:
     ~OrbishLookAndFeel();
 
     void drawButtonBackground(juce::Graphics& g, juce::Button& button, const juce::Colour& backgroundColour, bool something, bool isButtonDown) override;
-
     #include "ff_meters/ff_meters_LookAndFeelMethods.h"
 private:
 };

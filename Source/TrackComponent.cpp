@@ -280,26 +280,6 @@ void TrackComponent::paint(Graphics& g){
     witness.setStrokeThickness (2.0f);
     
   for (auto l: Loops) {
-        Colour bgColour, fgColour;
-        if(active){
-            if(activeLoop == l->getIndex()){
-                bgColour = Colour(0xFFC5C5C5);
-                fgColour = Colour(0xFF0000FF);
-            }else{
-                bgColour = Colour(0xFF8F8F8F);
-                fgColour = Colour(0xFF002366);
-            }
-        }else{
-            if(activeLoop == l->getIndex()){
-                bgColour = Colour(0xFFB3B3B3);
-                fgColour = Colour(0xFF00008B);
-            }else{
-                bgColour = Colour(0xFFA9A9A9);
-                fgColour = Colour(0xFF001133);
-            }
-        }
-        l->setColour(ProgressBar::ColourIds::backgroundColourId, bgColour);
-        l->setColour(ProgressBar::ColourIds::foregroundColourId, fgColour);
         addAndMakeVisible(l);
     }
 
