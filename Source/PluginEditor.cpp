@@ -964,7 +964,7 @@ void OrbishAudioProcessorEditor::paintIfFileLoaded (Graphics& g, const Rectangle
     Path pth{};
     pth.addRectangle(thumbnailBounds.withSizeKeepingCentre(thumbnailBounds.getWidth()+10, thumbnailBounds.getHeight()+10));
 
-    g.setColour (Colours::steelblue);
+    g.setColour (findColour(TextButton::ColourIds::textColourOnId));
     auto audioLength (thumbnail.getTotalLength());                                      // [12]
     thumbnail.drawChannels (g,
                             thumbnailBounds,
