@@ -297,8 +297,6 @@ projectXml("<project />"), processor (p), thumbnailCache (5), thumbnail (32, for
     inputLevelSlider.addListener(this);
     inputLevelAttachment.reset (new SliderAttachment (valueTreeState, "inputLevel", inputLevelSlider));
     inputLevelSlider.setSliderStyle (Slider::LinearBarVertical);
-    inputLevelSlider.getLookAndFeel().setColour(Slider::trackColourId, Colours::black);
-    inputLevelSlider.getLookAndFeel().setColour(Slider::backgroundColourId, Colours::white);
     inputLevelSlider.setTextBoxStyle(Slider::TextEntryBoxPosition::NoTextBox, true, 0, 0);
     inputLevelSlider.setPopupDisplayEnabled (true, false, this);
     leftInnerSide.addAndMakeVisible(inputLevelSlider);
@@ -320,7 +318,6 @@ projectXml("<project />"), processor (p), thumbnailCache (5), thumbnail (32, for
     outputLevelAttachment.reset (new SliderAttachment (valueTreeState, "outputLevel", outputLevelSlider));
     
     outputLevelSlider.setSliderStyle (Slider::LinearBarVertical);
-    outputLevelSlider.getLookAndFeel().setColour(Slider::trackColourId, Colours::black);
     outputLevelSlider.setTextBoxStyle(Slider::TextEntryBoxPosition::NoTextBox, true, 0, 0);
     outputLevelSlider.setPopupDisplayEnabled (true, false, this);
     rightInnerSide.addAndMakeVisible(outputLevelSlider);
@@ -341,7 +338,6 @@ projectXml("<project />"), processor (p), thumbnailCache (5), thumbnail (32, for
     globalVolumeSlider.addListener(this);
     globalMixAttachment.reset (new SliderAttachment (valueTreeState, "globalMix", globalVolumeSlider));
     globalVolumeSlider.setSliderStyle (Slider::LinearBarVertical);
-    globalVolumeSlider.getLookAndFeel().setColour(Slider::trackColourId, Colours::black);
     globalVolumeSlider.setTextBoxStyle(Slider::TextEntryBoxPosition::NoTextBox, true, 0, 0);
     globalVolumeSlider.setPopupDisplayEnabled (true, false, this);
     rightInnerSide.addAndMakeVisible(globalVolumeSlider);

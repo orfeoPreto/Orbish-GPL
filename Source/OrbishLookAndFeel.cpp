@@ -56,6 +56,11 @@ OrbishLookAndFeel::OrbishLookAndFeel() {
     setColour(juce::PopupMenu::ColourIds::textColourId, lightGrey);
     setColour(juce::PopupMenu::ColourIds::highlightedTextColourId, yellow);
 
+    // sliders
+    setColour(juce::Slider::ColourIds::backgroundColourId, darkGrey);
+    setColour(juce::Slider::ColourIds::trackColourId, lightGrey);
+    setColour(juce::Slider::ColourIds::thumbColourId, yellow);
+
 }
 
 OrbishLookAndFeel::~OrbishLookAndFeel() {
