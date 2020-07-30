@@ -1,10 +1,20 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<JUCERPROJECT id="iqI92f" name="Orbish" projectType="audioplug" jucerVersion="5.4.7"
-              headerPath="../../..&#10;../..&#10;../../JuceLibraryCode&#10;..&#10;"
+<JUCERPROJECT id="iqI92f" name="Orbish" projectType="audioplug" headerPath="../../..&#10;../..&#10;../../JuceLibraryCode&#10;..&#10;"
               pluginManufacturer="Exu" pluginManufacturerCode="Exu" pluginCode="Orb"
-              pluginFormats="buildVST3">
+              pluginFormats="buildVST3" displaySplashScreen="1" jucerFormatVersion="1">
   <MAINGROUP id="MOZJJ5" name="Orbish">
+    <GROUP id="{40BAF4D8-7324-156C-E5E8-0098A128DC2C}" name="resources">
+      <GROUP id="{DD2D5306-C731-51D8-E32F-F8D89EB36CF7}" name="buttons">
+        <FILE id="gXjgB7" name="button-base-active.png" compile="0" resource="1"
+              file="resources/Bases/button-base-active.png"/>
+        <FILE id="EAeIva" name="button-base-clicked.png" compile="0" resource="1"
+              file="resources/Bases/button-base-clicked.png"/>
+        <FILE id="C51pop" name="button-base-hover.png" compile="0" resource="1"
+              file="resources/Bases/button-base-hover.png"/>
+        <FILE id="OUW2a1" name="button-base.png" compile="0" resource="1" file="resources/Bases/button-base.png"/>
+      </GROUP>
+    </GROUP>
     <GROUP id="{BBA6A5B7-B8B2-FF89-C2B6-EE59F1E7D235}" name="exu">
       <FILE id="zadO8A" name="Label.hpp" compile="0" resource="0" file="exu/Label.hpp"/>
       <FILE id="O2JfcA" name="UIStateGuard.hpp" compile="0" resource="0"
@@ -14,6 +24,9 @@
       <FILE id="bZC7bf" name="Blinker.hpp" compile="0" resource="0" file="Source/Blinker.hpp"/>
       <FILE id="j9gbcj" name="CommandIDs.h" compile="0" resource="0" file="Source/CommandIDs.h"/>
       <FILE id="p19WrD" name="Context.h" compile="0" resource="0" file="Source/Context.h"/>
+      <FILE id="ZRK40i" name="CustomButton.cpp" compile="1" resource="0"
+            file="Source/CustomButton.cpp"/>
+      <FILE id="X1Tg4s" name="CustomButton.h" compile="0" resource="0" file="Source/CustomButton.h"/>
       <FILE id="Z1ZKnC" name="DataExchange.h" compile="0" resource="0" file="Source/DataExchange.h"/>
       <FILE id="SooMdS" name="Group.h" compile="0" resource="0" file="Source/Group.h"/>
       <FILE id="JMO7d5" name="Loop.h" compile="0" resource="0" file="Source/Loop.h"/>
@@ -99,48 +112,6 @@
         <MODULEPATH id="ff_meters" path="."/>
       </MODULEPATHS>
     </VS2019>
-    <CODEBLOCKS_WINDOWS targetFolder="Builds/CodeBlocksWindows">
-      <CONFIGURATIONS>
-        <CONFIGURATION isDebug="1" name="Debug"/>
-        <CONFIGURATION isDebug="0" name="Release"/>
-      </CONFIGURATIONS>
-      <MODULEPATHS>
-        <MODULEPATH id="juce_opengl"/>
-        <MODULEPATH id="juce_gui_extra"/>
-        <MODULEPATH id="juce_gui_basics"/>
-        <MODULEPATH id="juce_graphics"/>
-        <MODULEPATH id="juce_events"/>
-        <MODULEPATH id="juce_data_structures"/>
-        <MODULEPATH id="juce_cryptography"/>
-        <MODULEPATH id="juce_core"/>
-        <MODULEPATH id="juce_audio_utils"/>
-        <MODULEPATH id="juce_audio_processors"/>
-        <MODULEPATH id="juce_audio_plugin_client"/>
-        <MODULEPATH id="juce_audio_formats"/>
-        <MODULEPATH id="juce_audio_devices"/>
-        <MODULEPATH id="juce_audio_basics"/>
-        <MODULEPATH id="ff_meters"/>
-      </MODULEPATHS>
-    </CODEBLOCKS_WINDOWS>
-    <CLION targetFolder="Builds/CLion" clionXcodeEnabled="1" clionCodeBlocksEnabled="1">
-      <MODULEPATHS>
-        <MODULEPATH id="juce_opengl"/>
-        <MODULEPATH id="juce_gui_extra"/>
-        <MODULEPATH id="juce_gui_basics"/>
-        <MODULEPATH id="juce_graphics"/>
-        <MODULEPATH id="juce_events"/>
-        <MODULEPATH id="juce_data_structures"/>
-        <MODULEPATH id="juce_cryptography"/>
-        <MODULEPATH id="juce_core"/>
-        <MODULEPATH id="juce_audio_utils"/>
-        <MODULEPATH id="juce_audio_processors"/>
-        <MODULEPATH id="juce_audio_plugin_client"/>
-        <MODULEPATH id="juce_audio_formats"/>
-        <MODULEPATH id="juce_audio_devices"/>
-        <MODULEPATH id="juce_audio_basics"/>
-        <MODULEPATH id="ff_meters"/>
-      </MODULEPATHS>
-    </CLION>
   </EXPORTFORMATS>
   <MODULES>
     <MODULE id="ff_meters" showAllCode="1" useLocalCopy="0" useGlobalPath="0"/>
