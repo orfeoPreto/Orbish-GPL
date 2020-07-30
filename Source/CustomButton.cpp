@@ -12,9 +12,8 @@
 
 CustomButton::CustomButton(const String& name, bool isPushButton, juce::Button::Listener* listener): TextButton (name){
     this->pushButton = isPushButton;
-    if (isPushButton){
+    if (pushButton){
         setColour(TextButton::ColourIds::textColourOnId, juce::Colour(0xff707070));
-        setColour(TextButton::ColourIds::buttonOnColourId, juce::Colours::black);
     }
 
     setToggleState(false, NotificationType::sendNotification);

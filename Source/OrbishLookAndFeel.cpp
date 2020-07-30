@@ -71,23 +71,48 @@ OrbishLookAndFeel::~OrbishLookAndFeel() {
 }
 
 void OrbishLookAndFeel::drawButtonBackground(juce::Graphics& g, juce::Button& button, const juce::Colour& backgroundColour, bool isHovering, bool isButtonDown) {
-    auto shadow = new DropShadow(Colours::black, 10, { 0,0 });
-    shadow->drawForRectangle(g, button.getLocalBounds().expanded(5,5));
+    g.setColour(juce::Colour(0xff262626));
+    g.fillRect(button.getLocalBounds());
 
-    // draw background
-    g.setColour(button.findColour(TextButton::buttonColourId));
-    g.fillRoundedRectangle(button.getLocalBounds().toFloat(), 5.0f);
-
-
-    // draw outline
-    if (button.getToggleState()){
-        g.setColour(button.findColour(TextButton::ColourIds::buttonOnColourId));
+    if (isPushButton(&button)){
+        drawPushButton(g, button, backgroundColour, isHovering, isButtonDown);
     }
     else{
-        g.setColour(juce::Colours::black);
+        drawToggleButton(g, button, backgroundColour, isHovering, isButtonDown);
     }
-    if (isButtonDown){
+}
+
+void OrbishLookAndFeel::drawPushButton(juce::Graphics& g, juce::Button& button, const juce::Colour& backgroundColour, bool isHovering, bool isButtonDown){
+    // draw background
+    g.setColour(juce::Colour(0xff262626));
+    g.fillRoundedRectangle(button.getLocalBounds().toFloat(), 5.0f);
+ 
+    // draw outline
+    g.setColour(juce::Colours::black);
+    if (isButtonDown) {
         g.setColour(juce::Colour(0xfffed70f));
     }
     g.drawRoundedRectangle(button.getLocalBounds().toFloat(), 5.0f, 1.0f);
+}
+
+void OrbishLookAndFeel::drawToggleButton(juce::Graphics& g, juce::Button& button, const juce::Colour& backgroundColour, bool isHovering, bool isButtonDown){
+    // draw background
+    g.setColour(juce::Colour(0xff262626));
+    g.fillRoundedRectangle(button.getLocalBounds().toFloat(), 5.0f);
+
+    // draw outline
+    g.setColour(juce::Colours::black);
+    if (button.getToggleState() || isButtonDown){
+        g.setColour(juce::Colour(0xfffed70f));
+    }
+    g.drawRoundedRectangle(button.getLocalBounds().toFloat(), 5.0f, 1.0f);
+}
+
+bool OrbishLookAndFeel::isPushButton(juce::Button* button){
+    if (auto orbishButton = dynamic_cast<CustomButton*>(button)) {
+        if (orbishButton->isPushButton()) {
+            return true;
+        }
+    }
+    return false;
 }

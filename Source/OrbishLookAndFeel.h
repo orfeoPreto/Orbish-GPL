@@ -12,6 +12,7 @@
 
 #include "JuceHeader.h"
 #include "TrackComponent.h"
+#include "CustomButton.h"
 
 class OrbishLookAndFeel : public juce::LookAndFeel_V3, public FFAU::LevelMeter::LookAndFeelMethods
 {
@@ -22,4 +23,7 @@ public:
     void drawButtonBackground(juce::Graphics& g, juce::Button& button, const juce::Colour& backgroundColour, bool something, bool isButtonDown) override;
     #include "ff_meters/ff_meters_LookAndFeelMethods.h"
 private:
+    void drawPushButton(juce::Graphics& g, juce::Button& button, const juce::Colour& backgroundColour, bool isHovering, bool isButtonDown);
+    void drawToggleButton(juce::Graphics& g, juce::Button& button, const juce::Colour& backgroundColour, bool isHovering, bool isButtonDown);
+    bool isPushButton(juce::Button* button);
 };
