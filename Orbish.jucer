@@ -21,6 +21,22 @@
             file="exu/UIStateGuard.hpp"/>
     </GROUP>
     <GROUP id="{AC20891E-F963-141F-355B-51CDA031CBF7}" name="Source">
+      <GROUP id="{B1708198-2297-7033-0C5C-79B08021FDA1}" name="ApplicationView">
+        <GROUP id="{323773F9-7867-1D78-8A20-F1336F39ADB3}" name="Tracks">
+          <FILE id="mzal8d" name="TrackArea.cpp" compile="1" resource="0" file="Source/TrackArea.cpp"/>
+          <FILE id="dRqBtO" name="TrackArea.h" compile="0" resource="0" file="Source/TrackArea.h"/>
+        </GROUP>
+        <GROUP id="{9A772742-A9A5-A4DA-AE9B-C9C571FD411B}" name="InfoAndControl">
+          <FILE id="XCFPVJ" name="InfoAndControlArea.cpp" compile="1" resource="0"
+                file="Source/InfoAndControlArea.cpp"/>
+          <FILE id="ay61Zu" name="InfoAndControlArea.h" compile="0" resource="0"
+                file="Source/InfoAndControlArea.h"/>
+        </GROUP>
+        <GROUP id="{F70AAFD2-9B5F-A008-2098-1BDF6B336CEF}" name="Header">
+          <FILE id="jqNiUX" name="HeaderArea.cpp" compile="1" resource="0" file="Source/HeaderArea.cpp"/>
+          <FILE id="kUflV6" name="HeaderArea.h" compile="0" resource="0" file="Source/HeaderArea.h"/>
+        </GROUP>
+      </GROUP>
       <FILE id="bZC7bf" name="Blinker.hpp" compile="0" resource="0" file="Source/Blinker.hpp"/>
       <FILE id="j9gbcj" name="CommandIDs.h" compile="0" resource="0" file="Source/CommandIDs.h"/>
       <FILE id="p19WrD" name="Context.h" compile="0" resource="0" file="Source/Context.h"/>

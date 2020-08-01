@@ -10,7 +10,6 @@
 
 #include "PluginProcessor.h"
 #include "PluginEditor.h"
-//#include "../ffAudio/ff_meters.h"
 
 
 //==============================================================================
@@ -24,6 +23,7 @@ projectXml("<project />"), processor (p), thumbnailCache (5), thumbnail (32, for
     // Define the Look and Feel of the application
     auto editorLookAndFeel = new OrbishLookAndFeel();
     setLookAndFeel(editorLookAndFeel);
+    setResizable(true, false);
 
     // Setup project header
 	project = Project();
@@ -33,11 +33,6 @@ projectXml("<project />"), processor (p), thumbnailCache (5), thumbnail (32, for
     projectLabel.setFont(Font(18, Font::bold));
     projectLabel.setJustificationType(Justification::centred);
 
-	initCommandManager();
-	mainMenu = std::make_unique<MainMenu>(this);
-	MenuBarModel* mm = mainMenu.get();
-	menuBar = std::make_unique<MenuBarComponent>(mm);
-	addAndMakeVisible(menuBar.get());
 	addAndMakeVisible(headerComp);
     // Make sure that before the constructor has finished, you've set the
     // editor's size to whatever you need it to be.
@@ -116,7 +111,7 @@ projectXml("<project />"), processor (p), thumbnailCache (5), thumbnail (32, for
                  String("Beat: Snaps to the beat (bottom of time signature)");
     snapModeCombo.setTooltip(str);
     
-    activeLabel.setText("Active Track - OpenGL mode", NotificationType::dontSendNotification);
+    activeLabel.setText("Active Track", NotificationType::dontSendNotification);
 
     // Track Buttons
 
@@ -365,8 +360,12 @@ projectXml("<project />"), processor (p), thumbnailCache (5), thumbnail (32, for
     transportButtonArea.addAndMakeVisible(snapModeCombo);
     transportButtonArea.addAndMakeVisible(recModeLabel);
     transportButtonArea.addAndMakeVisible(snapModeLabel);
-    setSize (1100, 620);
 
+    addAndMakeVisible(headerArea);
+    addAndMakeVisible(infoAndControlArea);
+    addAndMakeVisible(tracksArea);
+
+    setSize (1100, 620);
 }
 
 void OrbishAudioProcessorEditor::createTracksLayoutButton()
@@ -401,21 +400,6 @@ void OrbishAudioProcessorEditor::createTracksLayoutButton()
 }
 
 
-ApplicationCommandTarget* OrbishAudioProcessorEditor::getNextCommandTarget() { return nullptr; };
-
-void OrbishAudioProcessorEditor::getAllCommands(Array< CommandID >& commands) {
-	const CommandID ids[] = { CommandIDs::newProject,
-							  CommandIDs::open,
-							  CommandIDs::saveProjectAs,
-							  CommandIDs::saveProject,
-							  CommandIDs::showProjectSettings
-	};
-
-
-
-	commands.addArray(ids, numElementsInArray(ids));
-}
-
 void OrbishAudioProcessorEditor::showSettingsPage() {
 	settingsPage = std::make_shared<SettingsPage>(processor.loggingActive
 		, processor.context->maxUndoHistory
@@ -428,55 +412,6 @@ void OrbishAudioProcessorEditor::showSettingsPage() {
 
 void OrbishAudioProcessorEditor::closeSettingsPage() {
 	settingsPage.reset();
-}
-
-
-void OrbishAudioProcessorEditor::getCommandInfo(CommandID commandID, ApplicationCommandInfo& result) {
-	switch (commandID)
-	{
-	case CommandIDs::newProject:
-		result.setInfo("New Project...", "Creates a new Loopable project", CommandCategories::general, 0);
-		result.defaultKeypresses.add(KeyPress('n', ModifierKeys::ctrlModifier, 0));
-		result.setActive(true);
-		break;
-	case CommandIDs::open:
-		result.setInfo("Open Project...", "Opens an existing Loopable project", CommandCategories::general, 0);
-		result.defaultKeypresses.add(KeyPress('o', ModifierKeys::ctrlModifier, 0));
-		break;
-	case CommandIDs::saveProject:
-		result.setInfo("Save Project...", "Saves the current Loopable project", CommandCategories::general, 0);
-		result.defaultKeypresses.add(KeyPress('s', ModifierKeys::ctrlModifier, 0));
-		break;
-	case CommandIDs::saveProjectAs:
-		result.setInfo("Save Project As...", "Saves the current Loopable project under a different name", CommandCategories::general, 0);
-		result.defaultKeypresses.add(KeyPress('a', ModifierKeys::ctrlModifier, 0));
-		break;
-	case CommandIDs::showProjectSettings:
-		result.setInfo("Show Settings...", "Show the project settings", CommandCategories::general, 0);
-		result.defaultKeypresses.add(KeyPress('p', ModifierKeys::ctrlModifier, 0));
-		break;
-
-	default:
-		break;
-	}
-
-}
-
-bool OrbishAudioProcessorEditor::perform(const InvocationInfo& info) {
-	switch (info.commandID) {
-	case CommandIDs::newProject:                createNewProject();
-		break;
-	case CommandIDs::open:                      askUserToOpenFile();
-		break;
-	case CommandIDs::saveProject:               saveProject();
-		break;
-	case CommandIDs::saveProjectAs:              project.newProject = true; saveProject();
-		break;
-	case CommandIDs::showProjectSettings:     showSettingsPage();
-		break;
-	default:                                    return false;
-	}
-	return true;
 }
 
 void OrbishAudioProcessorEditor::createNewProject() {
@@ -690,61 +625,6 @@ bool OrbishAudioProcessorEditor::openFile(const File& file) {
 	return false;
 }
 
-void  OrbishAudioProcessorEditor::initCommandManager() {
-	commandManager.reset(new ApplicationCommandManager());
-	commandManager->registerAllCommandsForTarget(this);
-	commandManager->setFirstCommandTarget(this);
-}
-MenuBarModel* OrbishAudioProcessorEditor::getMenuModel() {
-	return mainMenu.get();
-}
-
-StringArray OrbishAudioProcessorEditor::getMenuNames() { return { "File",  "Settings" }; }
-
-void OrbishAudioProcessorEditor::createMenu(PopupMenu& menu, const String& menuName) {
-	if (menuName == "File")             createFileMenu(menu);
-	//else if (menuName == "Edit")        createEditMenu(menu);
-	else if (menuName == "Settings")        createSettingsMenu(menu);
-	else                                jassertfalse; // names have changed?
-}
-
-void OrbishAudioProcessorEditor::createFileMenu(PopupMenu& menu) {
-	menu.addCommandItem(commandManager.get(), CommandIDs::newProject);
-	menu.addCommandItem(commandManager.get(), CommandIDs::open);
-	menu.addCommandItem(commandManager.get(), CommandIDs::saveProjectAs);
-	menu.addCommandItem(commandManager.get(), CommandIDs::saveProject);
-	menu.addSeparator();
-
-#if ! JUCE_MAC
-/*
-	menu.addCommandItem(commandManager.get(), CommandIDs::showAboutWindow);
-	menu.addCommandItem(commandManager.get(), CommandIDs::showAppUsageWindow);
-	menu.addCommandItem(commandManager.get(), CommandIDs::checkForNewVersion);
-	menu.addCommandItem(commandManager.get(), CommandIDs::showGlobalPathsWindow);
-	menu.addSeparator();
-	*/
-	//menu.addCommandItem(commandManager.get(), StandardApplicationCommandIDs::quit);
-#endif
-
-}
-
-void OrbishAudioProcessorEditor::createEditMenu(PopupMenu& menu) {
-	menu.addCommandItem(commandManager.get(), StandardApplicationCommandIDs::undo);
-	menu.addCommandItem(commandManager.get(), StandardApplicationCommandIDs::redo);
-	menu.addSeparator();
-	menu.addCommandItem(commandManager.get(), StandardApplicationCommandIDs::cut);
-	menu.addCommandItem(commandManager.get(), StandardApplicationCommandIDs::copy);
-	menu.addCommandItem(commandManager.get(), StandardApplicationCommandIDs::paste);
-	menu.addCommandItem(commandManager.get(), StandardApplicationCommandIDs::del);
-	menu.addCommandItem(commandManager.get(), StandardApplicationCommandIDs::selectAll);
-	menu.addCommandItem(commandManager.get(), StandardApplicationCommandIDs::deselectAll);
-}
-
-void OrbishAudioProcessorEditor::createSettingsMenu(PopupMenu& menu)
-{
-	menu.addCommandItem(commandManager.get(), CommandIDs::showProjectSettings);
-}
-
 void OrbishAudioProcessorEditor::handleMidiMessages(const MidiBuffer& midiMessages){
     MidiBuffer processedMidi;
     int time;
@@ -797,10 +677,6 @@ void OrbishAudioProcessorEditor::handleMidiMessages(const MidiBuffer& midiMessag
         
         processedMidi.addEvent (m, time);
     }
-}
-
-MenuManager::~MenuManager(){
-    
 }
 
 OrbishAudioProcessorEditor::~OrbishAudioProcessorEditor()
@@ -1238,7 +1114,6 @@ void OrbishAudioProcessorEditor::resized()
 	if (nullptr != settingsPage.get()) {
 		settingsPage->setBounds(getX(), getY(), getWidth(), getHeight());
 	}
-	menuBar->setBounds(0, 0, getWidth(), 20);
 	headerComp.setBounds(getX(), getY() +20, getWidth(), 60);
     toolCanvas.setBounds(getWidth()/100, getHeight()/12 + 30, getWidth()*.98 , getHeight() - getHeight()/12-50 );
 
@@ -1328,6 +1203,12 @@ void OrbishAudioProcessorEditor::resized()
     snapModeCombo.setBounds(460, 70, 100, 25);
     recModeLabel.setBounds(340, 40, 100, 25);
     snapModeLabel.setBounds(340, 70, 100, 25);
+
+    auto bounds = getLocalBounds();
+    auto headerHeight = 40;
+    headerArea.setBounds(bounds.removeFromTop(headerHeight));
+    infoAndControlArea.setBounds(bounds.removeFromTop(juce::jmax(80, bounds.getHeight()/2)));
+    tracksArea.setBounds(bounds.removeFromTop(juce::jmax(40, bounds.getHeight())));
 
 }
 

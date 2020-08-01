@@ -18,12 +18,14 @@
 #include "Observer.h"
 #include "Orbish.h"
 #include "TrackComponent.h"
-#include "MainMenu.h"
 #include "CommandIDs.h"
 #include "SettingsPage.h"
 #include "../exu/Label.hpp"
 #include "OrbishLookAndFeel.h"
 #include "CustomButton.h"
+#include "HeaderArea.h"
+#include "InfoAndControlArea.h"
+#include "TrackArea.h"
 
 //==============================================================================
 /**
@@ -50,9 +52,7 @@ class OrbishAudioProcessorEditor : public AudioProcessorEditor,
 	public ChangeListener,
 	public SettingsPage::Listener,
 	private Timer,
-	public DragAndDropContainer,
-	public ApplicationCommandTarget,
-	public MenuManager
+	public DragAndDropContainer
 
 {
 public:
@@ -114,17 +114,6 @@ public:
     void askToCreateLoop() override;
     void updateTrackBounds();
 	String saveBufferFromLoop(int, int);
-	ApplicationCommandTarget* getNextCommandTarget() override;
-	void getAllCommands(Array< CommandID >& commands) override;
-	void getCommandInfo(CommandID commandID, ApplicationCommandInfo& result) override;
-	bool perform(const InvocationInfo& info) override;
-	void initCommandManager();
-	MenuBarModel* getMenuModel();
-	StringArray getMenuNames();
-	void createMenu(PopupMenu&, const String& menuName) override;
-	void createFileMenu(PopupMenu& menu);
-	void createEditMenu(PopupMenu& menu);
-	void createSettingsMenu(PopupMenu& menu);
 	void createNewProject();
 	void saveProject();
 	void askUserToOpenFile();
@@ -136,8 +125,12 @@ public:
 	int getTrackRowHeight(int);
 
 private:
-
     OpenGLContext openGLContext;
+
+    HeaderArea headerArea{this};
+    InfoAndControlArea infoAndControlArea{};
+    TrackArea tracksArea{};
+
     int nbrTracksInARow = 4;
     SharedResourcePointer<TooltipWindow> tooltipWindow;
 	std::shared_ptr<SettingsPage> settingsPage;
@@ -151,9 +144,6 @@ private:
     bool shouldRemoveLoop = false;
     Rectangle<int> toolCanvas { 10, 50, 980, 440 };
     Rectangle<int> playHead;
-	std::unique_ptr<MainMenu> mainMenu;
-	std::unique_ptr<MenuBarComponent> menuBar;
-	std::unique_ptr<ApplicationCommandManager> commandManager;
 	std::shared_ptr<ValueTree> loopTree;
 	Component headerComp;
     Component inputSliderComp;
@@ -163,7 +153,6 @@ private:
     DrawableButton* tracksLayoutButton;
     DrawableComposite* horizontalOutline;
     DrawableComposite* verticalOutline;
-    FlexBox generalInfoArea {};
     Component transportInfoArea {};
     Component loopInfoArea{};
     Component loopDisplayArea { };
