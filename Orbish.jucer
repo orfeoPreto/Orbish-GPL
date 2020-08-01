@@ -27,10 +27,14 @@
           <FILE id="dRqBtO" name="TrackArea.h" compile="0" resource="0" file="Source/TrackArea.h"/>
         </GROUP>
         <GROUP id="{9A772742-A9A5-A4DA-AE9B-C9C571FD411B}" name="InfoAndControl">
+          <FILE id="owVMyT" name="ControlArea.cpp" compile="1" resource="0" file="Source/ControlArea.cpp"/>
+          <FILE id="xtLcuA" name="ControlArea.h" compile="0" resource="0" file="Source/ControlArea.h"/>
           <FILE id="XCFPVJ" name="InfoAndControlArea.cpp" compile="1" resource="0"
                 file="Source/InfoAndControlArea.cpp"/>
           <FILE id="ay61Zu" name="InfoAndControlArea.h" compile="0" resource="0"
                 file="Source/InfoAndControlArea.h"/>
+          <FILE id="afuVJJ" name="InfoArea.cpp" compile="1" resource="0" file="Source/InfoArea.cpp"/>
+          <FILE id="rlid79" name="InfoArea.h" compile="0" resource="0" file="Source/InfoArea.h"/>
         </GROUP>
         <GROUP id="{F70AAFD2-9B5F-A008-2098-1BDF6B336CEF}" name="Header">
           <FILE id="jqNiUX" name="HeaderArea.cpp" compile="1" resource="0" file="Source/HeaderArea.cpp"/>

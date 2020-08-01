@@ -12,25 +12,19 @@
 #include "InfoAndControlArea.h"
 
 //==============================================================================
-InfoAndControlArea::InfoAndControlArea()
-{
+InfoAndControlArea::InfoAndControlArea(){
     // In your constructor, you should add any child components, and
     // initialise any special settings that your component needs.
 
+    addAndMakeVisible(infoArea);
+    addAndMakeVisible(controlArea);
+
 }
 
-InfoAndControlArea::~InfoAndControlArea()
-{
+InfoAndControlArea::~InfoAndControlArea(){
 }
 
-void InfoAndControlArea::paint (juce::Graphics& g)
-{
-    /* This demo code just fills the component's background and
-       draws some placeholder text to get you started.
-
-       You should replace everything in this method with your own
-       drawing code..
-    */
+void InfoAndControlArea::paint (juce::Graphics& g){
 
     g.fillAll (getLookAndFeel().findColour (juce::ResizableWindow::backgroundColourId));   // clear the background
 
@@ -39,13 +33,11 @@ void InfoAndControlArea::paint (juce::Graphics& g)
 
     g.setColour (juce::Colours::white);
     g.setFont (14.0f);
-    g.drawText ("InfoAndControlArea", getLocalBounds(),
-                juce::Justification::centred, true);   // draw some placeholder text
+    g.drawText ("InfoAndControlArea", getLocalBounds(),juce::Justification::centred, true);   // draw some placeholder text
 }
 
-void InfoAndControlArea::resized()
-{
-    // This method is where you should set the bounds of any child
-    // components that your component contains..
-
+void InfoAndControlArea::resized(){
+    auto bounds = getLocalBounds();
+    infoArea.setBounds(bounds.removeFromLeft(juce::jmax(150, bounds.getWidth() / 5)));
+    controlArea.setBounds(bounds);
 }

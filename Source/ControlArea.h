@@ -1,8 +1,8 @@
 /*
   ==============================================================================
 
-    InfoAndControlArea.h
-    Created: 1 Aug 2020 12:47:40pm
+    ControlArea.h
+    Created: 1 Aug 2020 3:22:34pm
     Author:  lenna
 
   ==============================================================================
@@ -11,25 +11,19 @@
 #pragma once
 
 #include <JuceHeader.h>
-#include "InfoArea.h"
-#include "ControlArea.h"
 
 //==============================================================================
 /*
 */
-class InfoAndControlArea  : public juce::Component
+class ControlArea  : public juce::Component
 {
 public:
-    InfoAndControlArea();
-    ~InfoAndControlArea() override;
+    ControlArea();
+    ~ControlArea() override;
 
     void paint (juce::Graphics&) override;
     void resized() override;
 
-    InfoArea infoArea{};
-
 private:
-    ControlArea controlArea{};
-
-    JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (InfoAndControlArea)
+    JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (ControlArea)
 };

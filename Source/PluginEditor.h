@@ -145,7 +145,6 @@ private:
     Rectangle<int> toolCanvas { 10, 50, 980, 440 };
     Rectangle<int> playHead;
 	std::shared_ptr<ValueTree> loopTree;
-	Component headerComp;
     Component inputSliderComp;
     Component outputSliderComp;
     Component globalSliderComp;
@@ -192,7 +191,6 @@ private:
 
     Component rightSide {};
     Grid transportButtonGrid {};
-	exu::Label projectLabel{};
     CustomButton recordButton { "Record", false, this };
     std::unique_ptr<ButtonAttachment> recordAttachment;
     CustomButton playButton { "Play", false, this };
@@ -276,15 +274,6 @@ private:
     int activeTrack = 0;
     int activeLoop = 0;
     bool dirty = false;
-    exu::Label timeSigLabel;
-    exu::Label bpmLabel;
-    exu::Label progressLabel;
-    exu::Label trackNumberLabel;
-    exu::Label loopNumberLabel;
-    exu::Label layerNumberLabel;
-	exu::Label groupNumberLabel;
-	DrawablePath barWitness {};
-    DrawablePath beatWitness {};
 	exu::Label groupLabel;
 	ComboBox groupCombo;
 	std::unique_ptr<AudioProcessorValueTreeState::ComboBoxAttachment> groupAttachment;

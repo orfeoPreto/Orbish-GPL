@@ -28,12 +28,6 @@ projectXml("<project />"), processor (p), thumbnailCache (5), thumbnail (32, for
     // Setup project header
 	project = Project();
 	setProjectName(project.name);
-	headerComp.addAndMakeVisible(projectLabel);
-    projectLabel.setColour(Label::textColourId, findColour(TextButton::ColourIds::textColourOnId));
-    projectLabel.setFont(Font(18, Font::bold));
-    projectLabel.setJustificationType(Justification::centred);
-
-	addAndMakeVisible(headerComp);
     // Make sure that before the constructor has finished, you've set the
     // editor's size to whatever you need it to be.
     
@@ -66,13 +60,10 @@ projectXml("<project />"), processor (p), thumbnailCache (5), thumbnail (32, for
     outputMeter->setMeterSource (processor.getOutputMeterSource());
     outputMeter->setMeterFlags(FFAU::LevelMeter::Minimal);
 
-
     for (auto track : processor.tracks) {
        doCreateTrack(track->Index);
     }
-    timeSigLabel.setTooltip("Current time signature\nComes from the host");
 
-    
 	Array<StringArray> buttonRecModeNames;
 	buttonRecModeNames.add({ "Overdub", "Record multiple layers within same loop" });
 	buttonRecModeNames.add({ "Repeat","Record additional layer while extending loop size repeating previous layers" });
@@ -263,8 +254,8 @@ projectXml("<project />"), processor (p), thumbnailCache (5), thumbnail (32, for
     inputDisplay.setBufferSize(processor.context->samplesPerBlock);
     inputDisplay.setColours(Colours::darkgrey, Colours::indianred);
 
-	groupLabel.setText("Group select: ", NotificationType::dontSendNotification);
-	headerComp.addAndMakeVisible(groupLabel);
+	
+	loopInfoArea.addAndMakeVisible(groupLabel);
 	groupAttachment.reset(new AudioProcessorValueTreeState::ComboBoxAttachment(valueTreeState, "selectGroup", groupCombo));
 
 	groupColours.add(Colours::aqua);
@@ -283,7 +274,7 @@ projectXml("<project />"), processor (p), thumbnailCache (5), thumbnail (32, for
 		groupCombo.addItem(group->Name, group->Index + 1);
 	}
 	groupCombo.setSelectedId(1);
-	headerComp.addAndMakeVisible(groupCombo);
+	loopInfoArea.addAndMakeVisible(groupCombo);
     groupCombo.setTooltip("Select a group, then add or remove tracks. \nAll tracks in the same group will act simultaneously for certain commands");
     inputLevelSlider.setNumDecimalPlacesToDisplay(1);
     
@@ -347,22 +338,16 @@ projectXml("<project />"), processor (p), thumbnailCache (5), thumbnail (32, for
     rightInnerSide.addAndMakeVisible(globalSliderComp);
     leftSide.addAndMakeVisible(inputMeter.get());
     rightSide.addAndMakeVisible(outputMeter.get());
-    headerComp.addAndMakeVisible(timeSigLabel);
-    headerComp.addAndMakeVisible(bpmLabel);
-    headerComp.addAndMakeVisible(progressLabel);
-    headerComp.addAndMakeVisible(trackNumberLabel);
-    headerComp.addAndMakeVisible(loopNumberLabel);
-    headerComp.addAndMakeVisible(layerNumberLabel);
-    headerComp.addAndMakeVisible(groupNumberLabel);
-    headerComp.addAndMakeVisible(barWitness);
-    headerComp.addAndMakeVisible(beatWitness);
     transportButtonArea.addAndMakeVisible(recModeCombo);
     transportButtonArea.addAndMakeVisible(snapModeCombo);
     transportButtonArea.addAndMakeVisible(recModeLabel);
     transportButtonArea.addAndMakeVisible(snapModeLabel);
 
+    headerArea.setLookAndFeel(editorLookAndFeel);
     addAndMakeVisible(headerArea);
+    infoAndControlArea.setLookAndFeel(editorLookAndFeel);
     addAndMakeVisible(infoAndControlArea);
+    tracksArea.setLookAndFeel(editorLookAndFeel);
     addAndMakeVisible(tracksArea);
 
     setSize (1100, 620);
@@ -464,7 +449,8 @@ void OrbishAudioProcessorEditor::createNewProject() {
 	project.dirty = true;
 }
 void OrbishAudioProcessorEditor::setProjectName(String name) {
-	projectLabel.setText(name, NotificationType::dontSendNotification);
+	//projectLabel.setText(name, NotificationType::dontSendNotification);
+    infoAndControlArea.infoArea.setProjectName(name);
 	project.name = name;
 }
 
@@ -481,7 +467,7 @@ void OrbishAudioProcessorEditor::saveProject() {
             | FileBrowserComponent::FileChooserFlags::saveMode
 			, nullptr))
 			project.directory = fc.getResult();
-        setProjectName(project.directory.getFileName());	//	
+        setProjectName(project.directory.getFileName());	
 		if (!project.directory.exists()) {
 			juce::Result result = project.directory.createDirectory();
 			if (result.failed()) {
@@ -1038,14 +1024,12 @@ void OrbishAudioProcessorEditor::paint (Graphics& g)
 
 void OrbishAudioProcessorEditor::paintInfoSection(Graphics& g){
     String timeSig = String(processor.context->info->timeSigNumerator) + "/" + String(processor.context->info->timeSigDenominator);
-    if(timeSig != timeSigLabel.getText()){
-        timeSigLabel.setText(timeSig, NotificationType::dontSendNotification);
-        timeSigLabel.touch();
+    if(timeSig != infoAndControlArea.infoArea.getTimeSignature()){
+        infoAndControlArea.infoArea.setTimeSignature(timeSig);
     }
     auto bpmStr = "bpm: " + String(processor.context->info->bpm, 1);
-    if(bpmStr != bpmLabel.getText()){
-        bpmLabel.setText(bpmStr, NotificationType::dontSendNotification);
-        bpmLabel.touch();
+    if(bpmStr != infoAndControlArea.infoArea.getBeatsPerMinute()){
+        infoAndControlArea.infoArea.setBeatsPerMinute(bpmStr);
     }
     
     float totalSubDiv = processor.samplesToBeats(*processor.activeTrack->CurrentPlayingIndex);
@@ -1055,21 +1039,20 @@ void OrbishAudioProcessorEditor::paintInfoSection(Graphics& g){
     float rest = std::modf(totalSubDiv, &garbage);
     int subSubDiv = rest * 4 + 1;
     String progress = String(bars) + ". " + String(beats) + ". " + String(subSubDiv);
-    if (progress !=  progressLabel.getText()) {
-    progressLabel.setText(progress, NotificationType::dontSendNotification);
+    if (progress !=  infoAndControlArea.infoArea.getProgress()) {
+        infoAndControlArea.infoArea.setProgress(progress);
     }
-    progressLabel.setTooltip("Shows the progress of the loop while playing\n Time progress is synced to the host");
     auto trackNbr = "Track: "+String(processor.activeTrack->Index + 1);
-    if (trackNbr != trackNumberLabel.getText()) {
-        trackNumberLabel.setText(trackNbr, NotificationType::dontSendNotification);
+    if (trackNbr != infoAndControlArea.infoArea.getTrackNumber()) {
+        infoAndControlArea.infoArea.setTrackNumber(trackNbr);
     }
     auto loopNbr = "Loop: "+String(tracks[activeTrack]->getActiveLoop() + 1);
-    if (loopNbr != loopNumberLabel.getText()) {
-        loopNumberLabel.setText(loopNbr, NotificationType::dontSendNotification);
+    if (loopNbr != infoAndControlArea.infoArea.getLoopNumber()) {
+        infoAndControlArea.infoArea.setLoopNumber(loopNbr);
     }
     auto layerNbr = "Layer: " + String(*processor.activeTrack->CurrentTop + 1);
-    if (layerNbr != layerNumberLabel.getText()) {
-        layerNumberLabel.setText(layerNbr, NotificationType::dontSendNotification);
+    if (layerNbr != infoAndControlArea.infoArea.getLayerNumber()) {
+        infoAndControlArea.infoArea.setLayerNumber(layerNbr);
     }
 	auto grp = processor.getTrackGroup(processor.activeTrack);
 	String groupName = "";
@@ -1077,36 +1060,21 @@ void OrbishAudioProcessorEditor::paintInfoSection(Graphics& g){
 		groupName = grp->Name;
 	}
     groupName = "Group: " + String(groupName);
-    if (groupNumberLabel.getText() != groupName){
-        groupNumberLabel.setText(groupName, NotificationType::dontSendNotification);
+    if (infoAndControlArea.infoArea.getGroupNumber() != groupName){
+        infoAndControlArea.infoArea.setGroupNumber(groupName);
     }
     if (processor.activeTrack->Playing) {
-        Path path;
-        path.addEllipse(300,35,10,10);
-        barWitness.setPath (path);
-        barWitness.setFill (Colours::green);
-        barWitness.setStrokeFill (Colours::greenyellow);
-        if((beats == 1 && subSubDiv == 1 && rest < (processor.context->bpm * 0.003f))){
-            barWitness.setAlpha(1);
-        }else{
-            barWitness.setAlpha(0.2);
+        if ((beats == 1 && subSubDiv == 1 && rest < (processor.context->bpm * 0.003f))){
+            infoAndControlArea.infoArea.updateBarWitness(1);
+        } else {
+            infoAndControlArea.infoArea.updateBarWitness(0.2);   
         }
-        barWitness.setStrokeThickness (2.0f);
-        
-        Path path2;
-        path2.addEllipse(320,35,10,10);
-        beatWitness.setPath (path2);
-        beatWitness.setFill (Colours::orangered);
-        beatWitness.setStrokeFill (Colours::orange);
         if(processor.activeTrack->Playing && subSubDiv == 1 && rest < (processor.context->bpm * 0.003f)){
-            beatWitness.setAlpha(1);
+            infoAndControlArea.infoArea.updateBeatWitness(1);
         }else{
-            beatWitness.setAlpha(0.2);
+            infoAndControlArea.infoArea.updateBeatWitness(0.2);
         }
-        beatWitness.setStrokeThickness (2.0f);
     }
-
-
 }
 
 void OrbishAudioProcessorEditor::resized()
@@ -1114,14 +1082,12 @@ void OrbishAudioProcessorEditor::resized()
 	if (nullptr != settingsPage.get()) {
 		settingsPage->setBounds(getX(), getY(), getWidth(), getHeight());
 	}
-	headerComp.setBounds(getX(), getY() +20, getWidth(), 60);
     toolCanvas.setBounds(getWidth()/100, getHeight()/12 + 30, getWidth()*.98 , getHeight() - getHeight()/12-50 );
 
     // This is generally where you'll want to lay out the positions of any
     // subcomponents in your editor..
     int containerMargin = 1;
     int controlMargin = 2;
-	projectLabel.setBounds(450, 5, 200, 20);
     activeLabel.setBounds(10, 10, 200, 20);
     recordButton.setBounds(10, 40, 50, 20);
     playButton.setBounds(65, 40, 50, 20);
@@ -1189,14 +1155,6 @@ void OrbishAudioProcessorEditor::resized()
     outputMeter->setBounds(r.withBottomY(outputLevelSlider.getBottom()));
 
     makeTracks();
-    
-    timeSigLabel.setBounds(105,25,50,28);
-    bpmLabel.setBounds(170,25,70,28);
-    progressLabel.setBounds(340,25,100,28);
-    trackNumberLabel.setBounds(105, 5, 60, 15);
-    loopNumberLabel.setBounds(170, 5, 60, 15);
-    layerNumberLabel.setBounds(235, 5, 60, 15);
-	groupNumberLabel.setBounds(300, 5, 60, 15);
 	groupLabel.setBounds(860, 5, 100, 15);
 	groupCombo.setBounds(965, 5, 50, 25);
     recModeCombo.setBounds(460, 40, 100, 25);
@@ -1234,7 +1192,10 @@ void OrbishAudioProcessorEditor::makeTracks(){
     trackArea.setBounds(tracksViewport.getBounds());
     updateTrackBounds();
     for (auto t : tracks) {
-        auto i = t->getIndex();
+        auto indexOfActiveTrack = t->getIndex();
+        if (activeTrack == indexOfActiveTrack){
+            infoAndControlArea.infoArea.setGroupNumber(t->Group);
+        }
         auto tr = t->getAudioTrack();
 		auto grp = processor.getTrackGroup(tr);
 		String groupName = "";
@@ -1406,8 +1367,7 @@ void OrbishAudioProcessorEditor::updateNextLoopNumber(int trackNumber, int loopN
 	if (tracks.size() > trackNumber && trackNumber >= 0 && loopNumber >= 0) {
 		auto t = tracks[trackNumber];
 		t->setActiveLoop(loopNumber);
-        activeLoopLabel.setText(String(tracks[activeTrack]->getActiveLoop() + 1), NotificationType::dontSendNotification);
-        loopNumberLabel.setText(String(tracks[activeTrack]->getActiveLoop() + 1), NotificationType::dontSendNotification);
+        infoAndControlArea.infoArea.setLoopNumber(String(tracks[activeTrack]->getActiveLoop() + 1));
 		tracksDirty = true;
 	}
 }
@@ -1425,9 +1385,9 @@ void OrbishAudioProcessorEditor::changeTrack(){
     }
     tracksDirty = true;
     activeTrack=nextTrackNumber;
-    activeTrackLabel.setText(String(activeTrack + 1), NotificationType::dontSendNotification);
-    activeLoopLabel.setText(String(tracks[activeTrack]->getActiveLoop() + 1), NotificationType::dontSendNotification);
-    loopNumberLabel.setText(String(tracks[activeTrack]->getActiveLoop() + 1), NotificationType::dontSendNotification);
+
+    infoAndControlArea.infoArea.setTrackNumber(String(activeTrack + 1));
+    infoAndControlArea.infoArea.setLoopNumber(String(tracks[activeTrack]->getActiveLoop() + 1));
     trackNumberUpdated = false;
 }
 
