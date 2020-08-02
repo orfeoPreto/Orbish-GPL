@@ -723,10 +723,11 @@ OrbishAudioProcessor::OrbishAudioProcessor() :
                                     head->getCurrentPosition(info);
                                     context->timeSigBottom = info.timeSigDenominator;
                                     context->timeSigTop = info.timeSigNumerator;
-                                    if (context->bpm != info.bpm
-                                        || context->timeSigTop != info.timeSigDenominator) {
-                                        context->bpm = info.bpm;
-                                        context->samplesPerBeat = beatsToSamples(1);
+									if (context->bpm != info.bpm
+										|| context->timeSigTop != info.timeSigDenominator) {
+										context->bpm = info.bpm;
+										context->samplesPerBeat = beatsToSamples(1);
+										//logMessage(String("bpm: ") + String(context->bpm));
                                     }
 
                                     context->maxBlockSize = buffer.getNumSamples();
@@ -743,17 +744,28 @@ OrbishAudioProcessor::OrbishAudioProcessor() :
                                 }
 
                                 void OrbishAudioProcessor::realign(){
-                                    if (context->info->isPlaying && context->info->timeInSamples % (context->samplesPerBeat * context->timeSigTop * 4) < context->samplesPerBlock) {
+									int df = context->info->timeInSamples
+										% (context->samplesPerBeat * context->timeSigTop);
+                                    if (context->info->isPlaying
+										  && df
+											< context->samplesPerBlock) {
+										logMessage(String("spb:") + String(context->samplesPerBeat) + String("\nNum: ") + String(context->timeSigTop)
+											+ String("\nsamplesPerBlock: ") + String(context->samplesPerBlock)
+											+ String("\timeInSamples: ") + String(context->info->timeInSamples)
+											+ String("\nfps: ") + String(context->sampleRate)
+											+ String("\ndf: ") + String(df));
                                         if (!hostHasPlayed)hostHasPlayed = true;
                                         auto diffHost = differenceFromClosestBeatInSamples(int(context->info->timeInSamples));
                                         if (abs(diffHost) < context->samplesPerBlock * 0.5f) {
                                             for(auto track:tracks){
                                                 auto diffPlugin = differenceFromClosestBeatInSamples(*track->CurrentPlayingIndex);
+												logMessage(String("diffHost:") + String(diffHost) + String("\ndiffPlugin: ") + String(diffPlugin));
                                                 int diff = diffHost - diffPlugin;
                                                 if (abs(diff) > 0) {
-                                                    if (!((diff < 0 && *track->CurrentPlayingIndex < abs(diff))
-                                                        || (diff > 0 && *track->CurrentPlayingIndex > * track->LoopDuration - diff))) {
-                                                        track->RealignOffset = diff;
+                                                    if (!((diff < 0 && *track->CurrentPlayingIndex < abs(diffHost))
+                                                        || (diffHost > 0 && *track->CurrentPlayingIndex > * track->LoopDuration - diffHost))) {
+                                                        track->RealignOffset = diffHost;
+														logMessage(String("realign at:") + String(context->info->ppqPosition) + String("\ndiff: ")+String(diff));
                                                     }
                                                 }
                                             }
@@ -873,6 +885,7 @@ OrbishAudioProcessor::OrbishAudioProcessor() :
                                         {
                                             expectedPos = currentPos;
                                         }
+										
                                         float expectedSamplePosition = beatsToSamples(expectedPos);
                                         int nextSample = int(floor(expectedSamplePosition + .5)) - int(context->info->timeInSamples);
 //                                        logMessage("nextSample" + String(nextSample));
