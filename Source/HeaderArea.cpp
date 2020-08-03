@@ -3,7 +3,7 @@
 
     HeaderArea.cpp
     Created: 1 Aug 2020 12:47:15pm
-    Author:  lenna
+    Author:  Lennart Cockx
 
   ==============================================================================
 */
@@ -13,37 +13,22 @@
 #include "PluginEditor.h"
 
 //==============================================================================
-HeaderArea::HeaderArea(OrbishAudioProcessorEditor* editor){
-    // In your constructor, you should add any child components, and
-    // initialise any special settings that your component needs.
-
-    bindEditor(editor);
-
+HeaderArea::HeaderArea(){
     initCommandManager();
     mainMenu = std::make_unique<MainMenu>(this);
     MenuBarModel* mm = mainMenu.get();
     menuBar = std::make_unique<MenuBarComponent>(mm);
     addAndMakeVisible(menuBar.get());
-
 }
 
-HeaderArea::~HeaderArea()
-{
+HeaderArea::~HeaderArea(){
 }
 
-MenuManager::~MenuManager()
-{
+MenuManager::~MenuManager(){
 }
 
 
-void HeaderArea::paint (juce::Graphics& g)
-{
-    /* This demo code just fills the component's background and
-       draws some placeholder text to get you started.
-
-       You should replace everything in this method with your own
-       drawing code..
-    */
+void HeaderArea::paint (juce::Graphics& g){
 
     g.fillAll (getLookAndFeel().findColour (juce::ResizableWindow::backgroundColourId));   // clear the background
 
@@ -63,7 +48,7 @@ void HeaderArea::resized()
     menuBar->setBounds(getLocalBounds());
 }
 
-void HeaderArea::bindEditor(OrbishAudioProcessorEditor* pluginEditor){
+void HeaderArea::setEditor(OrbishAudioProcessorEditor* pluginEditor){
     editor = pluginEditor;
 }
 

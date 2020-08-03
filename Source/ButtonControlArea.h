@@ -3,7 +3,7 @@
 
     ButtonControlArea.h
     Created: 3 Aug 2020 2:12:34pm
-    Author:  Aoriseth
+    Author:  Lennart Cockx
 
   ==============================================================================
 */
@@ -29,8 +29,10 @@ public:
     void paint (juce::Graphics&) override;
     void resized() override;
 
-private:
     TransportControlArea transportControlArea{};
+   
+
+private:
     ModeAndNavigationControlArea modeAndNavigationControlArea{};
     GlobalControlArea globalControlArea{};
     OutputControlArea outputControlArea{};

@@ -3,7 +3,7 @@
 
     InfoAndControlArea.h
     Created: 1 Aug 2020 12:47:40pm
-    Author:  lenna
+    Author:  Lennart Cockx
 
   ==============================================================================
 */
@@ -13,6 +13,7 @@
 #include <JuceHeader.h>
 #include "InfoArea.h"
 #include "ControlArea.h"
+class OrbishAudioProcessorEditor;
 
 //==============================================================================
 /*
@@ -22,14 +23,14 @@ class InfoAndControlArea  : public juce::Component
 public:
     InfoAndControlArea();
     ~InfoAndControlArea() override;
-
+     
     void paint (juce::Graphics&) override;
     void resized() override;
 
     InfoArea infoArea{};
+    ControlArea controlArea{};
 
 private:
-    ControlArea controlArea{};
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (InfoAndControlArea)
 };

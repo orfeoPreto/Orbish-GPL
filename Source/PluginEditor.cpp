@@ -101,48 +101,23 @@ projectXml("<project />"), processor (p), thumbnailCache (5), thumbnail (32, for
                  String("Bar: Snaps to bar\n") +
                  String("Beat: Snaps to the beat (bottom of time signature)");
     snapModeCombo.setTooltip(str);
+
+    // Track Button attachments
+    auto transportControlArea = &infoAndControlArea.controlArea.buttonControlArea.transportControlArea;
+
+    recordAttachment.reset (new ButtonAttachment (valueTreeState, "record", transportControlArea->recordButton));
+    playAttachment.reset (new ButtonAttachment (valueTreeState, "play", transportControlArea->playButton));
+    stopAttachment.reset(new ButtonAttachment(valueTreeState, "stop", transportControlArea->stopButton));
+    clearAttachment.reset(new ButtonAttachment(valueTreeState, "reset", transportControlArea->clearButton));
+    muteAttachment.reset(new ButtonAttachment(valueTreeState, "mute", transportControlArea->muteButton));
+    soloAttachment.reset(new ButtonAttachment(valueTreeState, "solo", transportControlArea->soloButton));
+    monitorAttachment.reset(new ButtonAttachment(valueTreeState, "monitor", transportControlArea->monitorButton));
+    reverseAttachment.reset(new ButtonAttachment(valueTreeState, "reverse", transportControlArea->reverseButton));
+    undoAttachment.reset(new ButtonAttachment(valueTreeState, "undo", transportControlArea->undoButton));
+    redoAttachment.reset(new ButtonAttachment(valueTreeState, "redo", transportControlArea->redoButton));
+    bounceAttachment.reset(new ButtonAttachment(valueTreeState, "bounce", transportControlArea->bounceButton));
+    triggerAttachment.reset(new ButtonAttachment(valueTreeState, "trigger", transportControlArea->autoTriggerButton));
     
-    activeLabel.setText("Active Track", NotificationType::dontSendNotification);
-
-    // Track Buttons
-
-    recordAttachment.reset (new ButtonAttachment (valueTreeState, "record", recordButton));
-    recordButton.setTooltip("Start/Stop recording on the active track");
-
-    playAttachment.reset (new ButtonAttachment (valueTreeState, "play", playButton));
-    playButton.setTooltip("Play/Pause the recorded material on the active track or group");
-
-    stopAttachment.reset(new ButtonAttachment(valueTreeState, "stop", stopButton));
-    stopButton.setTooltip("Stop playing on the active track or group");
-
-    clearAttachment.reset(new ButtonAttachment(valueTreeState, "reset", clearButton));
-    clearButton.setTooltip("Clear the active track");
-
-    muteAttachment.reset(new ButtonAttachment(valueTreeState, "mute", muteButton));
-    muteButton.setTooltip("Mute the active track or group");
-
-    soloAttachment.reset(new ButtonAttachment(valueTreeState, "solo", soloButton));
-    soloButton.setTooltip("Play exclusively the active track or group");
-
-    monitorAttachment.reset(new ButtonAttachment(valueTreeState, "monitor", monitorButton));
-    monitorButton.setTooltip("Listen to input audio when this track is active");
-
-    reverseAttachment.reset(new ButtonAttachment(valueTreeState, "reverse", reverseButton));
-    reverseButton.setTooltip("Reverse the audio on the active track");
-
-    undoAttachment.reset(new ButtonAttachment(valueTreeState, "undo", undoButton));
-    undoButton.setTooltip("Undo latest overdub recording");
-
-    redoAttachment.reset(new ButtonAttachment(valueTreeState, "redo", redoButton));
-    redoButton.setTooltip("Redo latest overdub recording");
-
-    bounceButton.setToggleState(true, NotificationType::sendNotification);
-    bounceAttachment.reset(new ButtonAttachment(valueTreeState, "bounce", bounceButton));
-    bounceButton.setTooltip("Flatten all overdub layers to one");
-
-    triggerAttachment.reset(new ButtonAttachment(valueTreeState, "trigger", autoTriggerButton));
-    autoTriggerButton.setTooltip("Start recording when input signal exceeds the predefined threshold");
-
     // Global Buttons
     globalLabel.setText("Global", NotificationType::dontSendNotification);
 
@@ -211,27 +186,13 @@ projectXml("<project />"), processor (p), thumbnailCache (5), thumbnail (32, for
 
     removeTrackAttachment.reset (new ButtonAttachment (valueTreeState, "removeTrack", removeTrackButton));
     removeTrackButton.setTooltip("Remove latest track");
-    
-    transportButtonArea.addAndMakeVisible(activeLabel);
-    transportButtonArea.addAndMakeVisible(recordButton);
-    transportButtonArea.addAndMakeVisible(playButton);
-    transportButtonArea.addAndMakeVisible(stopButton);
-    transportButtonArea.addAndMakeVisible(clearButton);
-    transportButtonArea.addAndMakeVisible(muteButton);
-    transportButtonArea.addAndMakeVisible(soloButton);
-    transportButtonArea.addAndMakeVisible(monitorButton);
-    transportButtonArea.addAndMakeVisible(reverseButton);
-    transportButtonArea.addAndMakeVisible(undoButton);
-    transportButtonArea.addAndMakeVisible(redoButton);
-    transportButtonArea.addAndMakeVisible(autoTriggerButton);
-	transportButtonArea.addAndMakeVisible(bounceButton);
 
-    transportButtonArea.addAndMakeVisible(loopLabel);
-    transportButtonArea.addAndMakeVisible(previousLoopButton);
-    transportButtonArea.addAndMakeVisible(activeLoopLabel);
-    transportButtonArea.addAndMakeVisible(nextLoopButton);
-    transportButtonArea.addAndMakeVisible(newLoopButton);
-    transportButtonArea.addAndMakeVisible(removeLoopButton);
+    loopConfigArea.addAndMakeVisible(loopLabel);
+    loopConfigArea.addAndMakeVisible(previousLoopButton);
+    loopConfigArea.addAndMakeVisible(activeLoopLabel);
+    loopConfigArea.addAndMakeVisible(nextLoopButton);
+    loopConfigArea.addAndMakeVisible(newLoopButton);
+    loopConfigArea.addAndMakeVisible(removeLoopButton);
 
     loopConfigArea.addAndMakeVisible(globalLabel);
     loopConfigArea.addAndMakeVisible(muteAllButton);
@@ -254,7 +215,6 @@ projectXml("<project />"), processor (p), thumbnailCache (5), thumbnail (32, for
     inputDisplay.setBufferSize(processor.context->samplesPerBlock);
     inputDisplay.setColours(Colours::darkgrey, Colours::indianred);
 
-	
 	loopInfoArea.addAndMakeVisible(groupLabel);
 	groupAttachment.reset(new AudioProcessorValueTreeState::ComboBoxAttachment(valueTreeState, "selectGroup", groupCombo));
 
@@ -338,19 +298,18 @@ projectXml("<project />"), processor (p), thumbnailCache (5), thumbnail (32, for
     rightInnerSide.addAndMakeVisible(globalSliderComp);
     leftSide.addAndMakeVisible(inputMeter.get());
     rightSide.addAndMakeVisible(outputMeter.get());
-    transportButtonArea.addAndMakeVisible(recModeCombo);
-    transportButtonArea.addAndMakeVisible(snapModeCombo);
-    transportButtonArea.addAndMakeVisible(recModeLabel);
-    transportButtonArea.addAndMakeVisible(snapModeLabel);
+    loopConfigArea.addAndMakeVisible(recModeCombo);
+    loopConfigArea.addAndMakeVisible(snapModeCombo);
+    loopConfigArea.addAndMakeVisible(recModeLabel);
+    loopConfigArea.addAndMakeVisible(snapModeLabel);
 
-    headerArea.setLookAndFeel(editorLookAndFeel);
+    headerArea.setEditor(this);
     addAndMakeVisible(headerArea);
-    infoAndControlArea.setLookAndFeel(editorLookAndFeel);
+    infoAndControlArea.controlArea.buttonControlArea.transportControlArea.setEditor(this);
     addAndMakeVisible(infoAndControlArea);
-    tracksArea.setLookAndFeel(editorLookAndFeel);
     addAndMakeVisible(tracksArea);
 
-    setSize (1100, 850);
+    setSize (1400, 650);
 }
 
 void OrbishAudioProcessorEditor::createTracksLayoutButton()
@@ -762,8 +721,7 @@ void OrbishAudioProcessorEditor::toggleStop(){
 }
 
 void OrbishAudioProcessorEditor::toggleClear(){
-        //getFromProcessor
-    playButton.setToggleState(false, NotificationType::dontSendNotification);
+    infoAndControlArea.controlArea.buttonControlArea.transportControlArea.playButton.setToggleState(false, NotificationType::dontSendNotification);
     thumbnail.reset(processor.context->audioInputsCount, thumbnail.getNumSamplesFinished());
     updatePlayHead(0,false);
 }
@@ -946,12 +904,12 @@ void OrbishAudioProcessorEditor::paint (Graphics& g)
         transportInfoArea.paint(g);
         g.fillRect(transportInfoArea.getBounds());
         addAndMakeVisible(transportInfoArea);
-        loopDisplayArea.paint(g);
-        g.fillRect(loopDisplayArea.getBounds());
-        addAndMakeVisible(loopDisplayArea);
-        transportButtonArea.paint(g);
+        //loopDisplayArea.paint(g);/*
+        //g.fillRect(loopDisplayArea.getBounds());
+        //addAndMakeVisible(loopDisplayArea);*/
+        /*transportButtonArea.paint(g);
         g.fillRect(transportButtonArea.getBounds());
-        addAndMakeVisible(transportButtonArea);
+        addAndMakeVisible(transportButtonArea);*/
         loopConfigArea.paint(g);
         g.fillRect(loopConfigArea.getBounds());
         addAndMakeVisible(loopConfigArea);
@@ -974,38 +932,20 @@ void OrbishAudioProcessorEditor::paint (Graphics& g)
     highlightActiveTrack(g);
     paintInfoSection(g);
 
-    if(processor.activeTrack->Recording){
-        recordButton.setColour(TextButton::textColourOnId, Colours::white);
-        recordButton.setColour(TextButton::buttonOnColourId, Colour(0x8FFC0B0B));
-    }else{
-        auto t = this->getTimerInterval();
-        if(processor.activeTrack->isRecordingArmed() && (t%1000)%2 > 0){
-            recordButton.setColour(TextButton::textColourOnId, Colour(0xFFFC0B0B));
-        }else{
-            recordButton.setColour(TextButton::textColourOnId, Colour(0x8FFC0B0B));
-        }
-    }
-    recordButton.setColour(TextButton::textColourOffId, Colour(0xAFFC0B0B));
+    auto transportControlArea = &infoAndControlArea.controlArea.buttonControlArea.transportControlArea;
 
     if(processor.activeTrack->Playing){
         if(processor.activeTrack->isPlayArmed()){
-            if(!playButton.getToggleState()){
-                playButton.triggerClick();
+            if(!transportControlArea->playButton.getToggleState()) {
+                transportControlArea->playButton.triggerClick();
             }
-            playButton.setColour(TextButton::textColourOnId, Colours::white);
-        }else{
-            playButton.setColour(TextButton::textColourOnId, Colour(0xFF2ACD01));
-            
         }
-        playButton.setColour(TextButton::buttonOnColourId, Colour(0x8F2ACD01));
-    }else{
-        if(processor.activeTrack->isPlayArmed()){
-            playButton.setColour(TextButton::textColourOnId, Colour(0xFF2ACD01));
-        }else{
-            playButton.setColour(TextButton::textColourOnId, Colour(Colours::darkgreen));
-            if(playButton.getToggleState()){
-                playButton.setToggleState(false, NotificationType::sendNotification);
-                playButton.setState(Button::buttonNormal);
+    }
+    else {
+        if (!processor.activeTrack->isPlayArmed()) {
+            if (transportControlArea->playButton.getToggleState()) {
+                transportControlArea->playButton.setToggleState(false, NotificationType::sendNotification);
+                transportControlArea->playButton.setState(Button::buttonNormal);
             }
         }
     }
@@ -1018,8 +958,6 @@ void OrbishAudioProcessorEditor::paint (Graphics& g)
         trackArea.repaint();
         tracksDirty = false;
     }
-
-    playButton.setColour(TextButton::textColourOffId, Colour(0xAF2ACD01));
 }
 
 void OrbishAudioProcessorEditor::paintInfoSection(Graphics& g){
@@ -1088,19 +1026,6 @@ void OrbishAudioProcessorEditor::resized()
     // subcomponents in your editor..
     int containerMargin = 1;
     int controlMargin = 2;
-    activeLabel.setBounds(10, 10, 200, 20);
-    recordButton.setBounds(10, 40, 50, 20);
-    playButton.setBounds(65, 40, 50, 20);
-    stopButton.setBounds(120, 40, 50, 20);
-    clearButton.setBounds(175, 40, 50, 20);
-    muteButton.setBounds(230, 40, 50, 20);
-    soloButton.setBounds(285, 40, 50, 20);
-    monitorButton.setBounds(10, 65, 50, 20);
-    reverseButton.setBounds(65, 65, 50, 20);
-    undoButton.setBounds(120, 65, 50, 20);
-    redoButton.setBounds(175, 65, 50, 20);
-    bounceButton.setBounds(230, 65, 50, 20);
-    autoTriggerButton.setBounds(285, 65, 50, 20);
 
     loopLabel.setBounds(5, 95, 50, 20);
     previousLoopButton.setBounds(60, 95, 25, 20);
@@ -1135,7 +1060,6 @@ void OrbishAudioProcessorEditor::resized()
     transportInfoArea.setBounds(toolCanvas.removeFromTop(100).reduced(containerMargin));
     loopDisplayArea.setBounds(toolCanvas.removeFromTop(40).reduced(containerMargin));
     auto rect = toolCanvas.removeFromTop(120).reduced(containerMargin);
-    transportButtonArea.setBounds(rect);
     loopConfigArea.setBounds(rect.removeFromRight(rect.getWidth() * .33f).reduced(containerMargin,0));
     rect = toolCanvas;
     rect.removeFromBottom(containerMargin + controlMargin + 1);
@@ -1262,37 +1186,11 @@ void OrbishAudioProcessorEditor::sliderChanged(Slider* slider) {
 }
 
 void OrbishAudioProcessorEditor::buttonClicked(Button* button){
-    if(button == &recordButton){
-        recordButton.onClick = [this]() { toggleRecord(); };
-    }
-    if(button == &stopButton){
-        stopButton.onClick = [this]() { toggleStop(); };
-    }
-    if(button == &clearButton || button == &clearAllButton){
-        button->onClick = [this]() { toggleClear(); };
-    }
-    if(button == &muteButton){
-        muteButton.onClick = [this]() { toggleMute(); };
-    }
-    if(button == &soloButton){
-    }
-    if(button == &monitorButton){
-        monitorButton.onClick = [this]() { toggleMonitor(); };
-    }
-    if(button == &reverseButton){
-        reverseButton.onClick = [this]() { toggleReverse(); };
-    }
-    if(button == &undoButton){
-        undoButton.onClick = [this]() { toggleUndo(); };
-    }
-    if(button == &redoButton){
-        redoButton.onClick = [this]() { toggleRedo(); };
-    }
-    if(button == &autoTriggerButton){
-        autoTriggerButton.onClick = [this]() { toggleAutoTrigger(); };
-    }
     if(button == &muteAllButton){
         button->onClick = [this] { toggleMuteAll((bool)muteAllButton.getToggleStateValue().getValue()); };
+    }
+    if (button == &clearAllButton) {
+        button->onClick = [this] { toggleClear(); };
     }
 	if (button == &addToGroupButton) {
 		button->onClick = [this] {

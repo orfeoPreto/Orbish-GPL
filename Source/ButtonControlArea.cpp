@@ -3,7 +3,7 @@
 
     ButtonControlArea.cpp
     Created: 3 Aug 2020 2:12:34pm
-    Author:  Aoriseth
+    Author:  Lennart Cockx
 
   ==============================================================================
 */
@@ -28,10 +28,12 @@ void ButtonControlArea::paint (juce::Graphics& g){
 
 void ButtonControlArea::resized(){
     auto bounds = getLocalBounds();
-    auto controlWidth = bounds.getWidth() / 5;
+    auto controlWidth = bounds.getWidth() / 4;
     transportControlArea.setBounds(bounds.removeFromLeft(controlWidth));
-    modeAndNavigationControlArea.setBounds(bounds.removeFromLeft(controlWidth));
-    globalControlArea.setBounds(bounds.removeFromLeft(controlWidth));
-    outputControlArea.setBounds(bounds.removeFromLeft(controlWidth));
+
+    auto leftoverWidth = bounds.getWidth() / 4;
+    modeAndNavigationControlArea.setBounds(bounds.removeFromLeft(leftoverWidth));
+    globalControlArea.setBounds(bounds.removeFromLeft(leftoverWidth));
+    outputControlArea.setBounds(bounds.removeFromLeft(leftoverWidth));
     inputControlArea.setBounds(bounds);
 }

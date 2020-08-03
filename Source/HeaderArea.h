@@ -3,7 +3,7 @@
 
     HeaderArea.h
     Created: 1 Aug 2020 12:47:15pm
-    Author:  lenna
+    Author:  Lennart Cockx
 
   ==============================================================================
 */
@@ -15,17 +15,16 @@
 #include "CommandIDs.h"
 class OrbishAudioProcessorEditor;
 //==============================================================================
-/*
-*/
+
 class HeaderArea  : public juce::Component, public MenuManager, public ApplicationCommandTarget{
 public:
-    HeaderArea(OrbishAudioProcessorEditor* editor);
+    HeaderArea();
     ~HeaderArea() override;
 
     void paint (juce::Graphics&) override;
     void resized() override;
 
-    void bindEditor(OrbishAudioProcessorEditor* editor);
+    void setEditor(OrbishAudioProcessorEditor* editor);
 
     void initCommandManager();
     ApplicationCommandTarget* getNextCommandTarget() override;

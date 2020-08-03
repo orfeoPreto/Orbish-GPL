@@ -3,7 +3,7 @@
 
     TransportControlArea.h
     Created: 3 Aug 2020 1:54:04pm
-    Author:  Aoriseth
+    Author:  Lennart Cockx
 
   ==============================================================================
 */
@@ -11,12 +11,13 @@
 #pragma once
 
 #include <JuceHeader.h>
-
+#include "CustomButton.h"
+#include "exu/Label.hpp"
+class OrbishAudioProcessorEditor;
 //==============================================================================
 /*
 */
-class TransportControlArea  : public juce::Component
-{
+class TransportControlArea  : public juce::Component, public Button::Listener{
 public:
     TransportControlArea();
     ~TransportControlArea() override;
@@ -24,8 +25,27 @@ public:
     void paint (juce::Graphics&) override;
     void resized() override;
 
+    void buttonClicked(Button* button) override;
+
+    CustomButton recordButton{ "Record", false };
+    CustomButton playButton{ "Play", false };
+    CustomButton stopButton{ "Stop", true };
+    CustomButton clearButton{ "Clear", true };
+    CustomButton muteButton{ "Mute", false };
+    CustomButton soloButton{ "Solo", false };
+    CustomButton monitorButton{ "Monitor", false };
+    CustomButton reverseButton{ "Revrs", false };
+    CustomButton undoButton{ "Undo", true };
+    CustomButton redoButton{ "Redo", true };
+    CustomButton bounceButton{ "Bounce", false };
+    CustomButton autoTriggerButton{ "Trigger", false };
+
+    exu::Label activeLabel{ "Active Track" };
+
+    void setEditor(OrbishAudioProcessorEditor* editor);
+
 private:
-    TextButton button{"TestButton"};
+    OrbishAudioProcessorEditor* editor;
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (TransportControlArea)
 };

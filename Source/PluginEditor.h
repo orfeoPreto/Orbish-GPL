@@ -127,7 +127,7 @@ public:
 private:
     OpenGLContext openGLContext;
 
-    HeaderArea headerArea{this};
+    HeaderArea headerArea{};
     InfoAndControlArea infoAndControlArea{};
     TrackArea tracksArea{};
 
@@ -176,7 +176,6 @@ private:
     std::unique_ptr<AudioProcessorValueTreeState::ComboBoxAttachment> snapModeAttachment;
 
     ComboBox snapModeCombo;
-    Component transportButtonArea {};
     Component loopConfigArea {};
     Component trackArea {};
     Viewport  tracksViewport;
@@ -190,31 +189,18 @@ private:
     bool thumbnailDirty = true;
 
     Component rightSide {};
-    Grid transportButtonGrid {};
-    CustomButton recordButton { "Record", false, this };
     std::unique_ptr<ButtonAttachment> recordAttachment;
-    CustomButton playButton { "Play", false, this };
     std::unique_ptr<ButtonAttachment> playAttachment;
-    CustomButton stopButton { "Stop", true, this };
     std::unique_ptr<ButtonAttachment> stopAttachment;
-    CustomButton clearButton { "Clear", true, this };
     std::unique_ptr<ButtonAttachment> clearAttachment;
-    CustomButton muteButton { "Mute", false, this };
     std::unique_ptr<ButtonAttachment> muteAttachment;
-    CustomButton soloButton { "Solo", false, this };
     std::unique_ptr<ButtonAttachment> soloAttachment;
-    CustomButton monitorButton { "Monitor", false, this };
     std::unique_ptr<ButtonAttachment> monitorAttachment;
-    CustomButton reverseButton { "Revrs", false, this };
     std::unique_ptr<ButtonAttachment> reverseAttachment;
     ToggleState reverseState = Off;
-    CustomButton undoButton { "Undo", true, this };
     std::unique_ptr<ButtonAttachment> undoAttachment;
-    CustomButton redoButton { "Redo", true, this };
     std::unique_ptr<ButtonAttachment> redoAttachment;
-    CustomButton bounceButton{ "Bounce", false, this };
     std::unique_ptr<ButtonAttachment> bounceAttachment;
-    CustomButton autoTriggerButton { "Trigger", false, this };
     std::unique_ptr<ButtonAttachment> triggerAttachment;
     
     CustomButton previousLoopButton { "<", true, this };
@@ -266,7 +252,6 @@ private:
     exu::Label trackLabel { "Tracks: " };
     exu::Label loopLabel { "Loops: " };
 
-    exu::Label activeLabel { "Active Track" };
     exu::Label globalLabel { "Global" };
     AudioProcessorValueTreeState& valueTreeState;
     OwnedArray<TrackComponent> tracks;

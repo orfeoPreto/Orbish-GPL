@@ -3,22 +3,19 @@
 
     InfoAndControlArea.cpp
     Created: 1 Aug 2020 12:47:40pm
-    Author:  lenna
+    Author:  Lennart Cockx
 
   ==============================================================================
 */
 
 #include <JuceHeader.h>
 #include "InfoAndControlArea.h"
+#include "PluginEditor.h"
 
 //==============================================================================
 InfoAndControlArea::InfoAndControlArea(){
-    // In your constructor, you should add any child components, and
-    // initialise any special settings that your component needs.
-
     addAndMakeVisible(infoArea);
     addAndMakeVisible(controlArea);
-
 }
 
 InfoAndControlArea::~InfoAndControlArea(){
