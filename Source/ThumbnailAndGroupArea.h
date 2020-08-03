@@ -1,9 +1,9 @@
 /*
   ==============================================================================
 
-    ControlArea.h
-    Created: 1 Aug 2020 3:22:34pm
-    Author:  lenna
+    ThumbnailAndGroupArea.h
+    Created: 3 Aug 2020 2:13:15pm
+    Author:  Aoriseth
 
   ==============================================================================
 */
@@ -11,25 +11,19 @@
 #pragma once
 
 #include <JuceHeader.h>
-#include "ButtonControlArea.h"
-#include "ThumbnailAndGroupArea.h"
 
 //==============================================================================
 /*
 */
-class ControlArea  : public juce::Component
+class ThumbnailAndGroupArea  : public juce::Component
 {
 public:
-    ControlArea();
-    ~ControlArea() override;
+    ThumbnailAndGroupArea();
+    ~ThumbnailAndGroupArea() override;
 
     void paint (juce::Graphics&) override;
     void resized() override;
 
 private:
-
-    ThumbnailAndGroupArea thumbnailAndGroupArea{};
-    ButtonControlArea buttonControlArea{};
-
-    JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (ControlArea)
+    JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (ThumbnailAndGroupArea)
 };

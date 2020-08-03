@@ -1,9 +1,9 @@
 /*
   ==============================================================================
 
-    ControlArea.h
-    Created: 1 Aug 2020 3:22:34pm
-    Author:  lenna
+    TransportControlArea.h
+    Created: 3 Aug 2020 1:54:04pm
+    Author:  Aoriseth
 
   ==============================================================================
 */
@@ -11,25 +11,21 @@
 #pragma once
 
 #include <JuceHeader.h>
-#include "ButtonControlArea.h"
-#include "ThumbnailAndGroupArea.h"
 
 //==============================================================================
 /*
 */
-class ControlArea  : public juce::Component
+class TransportControlArea  : public juce::Component
 {
 public:
-    ControlArea();
-    ~ControlArea() override;
+    TransportControlArea();
+    ~TransportControlArea() override;
 
     void paint (juce::Graphics&) override;
     void resized() override;
 
 private:
+    TextButton button{"TestButton"};
 
-    ThumbnailAndGroupArea thumbnailAndGroupArea{};
-    ButtonControlArea buttonControlArea{};
-
-    JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (ControlArea)
+    JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (TransportControlArea)
 };

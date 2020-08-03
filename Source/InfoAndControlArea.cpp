@@ -29,6 +29,6 @@ void InfoAndControlArea::paint (juce::Graphics& g){
 
 void InfoAndControlArea::resized(){
     auto bounds = getLocalBounds();
-    infoArea.setBounds(bounds.removeFromLeft(juce::jmax(150, bounds.getWidth() / 6)));
+    infoArea.setBounds(bounds.removeFromLeft(150));
     controlArea.setBounds(bounds);
 }
