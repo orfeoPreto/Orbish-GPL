@@ -25,5 +25,9 @@ public:
     void resized() override;
 
 private:
+
+    Component thumbnailAndGroupArea;
+    Component buttonControlArea;
+
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (ControlArea)
 };

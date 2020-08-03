@@ -350,7 +350,7 @@ projectXml("<project />"), processor (p), thumbnailCache (5), thumbnail (32, for
     tracksArea.setLookAndFeel(editorLookAndFeel);
     addAndMakeVisible(tracksArea);
 
-    setSize (1100, 620);
+    setSize (1100, 850);
 }
 
 void OrbishAudioProcessorEditor::createTracksLayoutButton()
@@ -1163,10 +1163,10 @@ void OrbishAudioProcessorEditor::resized()
     snapModeLabel.setBounds(340, 70, 100, 25);
 
     auto bounds = getLocalBounds();
-    auto headerHeight = 40;
+    auto headerHeight = 30;
     headerArea.setBounds(bounds.removeFromTop(headerHeight));
     infoAndControlArea.setBounds(bounds.removeFromTop(juce::jmax(80, bounds.getHeight()/2)));
-    tracksArea.setBounds(bounds.removeFromTop(juce::jmax(40, bounds.getHeight())));
+    tracksArea.setBounds(bounds);
 
 }
 
@@ -1225,9 +1225,6 @@ void OrbishAudioProcessorEditor::updateTrackAreaSize()
     }
     int totalHeight = (tracksLayoutHorizontal) ? tracks.size() * (55) + 5 : (sum)+5;
     int diff = trackArea.getHeight() - totalHeight;
-    if (getHeight() < 600 - diff || getHeight() > 900 - diff) {
-        setSize(getWidth(), std::min(std::max(getHeight() - diff, 600), 900));
-    }
     trackArea.setSize(trackArea.getWidth(), std::max(tracksViewport.getHeight(), totalHeight));
 }
 

@@ -25,19 +25,10 @@ InfoAndControlArea::~InfoAndControlArea(){
 }
 
 void InfoAndControlArea::paint (juce::Graphics& g){
-
-    g.fillAll (getLookAndFeel().findColour (juce::ResizableWindow::backgroundColourId));   // clear the background
-
-    g.setColour (juce::Colours::yellow);
-    g.drawRect (getLocalBounds(), 1);   // draw an outline around the component
-
-    g.setColour (juce::Colours::white);
-    g.setFont (14.0f);
-    g.drawText ("InfoAndControlArea", getLocalBounds(),juce::Justification::centred, true);   // draw some placeholder text
 }
 
 void InfoAndControlArea::resized(){
     auto bounds = getLocalBounds();
-    infoArea.setBounds(bounds.removeFromLeft(juce::jmax(150, bounds.getWidth() / 5)));
+    infoArea.setBounds(bounds.removeFromLeft(juce::jmax(150, bounds.getWidth() / 6)));
     controlArea.setBounds(bounds);
 }
