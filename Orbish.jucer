@@ -29,6 +29,26 @@
         <GROUP id="{9A772742-A9A5-A4DA-AE9B-C9C571FD411B}" name="InfoAndControl">
           <GROUP id="{279F791E-8117-00CC-5B46-5166D8D055EE}" name="Control">
             <GROUP id="{DBE39750-68F0-9AC9-F384-DDA0EEB43B78}" name="ButtonControl">
+              <GROUP id="{C9BA1CB1-4246-3FBC-36DC-4C6933BFFF75}" name="ModeAndNavigationControl">
+                <FILE id="Ia6PBu" name="ModeAndNavigationControlArea.cpp" compile="1"
+                      resource="0" file="Source/ModeAndNavigationControlArea.cpp"/>
+                <FILE id="LirMtS" name="ModeAndNavigationControlArea.h" compile="0"
+                      resource="0" file="Source/ModeAndNavigationControlArea.h"/>
+                <FILE id="kVeaRD" name="ModeControlArea.cpp" compile="1" resource="0"
+                      file="Source/ModeControlArea.cpp"/>
+                <FILE id="ZTBd6H" name="ModeControlArea.h" compile="0" resource="0"
+                      file="Source/ModeControlArea.h"/>
+                <FILE id="jQmyFD" name="NavigationControlArea.cpp" compile="1" resource="0"
+                      file="Source/NavigationControlArea.cpp"/>
+                <FILE id="wQ3KTi" name="NavigationControlArea.h" compile="0" resource="0"
+                      file="Source/NavigationControlArea.h"/>
+              </GROUP>
+              <GROUP id="{4E04B911-19B3-731F-D71B-D9A713B0AA22}" name="TransportControl">
+                <FILE id="GlS5FR" name="TransportControlArea.h" compile="0" resource="0"
+                      file="Source/TransportControlArea.h"/>
+                <FILE id="u8RfJL" name="TransportControlArea.cpp" compile="1" resource="0"
+                      file="Source/TransportControlArea.cpp"/>
+              </GROUP>
               <FILE id="OGik5G" name="ButtonControlArea.cpp" compile="1" resource="0"
                     file="Source/ButtonControlArea.cpp"/>
               <FILE id="zKbgU8" name="ButtonControlArea.h" compile="0" resource="0"
@@ -41,18 +61,10 @@
                     file="Source/InputControlArea.cpp"/>
               <FILE id="zmbHDc" name="InputControlArea.h" compile="0" resource="0"
                     file="Source/InputControlArea.h"/>
-              <FILE id="Ia6PBu" name="ModeAndNavigationControlArea.cpp" compile="1"
-                    resource="0" file="Source/ModeAndNavigationControlArea.cpp"/>
-              <FILE id="LirMtS" name="ModeAndNavigationControlArea.h" compile="0"
-                    resource="0" file="Source/ModeAndNavigationControlArea.h"/>
               <FILE id="EfeTDT" name="OutputControlArea.cpp" compile="1" resource="0"
                     file="Source/OutputControlArea.cpp"/>
               <FILE id="QBkckA" name="OutputControlArea.h" compile="0" resource="0"
                     file="Source/OutputControlArea.h"/>
-              <FILE id="u8RfJL" name="TransportControlArea.cpp" compile="1" resource="0"
-                    file="Source/TransportControlArea.cpp"/>
-              <FILE id="GlS5FR" name="TransportControlArea.h" compile="0" resource="0"
-                    file="Source/TransportControlArea.h"/>
             </GROUP>
             <FILE id="owVMyT" name="ControlArea.cpp" compile="1" resource="0" file="Source/ControlArea.cpp"/>
             <FILE id="xtLcuA" name="ControlArea.h" compile="0" resource="0" file="Source/ControlArea.h"/>

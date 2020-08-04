@@ -167,15 +167,8 @@ private:
     AudioTransportSource transportSource;
     AudioThumbnailCache thumbnailCache;                  // [1]
     AudioThumbnail thumbnail;
-    OwnedArray<TextButton> recModeButtons;
-    OwnedArray<TextButton> snapModeButtons;
-    exu::Label recModeLabel= { {}, {"Record Mode"}};
-    exu::Label snapModeLabel = { {}, {"Snap Mode"}};
-    ComboBox recModeCombo;
     std::unique_ptr<AudioProcessorValueTreeState::ComboBoxAttachment> recModeAttachment;
     std::unique_ptr<AudioProcessorValueTreeState::ComboBoxAttachment> snapModeAttachment;
-
-    ComboBox snapModeCombo;
     Component loopConfigArea {};
     Component trackArea {};
     Viewport  tracksViewport;

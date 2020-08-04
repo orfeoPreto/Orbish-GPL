@@ -30,13 +30,12 @@ public:
     void resized() override;
 
     TransportControlArea transportControlArea{};
-   
-
-private:
     ModeAndNavigationControlArea modeAndNavigationControlArea{};
     GlobalControlArea globalControlArea{};
     OutputControlArea outputControlArea{};
     InputControlArea inputControlArea{};
+
+private:
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (ButtonControlArea)
 };

@@ -64,43 +64,11 @@ projectXml("<project />"), processor (p), thumbnailCache (5), thumbnail (32, for
        doCreateTrack(track->Index);
     }
 
-	Array<StringArray> buttonRecModeNames;
-	buttonRecModeNames.add({ "Overdub", "Record multiple layers within same loop" });
-	buttonRecModeNames.add({ "Repeat","Record additional layer while extending loop size repeating previous layers" });
-	buttonRecModeNames.add({ "Append","Record new layer while extending without repeating previous layers" });
-	buttonRecModeNames.add({ "Overwrite", "overwrite content of current layer with new material, and extend original loop until recording ends" });
-	buttonRecModeNames.add({ "Punch","Record while replacing previous material on current layer" });
+    // Mode control attachments
+    auto modeControlArea = &infoAndControlArea.controlArea.buttonControlArea.modeAndNavigationControlArea.modeControlArea;
 
-	Array<StringArray> buttonSnapModeNames;
-	buttonSnapModeNames.add({ "No Sync", "Snap disabled, functionality goes into effect instantly" });
-	buttonSnapModeNames.add({ "Bar","Snaps to bar" });
-	buttonSnapModeNames.add({ "Beat","Snaps to the beat (bottom of time signature)" });
-
-    recModeAttachment.reset (new AudioProcessorValueTreeState::ComboBoxAttachment (valueTreeState, "mode", recModeCombo));
-    snapModeAttachment.reset (new AudioProcessorValueTreeState::ComboBoxAttachment (valueTreeState, "snap", snapModeCombo));
-
-	for (int i = 0; i < buttonRecModeNames.size(); ++i)
-	{
-		recModeCombo.addItem(buttonRecModeNames[i][0], i + 1);
-
-	}
-    for (int i = 0; i < buttonSnapModeNames.size(); ++i)
-    {
-        snapModeCombo.addItem(buttonSnapModeNames[i][0], i+1);
-
-    }
-    recModeCombo.setSelectedId(1);
-    String str = String("Overdub: Record multiple layers within same loop\n")    +
-                 String("Repeat: Record additional layer while extending loop size repeating previous layers\n") +
-                 String("Append: Record new layer while extending without repeating previous layers") +
-                 String("Overwrite: overwrite content of current layer with new material, and extend original loop until recording ends\n") +
-                 String("Punch: Record while replacing previous material on current layer\n");
-    recModeCombo.setTooltip(str);
-    snapModeCombo.setSelectedId(2);
-    str = String("No Sync: Snap disabled, functionality goes into effect instantly\n")    +
-                 String("Bar: Snaps to bar\n") +
-                 String("Beat: Snaps to the beat (bottom of time signature)");
-    snapModeCombo.setTooltip(str);
+    recModeAttachment.reset (new AudioProcessorValueTreeState::ComboBoxAttachment (valueTreeState, "mode", modeControlArea->recModeCombo));
+    snapModeAttachment.reset (new AudioProcessorValueTreeState::ComboBoxAttachment (valueTreeState, "snap", modeControlArea->snapModeCombo));
 
     // Track Button attachments
     auto transportControlArea = &infoAndControlArea.controlArea.buttonControlArea.transportControlArea;
@@ -298,10 +266,6 @@ projectXml("<project />"), processor (p), thumbnailCache (5), thumbnail (32, for
     rightInnerSide.addAndMakeVisible(globalSliderComp);
     leftSide.addAndMakeVisible(inputMeter.get());
     rightSide.addAndMakeVisible(outputMeter.get());
-    loopConfigArea.addAndMakeVisible(recModeCombo);
-    loopConfigArea.addAndMakeVisible(snapModeCombo);
-    loopConfigArea.addAndMakeVisible(recModeLabel);
-    loopConfigArea.addAndMakeVisible(snapModeLabel);
 
     headerArea.setEditor(this);
     addAndMakeVisible(headerArea);
@@ -653,14 +617,15 @@ void OrbishAudioProcessorEditor::timerCallback()
 		processor.context->xchange->readBufferQueue->pop(b);
 		updateLoopVisualiser(*b->buffer, b->numSamples);
 		String s = String(pointer_sized_int(b));
-		//DBG("Deleting ptr:" + s);
 		delete b;
 	}
+
+    auto modeControlArea = &infoAndControlArea.controlArea.buttonControlArea.modeAndNavigationControlArea.modeControlArea;
 	if (processor.activeTrack->Recording || processor.activeTrack->Playing) {
-		recModeCombo.setEnabled(false);
+        modeControlArea->recModeCombo.setEnabled(false);
 	}
 	else {
-		recModeCombo.setEnabled(true);
+        modeControlArea->recModeCombo.setEnabled(true);
 	}
 }
 
@@ -1081,10 +1046,6 @@ void OrbishAudioProcessorEditor::resized()
     makeTracks();
 	groupLabel.setBounds(860, 5, 100, 15);
 	groupCombo.setBounds(965, 5, 50, 25);
-    recModeCombo.setBounds(460, 40, 100, 25);
-    snapModeCombo.setBounds(460, 70, 100, 25);
-    recModeLabel.setBounds(340, 40, 100, 25);
-    snapModeLabel.setBounds(340, 70, 100, 25);
 
     auto bounds = getLocalBounds();
     auto headerHeight = 30;
