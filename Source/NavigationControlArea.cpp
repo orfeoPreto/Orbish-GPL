@@ -31,10 +31,25 @@ NavigationControlArea::NavigationControlArea(){
     removeLoopButton.setTooltip("Remove latest loop from active track");
     addAndMakeVisible(removeLoopButton);
     
-    
-    
 
 
+    trackLabel.setText("Tracks: ", NotificationType::dontSendNotification);
+    addAndMakeVisible(trackLabel);
+
+    previousTrackButton.setTooltip("Go to previous track");
+    addAndMakeVisible(previousTrackButton);
+
+    activeTrackLabel.setText("1", NotificationType::dontSendNotification);
+    addAndMakeVisible(activeTrackLabel);
+
+    nextTrackButton.setTooltip("Go to next track");
+    addAndMakeVisible(nextTrackButton);
+
+    newTrackButton.setTooltip("Create new track");
+    addAndMakeVisible(newTrackButton);
+
+    removeTrackButton.setTooltip("Remove latest track");
+    addAndMakeVisible(removeTrackButton);
 }
 
 NavigationControlArea::~NavigationControlArea(){
@@ -45,12 +60,20 @@ void NavigationControlArea::paint (juce::Graphics& g){
 
     g.setColour (juce::Colours::black);
     g.drawRect (getLocalBounds(), 1);   // draw an outline around the component
+
+    auto bounds = getLocalBounds();
+    auto loopButtonArea = bounds.removeFromLeft(bounds.getWidth() / 2).reduced(5);
+    auto trackButtonArea = bounds.reduced(5);
+
+    g.drawRect(loopButtonArea);
+    g.drawRect(trackButtonArea);
 }
 
 void NavigationControlArea::resized(){
     auto bounds = getLocalBounds();
 
-    auto loopButtonArea = bounds.removeFromLeft(bounds.getWidth() / 2).reduced(5);
+    // Loop navigation
+    auto loopButtonArea = bounds.removeFromLeft(bounds.getWidth() / 2).reduced(10);
     auto loopNavArea = loopButtonArea.removeFromLeft(loopButtonArea.getWidth() * 3 / 5);
 
     loopLabel.setBounds(loopNavArea.removeFromTop(15));
@@ -58,12 +81,27 @@ void NavigationControlArea::resized(){
     previousLoopButton.setBounds(loopNavArea.removeFromLeft(buttonWidth));
     activeLoopLabel.setBounds(loopNavArea.removeFromLeft(buttonWidth));
     nextLoopButton.setBounds(loopNavArea);
-
     newLoopButton.setBounds(loopButtonArea.removeFromTop(loopButtonArea.getWidth()/2));
     removeLoopButton.setBounds(loopButtonArea);
+
+    // Track navigation
+    auto trackButtonArea = bounds.reduced(10);
+    auto trackNavArea = trackButtonArea.removeFromLeft(trackButtonArea.getWidth() * 3 / 5);
+
+    trackLabel.setBounds(trackNavArea.removeFromTop(15));
+    buttonWidth = trackNavArea.getWidth() / 3;
+    previousTrackButton.setBounds(trackNavArea.removeFromLeft(buttonWidth));
+    activeTrackLabel.setBounds(trackNavArea.removeFromLeft(buttonWidth));
+    nextTrackButton.setBounds(trackNavArea);
+    newTrackButton.setBounds(trackButtonArea.removeFromTop(trackButtonArea.getWidth() / 2));
+    removeTrackButton.setBounds(trackButtonArea);
 
 }
 
 void NavigationControlArea::setActiveLoop(String loopNumber){
     activeLoopLabel.setText(loopNumber, NotificationType::dontSendNotification);
+}
+
+void NavigationControlArea::setActiveTrack(String trackNumber){
+    activeTrackLabel.setText(trackNumber, NotificationType::dontSendNotification);
 }

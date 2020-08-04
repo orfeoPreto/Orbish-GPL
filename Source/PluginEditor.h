@@ -201,13 +201,9 @@ private:
     std::unique_ptr<ButtonAttachment> newLoopAttachment;
     std::unique_ptr<ButtonAttachment> removeLoopAttachment;
     
-    CustomButton previousTrackButton { "<", true, this };
-    std::unique_ptr<ButtonAttachment> previousTrackAttachment;
-    CustomButton nextTrackButton { ">", true, this };
+    std::unique_ptr<ButtonAttachment> previousTrackAttachment;   
     std::unique_ptr<ButtonAttachment> nextTrackAttachment;
-    CustomButton newTrackButton { "+", true, this };
     std::unique_ptr<ButtonAttachment> newTrackAttachment;
-    CustomButton removeTrackButton { "-", true, this };
     std::unique_ptr<ButtonAttachment> removeTrackAttachment;
 
     CustomButton muteAllButton { "Mute", false, this };
@@ -225,8 +221,6 @@ private:
     CustomButton removeFromGroupButton{ "UnGroup", true, this };
 	std::unique_ptr<ButtonAttachment> removeFromGroupAttachment;
 
-    exu::Label activeTrackLabel { "1" };
-
     Slider inputLevelSlider { "Input Level"};
     std::unique_ptr<SliderAttachment> inputLevelAttachment;
     exu::Label inputLevelLabel { "Input Level" };
@@ -237,7 +231,6 @@ private:
     std::unique_ptr<SliderAttachment> globalMixAttachment;
     exu::Label globalVolumeLabel { "Global Volume" };
     exu::Label midiInfoLabel;
-    exu::Label trackLabel { "Tracks: " };
 
     exu::Label globalLabel { "Global" };
     AudioProcessorValueTreeState& valueTreeState;

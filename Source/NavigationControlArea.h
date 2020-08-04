@@ -32,7 +32,15 @@ public:
     CustomButton newLoopButton{ "+", true };
     CustomButton removeLoopButton{ "-", true };
 
+    exu::Label trackLabel{ "Tracks: " };
+    exu::Label activeTrackLabel{ "1" };
+    CustomButton previousTrackButton{ "<", true };
+    CustomButton nextTrackButton{ ">", true };
+    CustomButton newTrackButton{ "+", true};
+    CustomButton removeTrackButton{ "-", true};
+
     void setActiveLoop(String);
+    void setActiveTrack(String);
 
 private:
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (NavigationControlArea)

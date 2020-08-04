@@ -112,33 +112,22 @@ projectXml("<project />"), processor (p), thumbnailCache (5), thumbnail (32, for
 
     createTracksLayoutButton();
     
-    // Loop button attachments
+    
 
     auto navigationControlArea = &infoAndControlArea.controlArea.buttonControlArea.modeAndNavigationControlArea.navigationControlArea;
 
+    // Loop button attachments
     previousLoopAttachment.reset (new ButtonAttachment (valueTreeState, "previousLoop", navigationControlArea->previousLoopButton));
     nextLoopAttachment.reset (new ButtonAttachment (valueTreeState, "nextLoop", navigationControlArea->nextLoopButton));
     newLoopAttachment.reset (new ButtonAttachment (valueTreeState, "newLoop", navigationControlArea->newLoopButton));
     removeLoopAttachment.reset (new ButtonAttachment (valueTreeState, "removeLoop", navigationControlArea->removeLoopButton));
     
-    globalVolumeSlider.setValue(0);
-    
     // Track buttons
-    trackLabel.setText("Tracks: ", NotificationType::dontSendNotification);
-
-    previousTrackAttachment.reset (new ButtonAttachment (valueTreeState, "previousTrack", previousTrackButton));
-    previousTrackButton.setTooltip("Go to previous track");
-
-    activeTrackLabel.setText(String(activeTrack + 1), NotificationType::dontSendNotification);
-
-    nextTrackAttachment.reset (new ButtonAttachment (valueTreeState, "nextTrack", nextTrackButton));
-    nextTrackButton.setTooltip("Go to next track");
-
-    newTrackAttachment.reset (new ButtonAttachment (valueTreeState, "newTrack", newTrackButton));
-    newTrackButton.setTooltip("Create new track");
-
-    removeTrackAttachment.reset (new ButtonAttachment (valueTreeState, "removeTrack", removeTrackButton));
-    removeTrackButton.setTooltip("Remove latest track");
+    previousTrackAttachment.reset (new ButtonAttachment (valueTreeState, "previousTrack", navigationControlArea->previousTrackButton));
+    nextTrackAttachment.reset (new ButtonAttachment (valueTreeState, "nextTrack", navigationControlArea->nextTrackButton));
+    newTrackAttachment.reset (new ButtonAttachment (valueTreeState, "newTrack", navigationControlArea->newTrackButton));
+    removeTrackAttachment.reset (new ButtonAttachment (valueTreeState, "removeTrack", navigationControlArea->removeTrackButton));
+    
 
     loopConfigArea.addAndMakeVisible(globalLabel);
     loopConfigArea.addAndMakeVisible(muteAllButton);
@@ -149,12 +138,6 @@ projectXml("<project />"), processor (p), thumbnailCache (5), thumbnail (32, for
 	loopConfigArea.addAndMakeVisible(addToGroupButton);
 	loopConfigArea.addAndMakeVisible(removeFromGroupButton);
 
-    loopConfigArea.addAndMakeVisible(trackLabel);
-    loopConfigArea.addAndMakeVisible(previousTrackButton);
-    loopConfigArea.addAndMakeVisible(activeTrackLabel);
-    loopConfigArea.addAndMakeVisible(nextTrackButton);
-    loopConfigArea.addAndMakeVisible(newTrackButton);
-    loopConfigArea.addAndMakeVisible(removeTrackButton);
     loopConfigArea.addAndMakeVisible(tracksLayoutButton);
     
     inputDisplay.setSamplesPerBlock(processor.context->maxBlockSize);
@@ -182,6 +165,9 @@ projectXml("<project />"), processor (p), thumbnailCache (5), thumbnail (32, for
 	groupCombo.setSelectedId(1);
 	loopInfoArea.addAndMakeVisible(groupCombo);
     groupCombo.setTooltip("Select a group, then add or remove tracks. \nAll tracks in the same group will act simultaneously for certain commands");
+
+
+    globalVolumeSlider.setValue(0);
     inputLevelSlider.setNumDecimalPlacesToDisplay(1);
     
     inputLevelSlider.setTextBoxIsEditable(true);
@@ -979,12 +965,6 @@ void OrbishAudioProcessorEditor::resized()
 	addToGroupButton.setBounds(190, 40, 50, 20);
 	removeFromGroupButton.setBounds(190, 65, 50, 20);
 
-    trackLabel.setBounds(5, 95, 50, 20);
-    previousTrackButton.setBounds(60, 95, 25, 20);
-    activeTrackLabel.setBounds(95, 95, 30, 20);
-    nextTrackButton.setBounds(130, 95, 25, 20);
-    newTrackButton.setBounds(160, 95, 25, 20);
-    removeTrackButton.setBounds(190, 95, 25, 20);
     if(tracksLayoutButton != nullptr){
         tracksLayoutButton->setBounds(250, 90, 25, 25);
     }
@@ -1218,7 +1198,9 @@ void OrbishAudioProcessorEditor::changeTrack(){
 
     infoAndControlArea.infoArea.setTrackNumber(String(activeTrack + 1));
     infoAndControlArea.infoArea.setLoopNumber(String(tracks[activeTrack]->getActiveLoop() + 1));
+
     auto navigationControlArea = &infoAndControlArea.controlArea.buttonControlArea.modeAndNavigationControlArea.navigationControlArea;
+    navigationControlArea->setActiveTrack(String(activeTrack + 1));
     navigationControlArea->setActiveLoop(String(tracks[activeTrack]->getActiveLoop() + 1));
     trackNumberUpdated = false;
 }
