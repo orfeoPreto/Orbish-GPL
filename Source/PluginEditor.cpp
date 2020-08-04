@@ -112,31 +112,16 @@ projectXml("<project />"), processor (p), thumbnailCache (5), thumbnail (32, for
 
     createTracksLayoutButton();
     
-    // Loop Buttons
-    loopLabel.setText("Loops: ", NotificationType::dontSendNotification);
+    // Loop button attachments
 
-    previousLoopAttachment.reset (new ButtonAttachment (valueTreeState, "previousLoop", previousLoopButton));
-    previousLoopButton.setTooltip("Go to previous loop on active track or group");
+    auto navigationControlArea = &infoAndControlArea.controlArea.buttonControlArea.modeAndNavigationControlArea.navigationControlArea;
 
-    activeLoopLabel.setText(String(activeLoop + 1), NotificationType::dontSendNotification);
-
-    nextLoopAttachment.reset (new ButtonAttachment (valueTreeState, "nextLoop", nextLoopButton));
-    nextLoopButton.setTooltip("Go to next loop on active track or group");
-
-    newLoopAttachment.reset (new ButtonAttachment (valueTreeState, "newLoop", newLoopButton));
-    newLoopButton.setTooltip("Create new loop on active track");
-
-    removeLoopAttachment.reset (new ButtonAttachment (valueTreeState, "removeLoop", removeLoopButton));
-    removeLoopButton.setTooltip("Remove latest loop from active track");
+    previousLoopAttachment.reset (new ButtonAttachment (valueTreeState, "previousLoop", navigationControlArea->previousLoopButton));
+    nextLoopAttachment.reset (new ButtonAttachment (valueTreeState, "nextLoop", navigationControlArea->nextLoopButton));
+    newLoopAttachment.reset (new ButtonAttachment (valueTreeState, "newLoop", navigationControlArea->newLoopButton));
+    removeLoopAttachment.reset (new ButtonAttachment (valueTreeState, "removeLoop", navigationControlArea->removeLoopButton));
     
     globalVolumeSlider.setValue(0);
-    
-    loopConfigArea.addAndMakeVisible(loopLabel);
-    loopConfigArea.addAndMakeVisible(previousLoopButton);
-    loopConfigArea.addAndMakeVisible(activeLoopLabel);
-    loopConfigArea.addAndMakeVisible(nextLoopButton);
-    loopConfigArea.addAndMakeVisible(newLoopButton);
-    loopConfigArea.addAndMakeVisible(removeLoopButton);
     
     // Track buttons
     trackLabel.setText("Tracks: ", NotificationType::dontSendNotification);
@@ -154,13 +139,6 @@ projectXml("<project />"), processor (p), thumbnailCache (5), thumbnail (32, for
 
     removeTrackAttachment.reset (new ButtonAttachment (valueTreeState, "removeTrack", removeTrackButton));
     removeTrackButton.setTooltip("Remove latest track");
-
-    loopConfigArea.addAndMakeVisible(loopLabel);
-    loopConfigArea.addAndMakeVisible(previousLoopButton);
-    loopConfigArea.addAndMakeVisible(activeLoopLabel);
-    loopConfigArea.addAndMakeVisible(nextLoopButton);
-    loopConfigArea.addAndMakeVisible(newLoopButton);
-    loopConfigArea.addAndMakeVisible(removeLoopButton);
 
     loopConfigArea.addAndMakeVisible(globalLabel);
     loopConfigArea.addAndMakeVisible(muteAllButton);
@@ -991,13 +969,6 @@ void OrbishAudioProcessorEditor::resized()
     // subcomponents in your editor..
     int containerMargin = 1;
     int controlMargin = 2;
-
-    loopLabel.setBounds(5, 95, 50, 20);
-    previousLoopButton.setBounds(60, 95, 25, 20);
-    activeLoopLabel.setBounds(95, 95, 30, 20);
-    nextLoopButton.setBounds(130, 95, 25, 20);
-    newLoopButton.setBounds(160, 95, 25, 20);
-    removeLoopButton.setBounds(190, 95, 25, 20);
     
     globalLabel.setBounds(10, 10, 200, 20);
     muteAllButton.setBounds(10, 40, 50, 20);
@@ -1224,6 +1195,9 @@ void OrbishAudioProcessorEditor::updateNextLoopNumber(int trackNumber, int loopN
 		auto t = tracks[trackNumber];
 		t->setActiveLoop(loopNumber);
         infoAndControlArea.infoArea.setLoopNumber(String(tracks[activeTrack]->getActiveLoop() + 1));
+        auto navigationControlArea = &infoAndControlArea.controlArea.buttonControlArea.modeAndNavigationControlArea.navigationControlArea;
+        navigationControlArea->setActiveLoop(String(tracks[activeTrack]->getActiveLoop() + 1));
+        
 		tracksDirty = true;
 	}
 }
@@ -1244,6 +1218,8 @@ void OrbishAudioProcessorEditor::changeTrack(){
 
     infoAndControlArea.infoArea.setTrackNumber(String(activeTrack + 1));
     infoAndControlArea.infoArea.setLoopNumber(String(tracks[activeTrack]->getActiveLoop() + 1));
+    auto navigationControlArea = &infoAndControlArea.controlArea.buttonControlArea.modeAndNavigationControlArea.navigationControlArea;
+    navigationControlArea->setActiveLoop(String(tracks[activeTrack]->getActiveLoop() + 1));
     trackNumberUpdated = false;
 }
 

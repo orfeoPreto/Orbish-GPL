@@ -3,7 +3,7 @@
 
     NavigationControlArea.cpp
     Created: 4 Aug 2020 4:24:03pm
-    Author:  Aoriseth
+    Author:  Lennart Cockx
 
   ==============================================================================
 */
@@ -12,40 +12,58 @@
 #include "NavigationControlArea.h"
 
 //==============================================================================
-NavigationControlArea::NavigationControlArea()
-{
-    // In your constructor, you should add any child components, and
-    // initialise any special settings that your component needs.
+NavigationControlArea::NavigationControlArea(){
+    loopLabel.setText("Loops: ", NotificationType::dontSendNotification);
+    addAndMakeVisible(loopLabel);
+
+    previousLoopButton.setTooltip("Go to previous loop on active track or group");
+    addAndMakeVisible(previousLoopButton);
+
+    activeLoopLabel.setText("1", NotificationType::dontSendNotification);
+    addAndMakeVisible(activeLoopLabel);
+
+    nextLoopButton.setTooltip("Go to next loop on active track or group");
+    addAndMakeVisible(nextLoopButton);
+
+    newLoopButton.setTooltip("Create new loop on active track");
+    addAndMakeVisible(newLoopButton);
+
+    removeLoopButton.setTooltip("Remove latest loop from active track");
+    addAndMakeVisible(removeLoopButton);
+    
+    
+    
+
 
 }
 
-NavigationControlArea::~NavigationControlArea()
-{
+NavigationControlArea::~NavigationControlArea(){
 }
 
-void NavigationControlArea::paint (juce::Graphics& g)
-{
-    /* This demo code just fills the component's background and
-       draws some placeholder text to get you started.
-
-       You should replace everything in this method with your own
-       drawing code..
-    */
-
+void NavigationControlArea::paint (juce::Graphics& g){
     g.fillAll (getLookAndFeel().findColour (juce::ResizableWindow::backgroundColourId));   // clear the background
 
-    g.setColour (juce::Colours::grey);
+    g.setColour (juce::Colours::black);
     g.drawRect (getLocalBounds(), 1);   // draw an outline around the component
-
-    g.setColour (juce::Colours::white);
-    g.setFont (14.0f);
-    g.drawText ("NavigationControlArea", getLocalBounds(),
-                juce::Justification::centred, true);   // draw some placeholder text
 }
 
-void NavigationControlArea::resized()
-{
-    // This method is where you should set the bounds of any child
-    // components that your component contains..
+void NavigationControlArea::resized(){
+    auto bounds = getLocalBounds();
 
+    auto loopButtonArea = bounds.removeFromLeft(bounds.getWidth() / 2).reduced(5);
+    auto loopNavArea = loopButtonArea.removeFromLeft(loopButtonArea.getWidth() * 3 / 5);
+
+    loopLabel.setBounds(loopNavArea.removeFromTop(15));
+    auto buttonWidth = loopNavArea.getWidth() / 3;
+    previousLoopButton.setBounds(loopNavArea.removeFromLeft(buttonWidth));
+    activeLoopLabel.setBounds(loopNavArea.removeFromLeft(buttonWidth));
+    nextLoopButton.setBounds(loopNavArea);
+
+    newLoopButton.setBounds(loopButtonArea.removeFromTop(loopButtonArea.getWidth()/2));
+    removeLoopButton.setBounds(loopButtonArea);
+
+}
+
+void NavigationControlArea::setActiveLoop(String loopNumber){
+    activeLoopLabel.setText(loopNumber, NotificationType::dontSendNotification);
 }
