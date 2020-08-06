@@ -3,7 +3,7 @@
 
     ThumbnailAndGroupArea.cpp
     Created: 3 Aug 2020 2:13:15pm
-    Author:  Aoriseth
+    Author:  Lennart Cockx
 
   ==============================================================================
 */
@@ -12,40 +12,25 @@
 #include "ThumbnailAndGroupArea.h"
 
 //==============================================================================
-ThumbnailAndGroupArea::ThumbnailAndGroupArea()
-{
-    // In your constructor, you should add any child components, and
-    // initialise any special settings that your component needs.
-
+ThumbnailAndGroupArea::ThumbnailAndGroupArea(){
+    addAndMakeVisible(thumbnailArea);
+    addAndMakeVisible(groupControlArea);
 }
 
-ThumbnailAndGroupArea::~ThumbnailAndGroupArea()
-{
+ThumbnailAndGroupArea::~ThumbnailAndGroupArea(){
 }
 
-void ThumbnailAndGroupArea::paint (juce::Graphics& g)
-{
-    /* This demo code just fills the component's background and
-       draws some placeholder text to get you started.
-
-       You should replace everything in this method with your own
-       drawing code..
-    */
+void ThumbnailAndGroupArea::paint (juce::Graphics& g){
 
     g.fillAll (getLookAndFeel().findColour (juce::ResizableWindow::backgroundColourId));   // clear the background
 
-    g.setColour (juce::Colours::grey);
+    g.setColour (juce::Colours::black);
     g.drawRect (getLocalBounds(), 1);   // draw an outline around the component
-
-    g.setColour (juce::Colours::white);
-    g.setFont (14.0f);
-    g.drawText ("ThumbnailAndGroupArea", getLocalBounds(),
-                juce::Justification::centred, true);   // draw some placeholder text
 }
 
-void ThumbnailAndGroupArea::resized()
-{
-    // This method is where you should set the bounds of any child
-    // components that your component contains..
+void ThumbnailAndGroupArea::resized(){
+    auto bounds = getLocalBounds().reduced(10);
 
+    groupControlArea.setBounds(bounds.removeFromRight(bounds.getWidth() / 10));
+    thumbnailArea.setBounds(bounds);
 }

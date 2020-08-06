@@ -27,8 +27,35 @@
           <FILE id="dRqBtO" name="TrackArea.h" compile="0" resource="0" file="Source/TrackArea.h"/>
         </GROUP>
         <GROUP id="{9A772742-A9A5-A4DA-AE9B-C9C571FD411B}" name="InfoAndControl">
+          <GROUP id="{7EDDF3EA-A7AC-20ED-239E-FB5B5D7DCD15}" name="Info">
+            <FILE id="afuVJJ" name="InfoArea.cpp" compile="1" resource="0" file="Source/InfoArea.cpp"/>
+            <FILE id="rlid79" name="InfoArea.h" compile="0" resource="0" file="Source/InfoArea.h"/>
+          </GROUP>
           <GROUP id="{279F791E-8117-00CC-5B46-5166D8D055EE}" name="Control">
+            <GROUP id="{CB84F0F7-4BD8-1995-9A42-BF73DA00D0CD}" name="ThumbnailAndGroupControl">
+              <FILE id="pqjokd" name="GroupControlArea.cpp" compile="1" resource="0"
+                    file="Source/GroupControlArea.cpp"/>
+              <FILE id="clnPqb" name="GroupControlArea.h" compile="0" resource="0"
+                    file="Source/GroupControlArea.h"/>
+              <FILE id="I2uSuj" name="ThumbnailAndGroupArea.cpp" compile="1" resource="0"
+                    file="Source/ThumbnailAndGroupArea.cpp"/>
+              <FILE id="G19vNk" name="ThumbnailAndGroupArea.h" compile="0" resource="0"
+                    file="Source/ThumbnailAndGroupArea.h"/>
+              <FILE id="osOG0z" name="ThumbnailArea.cpp" compile="1" resource="0"
+                    file="Source/ThumbnailArea.cpp"/>
+              <FILE id="e1wiRM" name="ThumbnailArea.h" compile="0" resource="0" file="Source/ThumbnailArea.h"/>
+            </GROUP>
             <GROUP id="{DBE39750-68F0-9AC9-F384-DDA0EEB43B78}" name="ButtonControl">
+              <GROUP id="{BC19D5CC-7D4B-1E8F-A9EA-9BF77CF1FEBC}" name="OutputInputControl">
+                <FILE id="Uo8FCN" name="InputControlArea.cpp" compile="1" resource="0"
+                      file="Source/InputControlArea.cpp"/>
+                <FILE id="zmbHDc" name="InputControlArea.h" compile="0" resource="0"
+                      file="Source/InputControlArea.h"/>
+                <FILE id="EfeTDT" name="OutputControlArea.cpp" compile="1" resource="0"
+                      file="Source/OutputControlArea.cpp"/>
+                <FILE id="QBkckA" name="OutputControlArea.h" compile="0" resource="0"
+                      file="Source/OutputControlArea.h"/>
+              </GROUP>
               <GROUP id="{C9BA1CB1-4246-3FBC-36DC-4C6933BFFF75}" name="ModeAndNavigationControl">
                 <FILE id="Ia6PBu" name="ModeAndNavigationControlArea.cpp" compile="1"
                       resource="0" file="Source/ModeAndNavigationControlArea.cpp"/>
@@ -43,6 +70,12 @@
                 <FILE id="wQ3KTi" name="NavigationControlArea.h" compile="0" resource="0"
                       file="Source/NavigationControlArea.h"/>
               </GROUP>
+              <GROUP id="{770B1734-F0E4-0B20-D2B0-C4D78557C7BF}" name="GlobalControl">
+                <FILE id="nw6WOs" name="GlobalControlArea.cpp" compile="1" resource="0"
+                      file="Source/GlobalControlArea.cpp"/>
+                <FILE id="aQ3uhG" name="GlobalControlArea.h" compile="0" resource="0"
+                      file="Source/GlobalControlArea.h"/>
+              </GROUP>
               <GROUP id="{4E04B911-19B3-731F-D71B-D9A713B0AA22}" name="TransportControl">
                 <FILE id="GlS5FR" name="TransportControlArea.h" compile="0" resource="0"
                       file="Source/TransportControlArea.h"/>
@@ -53,32 +86,14 @@
                     file="Source/ButtonControlArea.cpp"/>
               <FILE id="zKbgU8" name="ButtonControlArea.h" compile="0" resource="0"
                     file="Source/ButtonControlArea.h"/>
-              <FILE id="nw6WOs" name="GlobalControlArea.cpp" compile="1" resource="0"
-                    file="Source/GlobalControlArea.cpp"/>
-              <FILE id="aQ3uhG" name="GlobalControlArea.h" compile="0" resource="0"
-                    file="Source/GlobalControlArea.h"/>
-              <FILE id="Uo8FCN" name="InputControlArea.cpp" compile="1" resource="0"
-                    file="Source/InputControlArea.cpp"/>
-              <FILE id="zmbHDc" name="InputControlArea.h" compile="0" resource="0"
-                    file="Source/InputControlArea.h"/>
-              <FILE id="EfeTDT" name="OutputControlArea.cpp" compile="1" resource="0"
-                    file="Source/OutputControlArea.cpp"/>
-              <FILE id="QBkckA" name="OutputControlArea.h" compile="0" resource="0"
-                    file="Source/OutputControlArea.h"/>
             </GROUP>
             <FILE id="owVMyT" name="ControlArea.cpp" compile="1" resource="0" file="Source/ControlArea.cpp"/>
             <FILE id="xtLcuA" name="ControlArea.h" compile="0" resource="0" file="Source/ControlArea.h"/>
-            <FILE id="I2uSuj" name="ThumbnailAndGroupArea.cpp" compile="1" resource="0"
-                  file="Source/ThumbnailAndGroupArea.cpp"/>
-            <FILE id="G19vNk" name="ThumbnailAndGroupArea.h" compile="0" resource="0"
-                  file="Source/ThumbnailAndGroupArea.h"/>
           </GROUP>
           <FILE id="XCFPVJ" name="InfoAndControlArea.cpp" compile="1" resource="0"
                 file="Source/InfoAndControlArea.cpp"/>
           <FILE id="ay61Zu" name="InfoAndControlArea.h" compile="0" resource="0"
                 file="Source/InfoAndControlArea.h"/>
-          <FILE id="afuVJJ" name="InfoArea.cpp" compile="1" resource="0" file="Source/InfoArea.cpp"/>
-          <FILE id="rlid79" name="InfoArea.h" compile="0" resource="0" file="Source/InfoArea.h"/>
         </GROUP>
         <GROUP id="{F70AAFD2-9B5F-A008-2098-1BDF6B336CEF}" name="Header">
           <FILE id="jqNiUX" name="HeaderArea.cpp" compile="1" resource="0" file="Source/HeaderArea.cpp"/>

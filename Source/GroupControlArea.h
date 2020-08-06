@@ -1,8 +1,8 @@
 /*
   ==============================================================================
 
-    ThumbnailAndGroupArea.h
-    Created: 3 Aug 2020 2:13:15pm
+    GroupControlArea.h
+    Created: 6 Aug 2020 12:38:51pm
     Author:  Lennart Cockx
 
   ==============================================================================
@@ -11,24 +11,19 @@
 #pragma once
 
 #include <JuceHeader.h>
-#include "ThumbnailArea.h"
-#include "GroupControlArea.h"
 
 //==============================================================================
 /*
 */
-class ThumbnailAndGroupArea  : public juce::Component
+class GroupControlArea  : public juce::Component
 {
 public:
-    ThumbnailAndGroupArea();
-    ~ThumbnailAndGroupArea() override;
+    GroupControlArea();
+    ~GroupControlArea() override;
 
     void paint (juce::Graphics&) override;
     void resized() override;
 
-    ThumbnailArea thumbnailArea{};
-    GroupControlArea groupControlArea{};
-
 private:
-    JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (ThumbnailAndGroupArea)
+    JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (GroupControlArea)
 };
