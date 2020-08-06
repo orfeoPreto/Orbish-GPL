@@ -64,14 +64,17 @@ projectXml("<project />"), processor (p), thumbnailCache (5), thumbnail (32, for
        doCreateTrack(track->Index);
     }
 
+    auto buttonControlArea = &infoAndControlArea.controlArea.buttonControlArea;
+
     // Mode control attachments
-    auto modeControlArea = &infoAndControlArea.controlArea.buttonControlArea.modeAndNavigationControlArea.modeControlArea;
+    auto modeControlArea = &buttonControlArea->modeAndNavigationControlArea.modeControlArea;
 
     recModeAttachment.reset (new AudioProcessorValueTreeState::ComboBoxAttachment (valueTreeState, "mode", modeControlArea->recModeCombo));
     snapModeAttachment.reset (new AudioProcessorValueTreeState::ComboBoxAttachment (valueTreeState, "snap", modeControlArea->snapModeCombo));
 
-    // Track Button attachments
-    auto transportControlArea = &infoAndControlArea.controlArea.buttonControlArea.transportControlArea;
+    // transport Button attachments
+    auto transportControlArea = &buttonControlArea->transportControlArea;
+    transportControlArea->setEditor(this);
 
     recordAttachment.reset (new ButtonAttachment (valueTreeState, "record", transportControlArea->recordButton));
     playAttachment.reset (new ButtonAttachment (valueTreeState, "play", transportControlArea->playButton));
@@ -86,33 +89,22 @@ projectXml("<project />"), processor (p), thumbnailCache (5), thumbnail (32, for
     bounceAttachment.reset(new ButtonAttachment(valueTreeState, "bounce", transportControlArea->bounceButton));
     triggerAttachment.reset(new ButtonAttachment(valueTreeState, "trigger", transportControlArea->autoTriggerButton));
     
-    // Global Buttons
-    globalLabel.setText("Global", NotificationType::dontSendNotification);
-
-    muteAllAttachment.reset (new ButtonAttachment (valueTreeState, "muteAll", muteAllButton));
-    muteAllButton.setTooltip("Mute all tracks");
-
-    stopAllAttachment.reset (new ButtonAttachment (valueTreeState, "stopAll", stopAllButton));
-    stopAllButton.setTooltip("Stop playing on all tracks");
-
-    startAllAttachment.reset (new ButtonAttachment (valueTreeState, "startAll", startAllButton));
-    startAllButton.setTooltip("Start playing on all tracks");
-
-    pauseAllAttachment.reset (new ButtonAttachment (valueTreeState, "pauseAll", pauseAllButton));
-    pauseAllButton.setTooltip("Pause all tracks");
-
-    clearAllAttachment.reset (new ButtonAttachment (valueTreeState, "resetAll", clearAllButton));
-    clearAllButton.setTooltip("Clear all tracks");
-
-	addToGroupAttachment.reset(new ButtonAttachment(valueTreeState, "addToGroup", addToGroupButton));
+    // Global Button attachments
+    auto globalControlArea = &buttonControlArea->globalControlArea;
+    globalControlArea->setEditor(this);
+    
+    muteAllAttachment.reset (new ButtonAttachment (valueTreeState, "muteAll", globalControlArea->muteAllButton));
+    stopAllAttachment.reset (new ButtonAttachment (valueTreeState, "stopAll", globalControlArea->stopAllButton));
+    startAllAttachment.reset (new ButtonAttachment (valueTreeState, "startAll", globalControlArea->startAllButton));
+    pauseAllAttachment.reset (new ButtonAttachment (valueTreeState, "pauseAll", globalControlArea->pauseAllButton));
+    clearAllAttachment.reset (new ButtonAttachment (valueTreeState, "resetAll", globalControlArea->clearAllButton));
+    
+    // Grouping buttons
+    addToGroupAttachment.reset(new ButtonAttachment(valueTreeState, "addToGroup", addToGroupButton));
     addToGroupButton.setTooltip("Add the active track to the selected group");
 
-	removeFromGroupAttachment.reset(new ButtonAttachment(valueTreeState, "removeFromGroup", removeFromGroupButton));
+    removeFromGroupAttachment.reset(new ButtonAttachment(valueTreeState, "removeFromGroup", removeFromGroupButton));
     removeFromGroupButton.setTooltip("Remove the active track from the selected group");
-
-    createTracksLayoutButton();
-    
-    
 
     auto navigationControlArea = &infoAndControlArea.controlArea.buttonControlArea.modeAndNavigationControlArea.navigationControlArea;
 
@@ -128,18 +120,9 @@ projectXml("<project />"), processor (p), thumbnailCache (5), thumbnail (32, for
     newTrackAttachment.reset (new ButtonAttachment (valueTreeState, "newTrack", navigationControlArea->newTrackButton));
     removeTrackAttachment.reset (new ButtonAttachment (valueTreeState, "removeTrack", navigationControlArea->removeTrackButton));
     
-
-    loopConfigArea.addAndMakeVisible(globalLabel);
-    loopConfigArea.addAndMakeVisible(muteAllButton);
-    loopConfigArea.addAndMakeVisible(stopAllButton);
-    loopConfigArea.addAndMakeVisible(startAllButton);
-    loopConfigArea.addAndMakeVisible(pauseAllButton);
-    loopConfigArea.addAndMakeVisible(clearAllButton);
 	loopConfigArea.addAndMakeVisible(addToGroupButton);
 	loopConfigArea.addAndMakeVisible(removeFromGroupButton);
 
-    loopConfigArea.addAndMakeVisible(tracksLayoutButton);
-    
     inputDisplay.setSamplesPerBlock(processor.context->maxBlockSize);
     inputDisplay.setBufferSize(processor.context->samplesPerBlock);
     inputDisplay.setColours(Colours::darkgrey, Colours::indianred);
@@ -233,42 +216,10 @@ projectXml("<project />"), processor (p), thumbnailCache (5), thumbnail (32, for
 
     headerArea.setEditor(this);
     addAndMakeVisible(headerArea);
-    infoAndControlArea.controlArea.buttonControlArea.transportControlArea.setEditor(this);
     addAndMakeVisible(infoAndControlArea);
     addAndMakeVisible(tracksArea);
 
     setSize (1400, 650);
-}
-
-void OrbishAudioProcessorEditor::createTracksLayoutButton()
-{
-    horizontalOutline = new DrawableComposite();
-    for (int i = 0; i<3; ++i) {
-        Path pth;
-        auto* line = new DrawablePath();
-        pth.addLineSegment(Line<float>{2, float(i) * 8, 30, float(i) * 8}, 4);
-        line->setPath(pth);
-        horizontalOutline->addChildComponent(line);
-    }
-
-    verticalOutline = new DrawableComposite();
-    for (int i = 0; i<6; ++i) {
-        Path pth;
-        auto* block = new DrawablePath();
-        pth.addRectangle(Rectangle<int>{i % 3 * 10, i / 3 * 13, 5, 7});
-        block->setPath(pth);
-        verticalOutline->addChildComponent(block);
-    }
-
-    tracksLayoutButton = new DrawableButton("Layout", DrawableButton::ImageFitted);
-    tracksLayoutButton->setColour(DrawableButton::backgroundOnColourId, Colour(0x40FFFFFF));
-    tracksLayoutButton->setColour(DrawableButton::backgroundColourId, Colour(0x40FFFFFF));
-
-    tracksLayoutButton->setImages(horizontalOutline, horizontalOutline, horizontalOutline, nullptr, verticalOutline, verticalOutline, verticalOutline, nullptr);
-    tracksLayoutButton->setTooltip("Toggles between horizontal and vertical layout of the tracks");
-    tracksLayoutButton->setToggleState(true, NotificationType::dontSendNotification);
-    tracksLayoutButton->setClickingTogglesState(true);
-    tracksLayoutButton->addListener(this);
 }
 
 
@@ -683,12 +634,6 @@ void OrbishAudioProcessorEditor::toggleAutoTrigger(){
    //processor.processTriggerModeChange();
 }
 
-void OrbishAudioProcessorEditor::toggleMuteAll(bool mute){
-        //getFromProcessor
-    muteAllButton.setState(Button::buttonNormal);
-//    processor.processMuteAllChange(mute);
-}
-
 void OrbishAudioProcessorEditor::changeInputLevel(){
     //processor.processInputLevelChange(inputLevelSlider.getValue());
 }
@@ -956,18 +901,8 @@ void OrbishAudioProcessorEditor::resized()
     int containerMargin = 1;
     int controlMargin = 2;
     
-    globalLabel.setBounds(10, 10, 200, 20);
-    muteAllButton.setBounds(10, 40, 50, 20);
-    stopAllButton.setBounds(10, 65, 50, 20);
-    pauseAllButton.setBounds(65, 40, 50, 20);
-    startAllButton.setBounds(65, 65, 50, 20);
-    clearAllButton.setBounds(120, 40, 50, 20);
 	addToGroupButton.setBounds(190, 40, 50, 20);
 	removeFromGroupButton.setBounds(190, 65, 50, 20);
-
-    if(tracksLayoutButton != nullptr){
-        tracksLayoutButton->setBounds(250, 90, 25, 25);
-    }
 
     leftSide.setBounds(toolCanvas.removeFromLeft(50).reduced(containerMargin));
     rightSide.setBounds(toolCanvas.removeFromRight(50).reduced(containerMargin));
@@ -1020,6 +955,14 @@ int OrbishAudioProcessorEditor::getTrackRowHeight(int rowIdx) {
 		maxNbrLoops = std::max(tracks[i]->Loops.size(), maxNbrLoops);
 	}
 	return (rowIdx>0)?maxNbrLoops * tracks[0]->loopHeight + tracks[tmpRowIdx * nbrTracksInARow]->getY() + tracks[0]->loopHeight :0;
+}
+
+void OrbishAudioProcessorEditor::setTracksDirty(){
+    tracksDirty = true;
+}
+
+void OrbishAudioProcessorEditor::toggleLayout(){
+    tracksLayoutHorizontal = !tracksLayoutHorizontal;
 }
 
 
@@ -1098,12 +1041,6 @@ void OrbishAudioProcessorEditor::sliderChanged(Slider* slider) {
 }
 
 void OrbishAudioProcessorEditor::buttonClicked(Button* button){
-    if(button == &muteAllButton){
-        button->onClick = [this] { toggleMuteAll((bool)muteAllButton.getToggleStateValue().getValue()); };
-    }
-    if (button == &clearAllButton) {
-        button->onClick = [this] { toggleClear(); };
-    }
 	if (button == &addToGroupButton) {
 		button->onClick = [this] {
 			makeTracks();
@@ -1114,13 +1051,6 @@ void OrbishAudioProcessorEditor::buttonClicked(Button* button){
 			makeTracks();
 		};
 	}
-
-    if(button == tracksLayoutButton){
-        tracksLayoutHorizontal = !tracksLayoutHorizontal;
-        tracksDirty = true;
-        repaint();
-        resized();
-    }
 	if (button == &settingsPage->closeSettingsButton) {
 		closeSettingsPage();
 	}

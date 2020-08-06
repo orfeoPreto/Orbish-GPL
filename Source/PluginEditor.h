@@ -57,7 +57,6 @@ class OrbishAudioProcessorEditor : public AudioProcessorEditor,
 {
 public:
     OrbishAudioProcessorEditor (OrbishAudioProcessor&, AudioProcessorValueTreeState& apvts);
-    void createTracksLayoutButton();
     ~OrbishAudioProcessorEditor();
 
     //==============================================================================
@@ -71,7 +70,6 @@ public:
     void toggleMonitor();
     void toggleReverse();
     void toggleUndo();
-    void toggleMuteAll(bool mute);
     void toggleRedo();
     void toggleAutoTrigger();
     void changeInputLevel();
@@ -123,6 +121,8 @@ public:
 	void showSettingsPage();
 	void closeSettingsPage();
 	int getTrackRowHeight(int);
+    void setTracksDirty();
+    void toggleLayout();
 
 private:
     OpenGLContext openGLContext;
@@ -149,9 +149,6 @@ private:
     Component outputSliderComp;
     Component globalSliderComp;
     bool tracksLayoutHorizontal = true;
-    DrawableButton* tracksLayoutButton;
-    DrawableComposite* horizontalOutline;
-    DrawableComposite* verticalOutline;
     Component transportInfoArea {};
     Component loopInfoArea{};
     Component loopDisplayArea { };
@@ -206,16 +203,12 @@ private:
     std::unique_ptr<ButtonAttachment> newTrackAttachment;
     std::unique_ptr<ButtonAttachment> removeTrackAttachment;
 
-    CustomButton muteAllButton { "Mute", false, this };
     std::unique_ptr<ButtonAttachment> muteAllAttachment;
-    CustomButton stopAllButton { "Stop", true, this };
     std::unique_ptr<ButtonAttachment> stopAllAttachment;
-    CustomButton startAllButton { "Start", true, this };
     std::unique_ptr<ButtonAttachment> startAllAttachment;
-    CustomButton pauseAllButton { "Pause", false, this };
     std::unique_ptr<ButtonAttachment> pauseAllAttachment;
-    CustomButton clearAllButton { "Clear", true, this };
 	std::unique_ptr<ButtonAttachment> clearAllAttachment;
+
     CustomButton addToGroupButton{ "Group", true, this };
 	std::unique_ptr<ButtonAttachment> addToGroupAttachment;
     CustomButton removeFromGroupButton{ "UnGroup", true, this };
@@ -232,7 +225,6 @@ private:
     exu::Label globalVolumeLabel { "Global Volume" };
     exu::Label midiInfoLabel;
 
-    exu::Label globalLabel { "Global" };
     AudioProcessorValueTreeState& valueTreeState;
     OwnedArray<TrackComponent> tracks;
     bool tracksDirty = false;
