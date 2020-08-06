@@ -27,10 +27,9 @@ public:
     void resized() override;
 
     ButtonControlArea buttonControlArea{};
+    ThumbnailAndGroupArea thumbnailAndGroupArea{};
 
 private:
-
-    ThumbnailAndGroupArea thumbnailAndGroupArea{};
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (ControlArea)
 };

@@ -15,9 +15,7 @@
 //==============================================================================
 OrbishAudioProcessorEditor::OrbishAudioProcessorEditor (OrbishAudioProcessor& p, AudioProcessorValueTreeState& apvts)
 : AudioProcessorEditor (&p),                              // [4]
-projectXml("<project />"), processor (p), thumbnailCache (5), thumbnail (32, formatManager, thumbnailCache), valueTreeState(apvts)
-{
-	//processor.logger->logMessage("begin gui constructor");
+projectXml("<project />"), processor (p), thumbnailCache (5), thumbnail (32, formatManager, thumbnailCache), valueTreeState(apvts){
     openGLContext.attachTo(*getTopLevelComponent());
 
     // Define the Look and Feel of the application
@@ -98,13 +96,27 @@ projectXml("<project />"), processor (p), thumbnailCache (5), thumbnail (32, for
     clearAllAttachment.reset (new ButtonAttachment (valueTreeState, "resetAll", globalControlArea->clearAllButton));
     
     // Grouping buttons
-    addToGroupAttachment.reset(new ButtonAttachment(valueTreeState, "addToGroup", addToGroupButton));
-    addToGroupButton.setTooltip("Add the active track to the selected group");
 
-    removeFromGroupAttachment.reset(new ButtonAttachment(valueTreeState, "removeFromGroup", removeFromGroupButton));
-    removeFromGroupButton.setTooltip("Remove the active track from the selected group");
+    auto groupControlArea = &infoAndControlArea.controlArea.thumbnailAndGroupArea.groupControlArea;
+    addToGroupAttachment.reset(new ButtonAttachment(valueTreeState, "addToGroup", groupControlArea->addToGroupButton));
+    removeFromGroupAttachment.reset(new ButtonAttachment(valueTreeState, "removeFromGroup", groupControlArea->removeFromGroupButton));
+    groupAttachment.reset(new AudioProcessorValueTreeState::ComboBoxAttachment(valueTreeState, "selectGroup", groupControlArea->groupCombo));
 
-    auto navigationControlArea = &infoAndControlArea.controlArea.buttonControlArea.modeAndNavigationControlArea.navigationControlArea;
+    groupColours.add(Colours::aqua);
+    groupColours.add(Colours::coral);
+    groupColours.add(Colours::crimson);
+    groupColours.add(Colours::lemonchiffon);
+    groupColours.add(Colours::darkturquoise);
+    groupColours.add(Colours::fuchsia);
+    groupColours.add(Colours::orange);
+    groupColours.add(Colours::darksalmon);
+    groupColours.add(Colours::violet);
+    groupColours.add(Colours::cornflowerblue);
+    for (auto group : processor.groups){
+        groupControlArea->groupCombo.addItem(group->Name, group->Index + 1);
+    }
+
+    auto navigationControlArea = &buttonControlArea->modeAndNavigationControlArea.navigationControlArea;
 
     // Loop button attachments
     previousLoopAttachment.reset (new ButtonAttachment (valueTreeState, "previousLoop", navigationControlArea->previousLoopButton));
@@ -117,35 +129,10 @@ projectXml("<project />"), processor (p), thumbnailCache (5), thumbnail (32, for
     nextTrackAttachment.reset (new ButtonAttachment (valueTreeState, "nextTrack", navigationControlArea->nextTrackButton));
     newTrackAttachment.reset (new ButtonAttachment (valueTreeState, "newTrack", navigationControlArea->newTrackButton));
     removeTrackAttachment.reset (new ButtonAttachment (valueTreeState, "removeTrack", navigationControlArea->removeTrackButton));
-    
-	loopConfigArea.addAndMakeVisible(addToGroupButton);
-	loopConfigArea.addAndMakeVisible(removeFromGroupButton);
 
     inputDisplay.setSamplesPerBlock(processor.context->maxBlockSize);
     inputDisplay.setBufferSize(processor.context->samplesPerBlock);
     inputDisplay.setColours(Colours::darkgrey, Colours::indianred);
-
-	loopInfoArea.addAndMakeVisible(groupLabel);
-	groupAttachment.reset(new AudioProcessorValueTreeState::ComboBoxAttachment(valueTreeState, "selectGroup", groupCombo));
-
-	groupColours.add(Colours::aqua);
-	groupColours.add(Colours::coral);
-	groupColours.add(Colours::crimson);
-	groupColours.add(Colours::lemonchiffon);
-	groupColours.add(Colours::darkturquoise);
-	groupColours.add(Colours::fuchsia);
-	groupColours.add(Colours::orange);
-	groupColours.add(Colours::darksalmon);
-	groupColours.add(Colours::violet);
-	groupColours.add(Colours::cornflowerblue);
-
-    for (auto group: processor.groups)
-	{
-		groupCombo.addItem(group->Name, group->Index + 1);
-	}
-	groupCombo.setSelectedId(1);
-	loopInfoArea.addAndMakeVisible(groupCombo);
-    groupCombo.setTooltip("Select a group, then add or remove tracks. \nAll tracks in the same group will act simultaneously for certain commands");
    
     headerArea.setEditor(this);
     addAndMakeVisible(headerArea);
@@ -215,7 +202,7 @@ void OrbishAudioProcessorEditor::createNewProject() {
 	}
 	processor.initGroups();
 	processor.activeTrack->processResetChange();
-    groupCombo.setSelectedId(1);
+    infoAndControlArea.controlArea.thumbnailAndGroupArea.groupControlArea.groupCombo.setSelectedId(1);
 	project.newProject = true;
 	project.dirty = true;
 }
@@ -287,8 +274,7 @@ void OrbishAudioProcessorEditor::saveProject() {
 	}
 	loopTree->appendChild(*gsv, nullptr);
 	std::unique_ptr<XmlElement> el = loopTree->createXml();
-	el->writeTo(project.directory.getChildFile(project.name + ".xml")
-                , XmlElement::TextFormat());
+	el->writeTo(project.directory.getChildFile(project.name + ".xml"), XmlElement::TextFormat());
 	project.newProject = false;
 	project.dirty = false;
 }
@@ -348,7 +334,7 @@ void OrbishAudioProcessorEditor::askUserToOpenFile() {
 		makeTracks();
 	}
 	processor.initGroups();
-    groupCombo.setSelectedId(1);
+    infoAndControlArea.controlArea.thumbnailAndGroupArea.groupControlArea.groupCombo.setSelectedId(1);
 	processor.activeTrack->processResetChange();
 	File dir = File(File::getSpecialLocation(File::userHomeDirectory));
 	if (dir.getChildFile("Orbish").exists()) {
@@ -663,9 +649,6 @@ void OrbishAudioProcessorEditor::paint (Graphics& g)
         transportInfoArea.paint(g);
         g.fillRect(transportInfoArea.getBounds());
         addAndMakeVisible(transportInfoArea);
-        loopConfigArea.paint(g);
-        g.fillRect(loopConfigArea.getBounds());
-        addAndMakeVisible(loopConfigArea);
         g.fillRect(tracksViewport.getBounds());
 
         tracksViewport.setViewedComponent(&trackArea, false);
@@ -780,8 +763,6 @@ void OrbishAudioProcessorEditor::resized()
     int containerMargin = 1;
     int controlMargin = 2;
     
-	addToGroupButton.setBounds(190, 40, 50, 20);
-	removeFromGroupButton.setBounds(190, 65, 50, 20);
 
     leftSide.setBounds(toolCanvas.removeFromLeft(50).reduced(containerMargin));
     rightSide.setBounds(toolCanvas.removeFromRight(50).reduced(containerMargin));
@@ -790,7 +771,6 @@ void OrbishAudioProcessorEditor::resized()
     transportInfoArea.setBounds(toolCanvas.removeFromTop(100).reduced(containerMargin));
     loopDisplayArea.setBounds(toolCanvas.removeFromTop(40).reduced(containerMargin));
     auto rect = toolCanvas.removeFromTop(120).reduced(containerMargin);
-    loopConfigArea.setBounds(rect.removeFromRight(rect.getWidth() * .33f).reduced(containerMargin,0));
     rect = toolCanvas;
     rect.removeFromBottom(containerMargin + controlMargin + 1);
     tracksViewport.setBounds(rect.reduced(containerMargin));
@@ -804,8 +784,6 @@ void OrbishAudioProcessorEditor::resized()
     r = rightSide.getLocalBounds().removeFromBottom(rightSide.getHeight() * .5f).reduced(5, 0);
 
     makeTracks();
-	groupLabel.setBounds(860, 5, 100, 15);
-	groupCombo.setBounds(965, 5, 50, 25);
 
     auto bounds = getLocalBounds();
     auto headerHeight = 30;
@@ -868,8 +846,7 @@ void OrbishAudioProcessorEditor::makeTracks(){
     updateTrackAreaSize();
 }
 
-void OrbishAudioProcessorEditor::updateTrackAreaSize()
-{
+void OrbishAudioProcessorEditor::updateTrackAreaSize(){
     std::vector<int> height; int sum = 0;
     height.reserve(20);
     for (auto track : tracks) {
@@ -883,10 +860,6 @@ void OrbishAudioProcessorEditor::updateTrackAreaSize()
     int totalHeight = (tracksLayoutHorizontal) ? tracks.size() * (55) + 5 : (sum)+5;
     int diff = trackArea.getHeight() - totalHeight;
     trackArea.setSize(trackArea.getWidth(), std::max(tracksViewport.getHeight(), totalHeight));
-}
-
-void OrbishAudioProcessorEditor::sliderValueChanged (Slider* slider) {
-    
 }
 
 void OrbishAudioProcessorEditor::clicked(Button* button) {
@@ -911,19 +884,12 @@ void OrbishAudioProcessorEditor::sliderChanged(Slider* slider) {
 }
 
 void OrbishAudioProcessorEditor::buttonClicked(Button* button){
-	if (button == &addToGroupButton) {
-		button->onClick = [this] {
-			makeTracks();
-		};
-	}
-	if (button == &removeFromGroupButton) {
-		button->onClick = [this] {
-			makeTracks();
-		};
-	}
 	if (button == &settingsPage->closeSettingsButton) {
 		closeSettingsPage();
 	}
+}
+
+void OrbishAudioProcessorEditor::sliderValueChanged(Slider* slider){
 }
 
 void OrbishAudioProcessorEditor::mouseDown(const MouseEvent &event) {

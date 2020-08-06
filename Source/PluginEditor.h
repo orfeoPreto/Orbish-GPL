@@ -133,9 +133,7 @@ private:
 	std::shared_ptr<ValueTree> loopTree;
     bool tracksLayoutHorizontal = true;
     Component transportInfoArea {};
-    Component loopInfoArea{};
     Component loopDisplayArea { };
-	Array<Colour> groupColours;
 	DialogWindow* dialog;
 	bool showDialogWindow(String title, String message, AlertWindow::AlertIconType icon, String firstButtonText, String secondButtonText);
     AudioVisualiserComponent inputDisplay {2};
@@ -146,7 +144,6 @@ private:
     AudioThumbnail thumbnail;
     std::unique_ptr<AudioProcessorValueTreeState::ComboBoxAttachment> recModeAttachment;
     std::unique_ptr<AudioProcessorValueTreeState::ComboBoxAttachment> snapModeAttachment;
-    Component loopConfigArea {};
     Component trackArea {};
     Viewport  tracksViewport;
     Component leftSide {};
@@ -188,12 +185,11 @@ private:
     std::unique_ptr<ButtonAttachment> pauseAllAttachment;
 	std::unique_ptr<ButtonAttachment> clearAllAttachment;
 
-    CustomButton addToGroupButton{ "Group", true, this };
+    Array<Colour> groupColours;
 	std::unique_ptr<ButtonAttachment> addToGroupAttachment;
-    CustomButton removeFromGroupButton{ "UnGroup", true, this };
 	std::unique_ptr<ButtonAttachment> removeFromGroupAttachment;
+    std::unique_ptr<AudioProcessorValueTreeState::ComboBoxAttachment> groupAttachment;
 
-    
     std::unique_ptr<SliderAttachment> inputLevelAttachment;
     std::unique_ptr<SliderAttachment> outputLevelAttachment;
     std::unique_ptr<SliderAttachment> globalMixAttachment;
@@ -205,9 +201,7 @@ private:
     int activeTrack = 0;
     int activeLoop = 0;
     bool dirty = false;
-	exu::Label groupLabel;
-	ComboBox groupCombo;
-	std::unique_ptr<AudioProcessorValueTreeState::ComboBoxAttachment> groupAttachment;
+	
     int nextTrackNumber = 0;
     int nextLoopNumber = -1;
 
