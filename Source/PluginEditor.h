@@ -63,21 +63,9 @@ public:
     void paint (Graphics&) override;
     void resized() override;
     void toggleRecord();
-    void togglePlay();
     void toggleStop();
     void toggleClear();
-    void toggleMute();
-    void toggleMonitor();
     void toggleReverse();
-    void toggleUndo();
-    void toggleRedo();
-    void toggleAutoTrigger();
-    void changeInputLevel();
-    void changeGlobalMix();
-    void handleInputLevel();
-    void handleOutputLevel();
-    void handleGlobalVolume();
-    void createTrack();
     void removeTrack(int) override;
     void removeLoop() override;
     void updatePlaying(int trackNumber) override;
@@ -96,8 +84,6 @@ public:
     void buttonClicked (Button* button) override;
     void sliderValueChanged (Slider* slider) override;
     void changeListenerCallback (ChangeBroadcaster* source) override;
-    void changeRecordingMode();
-    void changeSnapMode();
     void thumbnailChanged();
     void paintIfFileLoaded (Graphics& g, const Rectangle<int>& thumbnailBounds);
     void paintIfNoFileLoaded (Graphics& g, const Rectangle<int>& thumbnailBounds);
@@ -211,7 +197,6 @@ private:
     std::unique_ptr<SliderAttachment> inputLevelAttachment;
     std::unique_ptr<SliderAttachment> outputLevelAttachment;
     std::unique_ptr<SliderAttachment> globalMixAttachment;
-    
     exu::Label midiInfoLabel;
 
     AudioProcessorValueTreeState& valueTreeState;

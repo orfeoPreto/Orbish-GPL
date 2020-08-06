@@ -220,7 +220,6 @@ void OrbishAudioProcessorEditor::createNewProject() {
 	project.dirty = true;
 }
 void OrbishAudioProcessorEditor::setProjectName(String name) {
-	//projectLabel.setText(name, NotificationType::dontSendNotification);
     infoAndControlArea.infoArea.setProjectName(name);
 	project.name = name;
 }
@@ -449,9 +448,7 @@ void OrbishAudioProcessorEditor::changeListenerCallback (ChangeBroadcaster* sour
 		thumbnailChanged();
 }
 
-void OrbishAudioProcessorEditor::thumbnailChanged()
-{
-    //repaint();
+void OrbishAudioProcessorEditor::thumbnailChanged(){
 }
 
 void OrbishAudioProcessorEditor::timerCallback()
@@ -537,39 +534,8 @@ void OrbishAudioProcessorEditor::toggleClear(){
     updatePlayHead(0,false);
 }
 
-
-
-void OrbishAudioProcessorEditor::toggleMute(){
-    //processor.processMuteChange();
-}
-
-void OrbishAudioProcessorEditor::toggleMonitor(){
-    //processor.processMonitorChange();
-}
-
 void OrbishAudioProcessorEditor::toggleReverse(){
-        //getFromProcessor
     reverseState = (reverseState == On)?Off:On;
-    //processor.processReverseChange();
-}
-
-void OrbishAudioProcessorEditor::toggleUndo(){
-//   processor.processPreviousChange();
-}
-
-void OrbishAudioProcessorEditor::toggleRedo(){
-//   processor.processNextChange();
-}
-
-void OrbishAudioProcessorEditor::toggleAutoTrigger(){
-   //processor.processTriggerModeChange();
-}
-
-void OrbishAudioProcessorEditor::changeRecordingMode(){
-
-}
-
-void OrbishAudioProcessorEditor::changeSnapMode(){
 }
 
 void OrbishAudioProcessorEditor::paintIfFileLoaded (Graphics& g, const Rectangle<int>& thumbnailBounds)
@@ -697,12 +663,6 @@ void OrbishAudioProcessorEditor::paint (Graphics& g)
         transportInfoArea.paint(g);
         g.fillRect(transportInfoArea.getBounds());
         addAndMakeVisible(transportInfoArea);
-        //loopDisplayArea.paint(g);/*
-        //g.fillRect(loopDisplayArea.getBounds());
-        //addAndMakeVisible(loopDisplayArea);*/
-        /*transportButtonArea.paint(g);
-        g.fillRect(transportButtonArea.getBounds());
-        addAndMakeVisible(transportButtonArea);*/
         loopConfigArea.paint(g);
         g.fillRect(loopConfigArea.getBounds());
         addAndMakeVisible(loopConfigArea);
@@ -1096,11 +1056,6 @@ void OrbishAudioProcessorEditor::askToCreateTrack(){
     doCreateTrack(tracks.size());
     makeTracks();
     project.dirty = true;
-}
-
-
-void OrbishAudioProcessorEditor::createTrack(){
-    // moved to askToCreateTrack
 }
 
 

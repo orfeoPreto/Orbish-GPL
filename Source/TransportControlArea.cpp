@@ -106,22 +106,17 @@ void TransportControlArea::buttonClicked(Button* button){
         editor->toggleClear();
     }
     if (button == &muteButton) {
-        editor->toggleMute();
     }
     if (button == &monitorButton) {
-        editor->toggleMonitor();
     }
     if (button == &reverseButton) {
         editor->toggleReverse();
     }
     if (button == &undoButton) {
-        editor->toggleUndo();
     }
     if (button == &redoButton) {
-        editor->toggleRedo();
     }
     if (button == &autoTriggerButton) {
-        editor->toggleAutoTrigger();
     }
 }
 
