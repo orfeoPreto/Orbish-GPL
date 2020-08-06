@@ -3,7 +3,7 @@
 
     TrackArea.cpp
     Created: 1 Aug 2020 12:47:32pm
-    Author:  lenna
+    Author:  Lennart Cockx
 
   ==============================================================================
 */
@@ -12,40 +12,19 @@
 #include "TrackArea.h"
 
 //==============================================================================
-TrackArea::TrackArea()
-{
-    // In your constructor, you should add any child components, and
-    // initialise any special settings that your component needs.
+TrackArea::TrackArea(){
 
 }
 
-TrackArea::~TrackArea()
-{
+TrackArea::~TrackArea(){
 }
 
-void TrackArea::paint (juce::Graphics& g)
-{
-    /* This demo code just fills the component's background and
-       draws some placeholder text to get you started.
+void TrackArea::paint (juce::Graphics& g){
 
-       You should replace everything in this method with your own
-       drawing code..
-    */
-
-    g.fillAll (getLookAndFeel().findColour (juce::ResizableWindow::backgroundColourId));   // clear the background
-
-    g.setColour (juce::Colours::red);
+    g.setColour (juce::Colours::black);
     g.drawRect (getLocalBounds(), 1);   // draw an outline around the component
-
-    g.setColour (juce::Colours::white);
-    g.setFont (14.0f);
-    g.drawText ("TrackArea", getLocalBounds(),
-                juce::Justification::centred, true);   // draw some placeholder text
 }
 
-void TrackArea::resized()
-{
-    // This method is where you should set the bounds of any child
-    // components that your component contains..
+void TrackArea::resized(){
 
 }

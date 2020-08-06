@@ -3,7 +3,7 @@
 
     TrackArea.h
     Created: 1 Aug 2020 12:47:32pm
-    Author:  lenna
+    Author:  Lennart Cockx
 
   ==============================================================================
 */

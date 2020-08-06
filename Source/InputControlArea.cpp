@@ -76,7 +76,7 @@ void InputControlArea::resized(){
 
 void InputControlArea::setEditor(OrbishAudioProcessorEditor* pluginEditor){
     editor = pluginEditor;
-    inputMeter.setMeterSource(editor->getProcessor().getInputMeterSource());
+    inputMeter.setMeterSource(editor->getProcessor()->getInputMeterSource());
 
 }
 

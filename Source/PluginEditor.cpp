@@ -26,9 +26,8 @@ projectXml("<project />"), processor (p), thumbnailCache (5), thumbnail (32, for
     // Setup project header
 	project = Project();
 	setProjectName(project.name);
-    // Make sure that before the constructor has finished, you've set the
-    // editor's size to whatever you need it to be.
     
+    // Setup observers
     updateInputBuffer = &Observer::updateInputVisualiser;
     updateLoopBuffer = &Observer::updateLoopVisualiser;
     updatePlayPosition = &Observer::updatePlayHead;
@@ -36,18 +35,15 @@ projectXml("<project />"), processor (p), thumbnailCache (5), thumbnail (32, for
     newTrack = &Observer::askToCreateTrack;
     trackChange = &Observer::updateNextTrackNumber;
     trackRemoval = &Observer::removeTrack;
-    
     newLoop = &Observer::askToCreateLoop;
     loopChange = &Observer::updateNextLoopNumber;
     loopRemoval = &Observer::removeLoop;
-
     playChanged = &Observer::updatePlaying;
 
     processor.context->observer = this;
     thumbnail.addChangeListener (this);
     startTimer (20);
    
-
     auto buttonControlArea = &infoAndControlArea.controlArea.buttonControlArea;
 
     // setup level meters
@@ -130,9 +126,9 @@ projectXml("<project />"), processor (p), thumbnailCache (5), thumbnail (32, for
     newTrackAttachment.reset (new ButtonAttachment (valueTreeState, "newTrack", navigationControlArea->newTrackButton));
     removeTrackAttachment.reset (new ButtonAttachment (valueTreeState, "removeTrack", navigationControlArea->removeTrackButton));
 
-    inputDisplay.setSamplesPerBlock(processor.context->maxBlockSize);
-    inputDisplay.setBufferSize(processor.context->samplesPerBlock);
-    inputDisplay.setColours(Colours::darkgrey, Colours::indianred);
+
+    // Audio Display
+    infoAndControlArea.controlArea.thumbnailAndGroupArea.thumbnailArea.setEditor(this);
    
     headerArea.setEditor(this);
     addAndMakeVisible(headerArea);
@@ -421,26 +417,18 @@ void OrbishAudioProcessorEditor::handleMidiMessages(const MidiBuffer& midiMessag
     }
 }
 
-OrbishAudioProcessorEditor::~OrbishAudioProcessorEditor()
-{
+OrbishAudioProcessorEditor::~OrbishAudioProcessorEditor(){
 	processor.guiAlive = false;
     Thread::sleep(200);
     setLookAndFeel(nullptr);
 }
 
-void OrbishAudioProcessorEditor::changeListenerCallback (ChangeBroadcaster* source)
-{
-    if (source == &thumbnail)        
-		thumbnailChanged();
+void OrbishAudioProcessorEditor::changeListenerCallback (ChangeBroadcaster* source){
+           
 }
 
-void OrbishAudioProcessorEditor::thumbnailChanged(){
-}
-
-void OrbishAudioProcessorEditor::timerCallback()
-{
+void OrbishAudioProcessorEditor::timerCallback(){
     changeTrack();
-    transportInfoArea.repaint();
 	BufferForVisualisation* b;
 	if (processor.context->xchange->readBufferQueue->read_available()) {
 		processor.context->xchange->readBufferQueue->pop(b);
@@ -504,14 +492,13 @@ String OrbishAudioProcessorEditor::saveBufferFromLoop(int trackIdx, int loopIdx)
 
 void OrbishAudioProcessorEditor::toggleRecord(){
 	project.dirty = true;
-    inputDisplay.clear();
+    infoAndControlArea.controlArea.thumbnailAndGroupArea.thumbnailArea.inputDisplay.clear();
 }
 
 
 
 void OrbishAudioProcessorEditor::toggleStop(){
     updatePlayHead(0, false);
-
 }
 
 void OrbishAudioProcessorEditor::toggleClear(){
@@ -524,69 +511,16 @@ void OrbishAudioProcessorEditor::toggleReverse(){
     reverseState = (reverseState == On)?Off:On;
 }
 
-void OrbishAudioProcessorEditor::paintIfFileLoaded (Graphics& g, const Rectangle<int>& thumbnailBounds)
-{
-    Path pth{};
-    pth.addRectangle(thumbnailBounds.withSizeKeepingCentre(thumbnailBounds.getWidth()+10, thumbnailBounds.getHeight()+10));
-
-    g.setColour (findColour(TextButton::ColourIds::textColourOnId));
-    auto audioLength (thumbnail.getTotalLength());                                      // [12]
-    thumbnail.drawChannels (g,
-                            thumbnailBounds,
-                            0.0,
-                            audioLength,
-                            1.0f);
-    g.setColour (Colours::white);
-	playHead.setBounds(std::max(playHeadPosition - 2.0f, float(transportInfoArea.getX())), float(transportInfoArea.getY()), 2.0f,
-                        float(transportInfoArea.getHeight()));
-    g.setOpacity(0.4);
-	if (playHead.getX() < 0)playHead.setX(0);
-    g.fillRect(playHead);
-    auto c1 = Colour(0x00FFFFFF);
-    auto c2 = Colour(0x8FFFFF00);
-   // processor.logMessage("Calculating denominator for playhead trail size");
-    double tmpDenom = processor.samplesToBeats(float(*processor.activeTrack->LoopDuration));
-    int denominator = std::ceil(tmpDenom);
-  //  processor.logMessage("1st stage: " + String(denominator));
-    denominator = denominator / (processor.context->timeSigBottom * .25) ;
-  //  processor.logMessage("2nd stage: " + String(denominator));
-    denominator = denominator / processor.context->timeSigTop * (60 / processor.context->info->bpm);
- //   processor.logMessage("timesigTop: " + String(processor.context->timeSigTop));
- //   processor.logMessage("timeRatio: " + String(60 / processor.context->info->bpm));
-  //  processor.logMessage("bpm: " + String(processor.context->info->bpm));
-
- //   processor.logMessage("3rd stage: " + String(denominator));
-    denominator = jmin(jmax(denominator*2, 8),40);
-    if(processor.activeTrack->Playing){
-    if(reverseState == On){
-        float tailWidth =
-                std::min(transportInfoArea.getWidth() / denominator, transportInfoArea.getWidth() - (playHead.getX() - transportInfoArea.getX()));
-        auto tail = Rectangle<float>(playHead.getX() , transportInfoArea.getY(),tailWidth, transportInfoArea.getHeight());
-        g.setGradientFill( ColourGradient::horizontal( c2, c1, tail ));
-        g.fillRect(tail);
-    }else{
-        float tailWidth =
-                std::min(transportInfoArea.getWidth() / denominator, playHead.getX()-transportInfoArea.getX());
-        auto tail = Rectangle<float>(playHead.getX() - tailWidth, transportInfoArea.getY()
-                                    , tailWidth
-                                    , transportInfoArea.getHeight());
-        g.setGradientFill( ColourGradient::horizontal( c1, c2, tail ));
-        g.fillRect(tail);
-        }
-    }
+void OrbishAudioProcessorEditor::paintIfFileLoaded (Graphics& g, const Rectangle<int>& thumbnailBounds){
+    
 }
 
-void OrbishAudioProcessorEditor::paintIfNoFileLoaded (Graphics& g, const Rectangle<int>& thumbnailBounds)
-{
-    g.setColour (Colours::white);
-    Path pth{};
-    pth.addRectangle(thumbnailBounds.withSizeKeepingCentre(thumbnailBounds.getWidth()+10, thumbnailBounds.getHeight()+10));
-
-    g.setColour (findColour(Label::textColourId));
-    g.drawFittedText ("No Loop", thumbnailBounds, Justification::centred, 1.0f);
+void OrbishAudioProcessorEditor::paintIfNoFileLoaded (Graphics& g, const Rectangle<int>& thumbnailBounds){
+    
 }
 
 void OrbishAudioProcessorEditor::updateInputVisualiser(const AudioBuffer<float>& buffer, int numSamples){
+    infoAndControlArea.controlArea.thumbnailAndGroupArea.thumbnailArea.repaint();
 }
 
 void OrbishAudioProcessorEditor::updateLoopVisualiser(const AudioBuffer<float>& buffer, int numSamples){
@@ -594,33 +528,17 @@ void OrbishAudioProcessorEditor::updateLoopVisualiser(const AudioBuffer<float>& 
     if (numSamples > 0) {
         thumbnail.addBlock (0, buffer, 0, numSamples);
     }
+    infoAndControlArea.controlArea.thumbnailAndGroupArea.thumbnailArea.repaint();
 }
 
 
 void OrbishAudioProcessorEditor::updatePlayHead(int position, bool reverse){
-    reverseState = (reverse)?ToggleState::On:ToggleState::Off;
-       if(reverseState == On){
-        if(thumbnail.getTotalLength() > 0){
-            float audioPosition = jmax(.0f,float(thumbnail.getNumSamplesFinished() - position));
-            playHeadPosition = ((audioPosition / thumbnail.getNumSamplesFinished()) * transportInfoArea.getWidth() + transportInfoArea.getX());
-        }else{
-            playHeadPosition = thumbnail.getNumSamplesFinished()-1;
-        }
-    }else{
-        if(thumbnail.getTotalLength() > 0){
-            float audioPosition = position;
-            playHeadPosition = ((audioPosition / thumbnail.getNumSamplesFinished()) * transportInfoArea.getWidth() + transportInfoArea.getX());
-        }else{
-            playHeadPosition = 0;
-        }
-    }
-    playHeadPosition = jmax(playHeadPosition,.0f);
+    reverseState = (reverse) ? ToggleState::On : ToggleState::Off;
+    infoAndControlArea.controlArea.thumbnailAndGroupArea.thumbnailArea.updatePlayHead(position, reverse);
 }
 
 //==============================================================================
-void OrbishAudioProcessorEditor::paint (Graphics& g)
-{
-    // (Our component is opaque, so we must completely fill the background with a solid colour)
+void OrbishAudioProcessorEditor::paint (Graphics& g){
     g.fillAll(getLookAndFeel().findColour(ResizableWindow::backgroundColourId));
 
     if(start){
@@ -629,40 +547,21 @@ void OrbishAudioProcessorEditor::paint (Graphics& g)
 
         g.drawFittedText ("Orbish", getLocalBounds(), Justification::top, 1);
         g.setColour(Colours::black);
-        g.fillRect(toolCanvas);
-        
-        leftSide.paint(g);
-        g.fillRect(leftSide.getBounds());
-        addAndMakeVisible(leftSide);
-
-        rightSide.paint(g);
-        g.fillRect(rightSide.getBounds());
-        addAndMakeVisible(rightSide);
-        rightInnerSide.paint(g);
-        g.fillRect(rightInnerSide.getBounds());
-        addAndMakeVisible(rightInnerSide);
-        leftInnerSide.paint(g);
-        g.fillRect(leftInnerSide.getBounds());
-        addAndMakeVisible(leftInnerSide);
-        
-        g.setGradientFill(ColourGradient(Colours::black,(float) transportInfoArea.getX(),(float) transportInfoArea.getY(), Colours::transparentBlack, (float) transportInfoArea.getX() + (float) transportInfoArea.getWidth(), (float) transportInfoArea.getY() + (float) transportInfoArea.getHeight(), false));
-        transportInfoArea.paint(g);
-        g.fillRect(transportInfoArea.getBounds());
-        addAndMakeVisible(transportInfoArea);
+       
         g.fillRect(tracksViewport.getBounds());
 
         tracksViewport.setViewedComponent(&trackArea, false);
         tracksViewport.setScrollBarsShown(true, false);
         tracksViewport.setScrollBarThickness(20);
         addAndMakeVisible(tracksViewport);
-            start = false;
+        start = false;
     }
 
     if (thumbnail.getNumChannels() == 0 || thumbnail.getTotalLength() <= 0) {
-            paintIfNoFileLoaded (g, transportInfoArea.getBounds());
+        infoAndControlArea.controlArea.thumbnailAndGroupArea.thumbnailArea.setFileLoaded(false);
     }
     else {
-            paintIfFileLoaded (g, transportInfoArea.getBounds());
+        infoAndControlArea.controlArea.thumbnailAndGroupArea.thumbnailArea.setFileLoaded(true);
     }
     g.setColour(Colours::greenyellow);
     highlightActiveTrack(g);
@@ -751,46 +650,18 @@ void OrbishAudioProcessorEditor::paintInfoSection(Graphics& g){
     }
 }
 
-void OrbishAudioProcessorEditor::resized()
-{
+void OrbishAudioProcessorEditor::resized() {
 	if (nullptr != settingsPage.get()) {
 		settingsPage->setBounds(getX(), getY(), getWidth(), getHeight());
 	}
-    toolCanvas.setBounds(getWidth()/100, getHeight()/12 + 30, getWidth()*.98 , getHeight() - getHeight()/12-50 );
-
-    // This is generally where you'll want to lay out the positions of any
-    // subcomponents in your editor..
-    int containerMargin = 1;
-    int controlMargin = 2;
-    
-
-    leftSide.setBounds(toolCanvas.removeFromLeft(50).reduced(containerMargin));
-    rightSide.setBounds(toolCanvas.removeFromRight(50).reduced(containerMargin));
-    leftInnerSide.setBounds(toolCanvas.removeFromLeft(50).reduced(containerMargin));
-    rightInnerSide.setBounds(toolCanvas.removeFromRight(50).reduced(containerMargin));
-    transportInfoArea.setBounds(toolCanvas.removeFromTop(100).reduced(containerMargin));
-    loopDisplayArea.setBounds(toolCanvas.removeFromTop(40).reduced(containerMargin));
-    auto rect = toolCanvas.removeFromTop(120).reduced(containerMargin);
-    rect = toolCanvas;
-    rect.removeFromBottom(containerMargin + controlMargin + 1);
-    tracksViewport.setBounds(rect.reduced(containerMargin));
-
-    auto r = leftInnerSide.getLocalBounds();
-    auto s = r.removeFromTop(r.getHeight()/2);
-    r = rightInnerSide.getLocalBounds();
-    s = r.removeFromLeft(r.getWidth() * .5f);
-
-    r = leftSide.getLocalBounds().removeFromBottom(leftSide.getHeight() * .5f).reduced(5, 0);
-    r = rightSide.getLocalBounds().removeFromBottom(rightSide.getHeight() * .5f).reduced(5, 0);
-
-    makeTracks();
 
     auto bounds = getLocalBounds();
     auto headerHeight = 30;
     headerArea.setBounds(bounds.removeFromTop(headerHeight));
     infoAndControlArea.setBounds(bounds.removeFromTop(juce::jmax(80, bounds.getHeight()/2)));
     tracksArea.setBounds(bounds);
-
+    tracksViewport.setBounds(bounds);
+    makeTracks();
 }
 
 void OrbishAudioProcessorEditor::highlightActiveTrack(Graphics& g){
@@ -817,8 +688,21 @@ void OrbishAudioProcessorEditor::toggleLayout(){
     tracksLayoutHorizontal = !tracksLayoutHorizontal;
 }
 
-OrbishAudioProcessor& OrbishAudioProcessorEditor::getProcessor(){
-    return processor;
+OrbishAudioProcessor* OrbishAudioProcessorEditor::getProcessor(){
+    return &processor;
+}
+
+AudioThumbnail* OrbishAudioProcessorEditor::getThumbnailInstance(){
+    return &thumbnail;
+}
+
+bool OrbishAudioProcessorEditor::getReverseState(){
+    if (reverseState == Off ){
+        return true;
+    }
+    else {
+        return false;
+    }
 }
 
 
@@ -843,7 +727,6 @@ void OrbishAudioProcessorEditor::makeTracks(){
 		t->GroupColour = grpCol;
     }
     repaint(tracksViewport.getBounds());
-    updateTrackAreaSize();
 }
 
 void OrbishAudioProcessorEditor::updateTrackAreaSize(){

@@ -84,7 +84,6 @@ public:
     void buttonClicked (Button* button) override;
     void sliderValueChanged (Slider* slider) override;
     void changeListenerCallback (ChangeBroadcaster* source) override;
-    void thumbnailChanged();
     void paintIfFileLoaded (Graphics& g, const Rectangle<int>& thumbnailBounds);
     void paintIfNoFileLoaded (Graphics& g, const Rectangle<int>& thumbnailBounds);
     void timerCallback() override;
@@ -108,7 +107,9 @@ public:
 	int getTrackRowHeight(int);
     void setTracksDirty();
     void toggleLayout();
-    OrbishAudioProcessor& getProcessor();
+    OrbishAudioProcessor* getProcessor();
+    AudioThumbnail* getThumbnailInstance();
+    bool getReverseState();
 
 private:
     OpenGLContext openGLContext;
@@ -128,15 +129,10 @@ private:
     bool shouldCreateTrack = false;
     bool shouldCreateLoop = false;
     bool shouldRemoveLoop = false;
-    Rectangle<int> toolCanvas { 10, 50, 980, 440 };
-    Rectangle<int> playHead;
 	std::shared_ptr<ValueTree> loopTree;
     bool tracksLayoutHorizontal = true;
-    Component transportInfoArea {};
-    Component loopDisplayArea { };
 	DialogWindow* dialog;
 	bool showDialogWindow(String title, String message, AlertWindow::AlertIconType icon, String firstButtonText, String secondButtonText);
-    AudioVisualiserComponent inputDisplay {2};
     AudioFormatManager formatManager;                    // [3]
     std::unique_ptr<AudioFormatReaderSource> readerSource;
     AudioTransportSource transportSource;
@@ -146,15 +142,10 @@ private:
     std::unique_ptr<AudioProcessorValueTreeState::ComboBoxAttachment> snapModeAttachment;
     Component trackArea {};
     Viewport  tracksViewport;
-    Component leftSide {};
-    Component leftInnerSide {};
-    Component rightInnerSide {};
-    float playHeadPosition=0;
     FFAU::LevelMeterSource outputMeterSource;
     bool start = true;
     bool thumbnailDirty = true;
 
-    Component rightSide {};
     std::unique_ptr<ButtonAttachment> recordAttachment;
     std::unique_ptr<ButtonAttachment> playAttachment;
     std::unique_ptr<ButtonAttachment> stopAttachment;

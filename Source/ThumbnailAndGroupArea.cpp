@@ -29,7 +29,7 @@ void ThumbnailAndGroupArea::paint (juce::Graphics& g){
 }
 
 void ThumbnailAndGroupArea::resized(){
-    auto bounds = getLocalBounds().reduced(10);
+    auto bounds = getLocalBounds();
 
     groupControlArea.setBounds(bounds.removeFromRight(bounds.getWidth() / 10));
     thumbnailArea.setBounds(bounds);
