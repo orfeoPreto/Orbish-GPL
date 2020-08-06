@@ -145,8 +145,6 @@ private:
     Rectangle<int> toolCanvas { 10, 50, 980, 440 };
     Rectangle<int> playHead;
 	std::shared_ptr<ValueTree> loopTree;
-    Component inputSliderComp;
-    Component globalSliderComp;
     bool tracksLayoutHorizontal = true;
     Component transportInfoArea {};
     Component loopInfoArea{};
@@ -155,8 +153,6 @@ private:
 	DialogWindow* dialog;
 	bool showDialogWindow(String title, String message, AlertWindow::AlertIconType icon, String firstButtonText, String secondButtonText);
     AudioVisualiserComponent inputDisplay {2};
-    std::shared_ptr<FFAU::LevelMeter> inputMeter;
-    std::shared_ptr<FFAU::LevelMeterLookAndFeel> lnf;
     AudioFormatManager formatManager;                    // [3]
     std::unique_ptr<AudioFormatReaderSource> readerSource;
     AudioTransportSource transportSource;
@@ -171,7 +167,6 @@ private:
     Component leftInnerSide {};
     Component rightInnerSide {};
     float playHeadPosition=0;
-    FFAU::LevelMeterSource inputMeterSource;
     FFAU::LevelMeterSource outputMeterSource;
     bool start = true;
     bool thumbnailDirty = true;
@@ -212,13 +207,11 @@ private:
     CustomButton removeFromGroupButton{ "UnGroup", true, this };
 	std::unique_ptr<ButtonAttachment> removeFromGroupAttachment;
 
-    Slider inputLevelSlider { "Input Level"};
+    
     std::unique_ptr<SliderAttachment> inputLevelAttachment;
-    exu::Label inputLevelLabel { "Input Level" };
     std::unique_ptr<SliderAttachment> outputLevelAttachment;
-    Slider globalVolumeSlider { "Global Volume"};
     std::unique_ptr<SliderAttachment> globalMixAttachment;
-    exu::Label globalVolumeLabel { "Global Volume" };
+    
     exu::Label midiInfoLabel;
 
     AudioProcessorValueTreeState& valueTreeState;

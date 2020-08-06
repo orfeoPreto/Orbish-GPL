@@ -49,18 +49,20 @@ projectXml("<project />"), processor (p), thumbnailCache (5), thumbnail (32, for
     thumbnail.addChangeListener (this);
     startTimer (20);
    
+
+    auto buttonControlArea = &infoAndControlArea.controlArea.buttonControlArea;
+
     // setup level meters
-    inputMeter = std::make_shared<FFAU::LevelMeter> (); // See FFAU::LevelMeter::MeterFlags for options
-    inputMeter->setLookAndFeel (editorLookAndFeel);
-    inputMeter->setMeterSource (processor.getInputMeterSource());
-    inputMeter->setMeterFlags(FFAU::LevelMeter::Minimal);
+    buttonControlArea->outputControlArea.setEditor(this);
+    outputLevelAttachment.reset(new SliderAttachment(valueTreeState, "outputLevel", buttonControlArea->outputControlArea.outputLevelSlider));
+
+    buttonControlArea->inputControlArea.setEditor(this);
+    inputLevelAttachment.reset(new SliderAttachment(valueTreeState, "inputLevel", buttonControlArea->inputControlArea.inputLevelSlider));
+    globalMixAttachment.reset(new SliderAttachment(valueTreeState, "globalMix", buttonControlArea->inputControlArea.globalVolumeSlider));
 
     for (auto track : processor.tracks) {
        doCreateTrack(track->Index);
     }
-
-    auto buttonControlArea = &infoAndControlArea.controlArea.buttonControlArea;
-    buttonControlArea->outputControlArea.setEditor(this);
 
     // Mode control attachments
     auto modeControlArea = &buttonControlArea->modeAndNavigationControlArea.modeControlArea;
@@ -144,53 +146,7 @@ projectXml("<project />"), processor (p), thumbnailCache (5), thumbnail (32, for
 	groupCombo.setSelectedId(1);
 	loopInfoArea.addAndMakeVisible(groupCombo);
     groupCombo.setTooltip("Select a group, then add or remove tracks. \nAll tracks in the same group will act simultaneously for certain commands");
-
-
-    globalVolumeSlider.setValue(0);
-    inputLevelSlider.setNumDecimalPlacesToDisplay(1);
-    
-    inputLevelSlider.setTextBoxIsEditable(true);
-    inputLevelSlider.setTextValueSuffix(" db");
-    inputLevelSlider.addListener(this);
-    inputLevelAttachment.reset (new SliderAttachment (valueTreeState, "inputLevel", inputLevelSlider));
-    inputLevelSlider.setSliderStyle (Slider::LinearBarVertical);
-    inputLevelSlider.setTextBoxStyle(Slider::TextEntryBoxPosition::NoTextBox, true, 0, 0);
-    inputLevelSlider.setPopupDisplayEnabled (true, false, this);
-    leftInnerSide.addAndMakeVisible(inputLevelSlider);
-    inputLevelLabel.setText("Input Level", NotificationType::dontSendNotification);
-    inputLevelLabel.attachToComponent(&inputLevelSlider, false);
-    inputLevelSlider.setTooltip("Adjust the level of the input signal for the active track");
-    leftInnerSide.addAndMakeVisible(inputSliderComp);
-    
-    inputLevelSlider.textFromValueFunction = [this] (double val)
-        {
-                return String (val, 1);
-        };
-
-    auto outputControlArea = &buttonControlArea->outputControlArea;
-    outputLevelAttachment.reset (new SliderAttachment (valueTreeState, "outputLevel", outputControlArea->outputLevelSlider));
-    
-    globalVolumeSlider.setRange(-120, 6);
-    globalVolumeSlider.setNumDecimalPlacesToDisplay(2);
-    globalVolumeSlider.setTextBoxIsEditable(true);
-    globalVolumeSlider.setTextValueSuffix(" db");
-    globalVolumeSlider.addListener(this);
-    globalMixAttachment.reset (new SliderAttachment (valueTreeState, "globalMix", globalVolumeSlider));
-    globalVolumeSlider.setSliderStyle (Slider::LinearBarVertical);
-    globalVolumeSlider.setTextBoxStyle(Slider::TextEntryBoxPosition::NoTextBox, true, 0, 0);
-    globalVolumeSlider.setPopupDisplayEnabled (true, false, this);
-    rightInnerSide.addAndMakeVisible(globalVolumeSlider);
-    globalVolumeLabel.setText("Global Level", NotificationType::dontSendNotification);
-    globalVolumeSlider.textFromValueFunction = [this] (double val)
-        {
-                return String (val, 1);
-        };
-    globalVolumeLabel.attachToComponent(&globalVolumeSlider, false);
-    globalVolumeSlider.setTooltip("Adjust the level of the general output signal");
-
-    rightInnerSide.addAndMakeVisible(globalSliderComp);
-    leftSide.addAndMakeVisible(inputMeter.get());
-
+   
     headerArea.setEditor(this);
     addAndMakeVisible(headerArea);
     addAndMakeVisible(infoAndControlArea);
@@ -484,7 +440,6 @@ OrbishAudioProcessorEditor::~OrbishAudioProcessorEditor()
 {
 	processor.guiAlive = false;
     Thread::sleep(200);
-    inputMeter->setLookAndFeel(nullptr);
     setLookAndFeel(nullptr);
 }
 
@@ -608,14 +563,6 @@ void OrbishAudioProcessorEditor::toggleRedo(){
 
 void OrbishAudioProcessorEditor::toggleAutoTrigger(){
    //processor.processTriggerModeChange();
-}
-
-void OrbishAudioProcessorEditor::changeInputLevel(){
-    //processor.processInputLevelChange(inputLevelSlider.getValue());
-}
-
-void OrbishAudioProcessorEditor::changeGlobalMix(){
-  //  processor.processMixChange(globalVolumeSlider.getValue());
 }
 
 void OrbishAudioProcessorEditor::changeRecordingMode(){
@@ -890,13 +837,10 @@ void OrbishAudioProcessorEditor::resized()
 
     auto r = leftInnerSide.getLocalBounds();
     auto s = r.removeFromTop(r.getHeight()/2);
-    inputLevelSlider.setBounds (r.removeFromLeft(r.getWidth() * .5f).reduced(controlMargin + 3));
     r = rightInnerSide.getLocalBounds();
     s = r.removeFromLeft(r.getWidth() * .5f);
 
-    globalVolumeSlider.setBounds(r.removeFromBottom(r.getHeight() * .5f).reduced(controlMargin + 3));
     r = leftSide.getLocalBounds().removeFromBottom(leftSide.getHeight() * .5f).reduced(5, 0);
-    inputMeter->setBounds(r.withBottomY(inputLevelSlider.getBottom()));
     r = rightSide.getLocalBounds().removeFromBottom(rightSide.getHeight() * .5f).reduced(5, 0);
 
     makeTracks();
@@ -982,12 +926,7 @@ void OrbishAudioProcessorEditor::updateTrackAreaSize()
 }
 
 void OrbishAudioProcessorEditor::sliderValueChanged (Slider* slider) {
-    if(slider == &inputLevelSlider){
-        inputLevelSlider.onValueChange = [this]() { changeInputLevel(); };
-    }
-    if(slider == &globalVolumeSlider){
-        globalVolumeSlider.onValueChange = [this]() { changeGlobalMix(); };
-    }
+    
 }
 
 void OrbishAudioProcessorEditor::clicked(Button* button) {

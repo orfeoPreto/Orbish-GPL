@@ -17,6 +17,7 @@ OutputControlArea::OutputControlArea(){
     addAndMakeVisible(outputMeter);
 
     outputLevelLabel.setText("Output Level", NotificationType::dontSendNotification);
+    outputLevelLabel.attachToComponent(&outputLevelSlider, false);
     addAndMakeVisible(outputLevelLabel);
 
     outputLevelSlider.setRange(-60, 6);
