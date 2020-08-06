@@ -48,9 +48,9 @@ void OutputControlArea::resized(){
     auto bounds = getLocalBounds().reduced(10);
 
     outputLevelLabel.setBounds(bounds.removeFromTop(15));
-    bounds.reduce(10, 10);
-    outputLevelSlider.setBounds(bounds.removeFromLeft(bounds.getWidth() / 2).reduced(10));
-    outputMeter.setBounds(bounds.reduced(10));
+    outputLevelSlider.setBounds(bounds.removeFromLeft(bounds.getWidth() / 2));
+    bounds.removeFromLeft(5);
+    outputMeter.setBounds(bounds);
 }
 
 void OutputControlArea::setEditor(OrbishAudioProcessorEditor* pluginEditor){

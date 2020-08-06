@@ -68,10 +68,11 @@ void InputControlArea::resized(){
     auto bounds = getLocalBounds().reduced(10);
 
     inputLevelLabel.setBounds(bounds.removeFromTop(15));
-    bounds.reduce(10, 10);
-    globalVolumeSlider.setBounds(bounds.removeFromLeft(bounds.getWidth() / 3).reduced(10));
-    inputLevelSlider.setBounds(bounds.removeFromLeft(bounds.getWidth() / 2).reduced(10));
-    inputMeter.setBounds(bounds.reduced(10));
+    globalVolumeSlider.setBounds(bounds.removeFromLeft(bounds.getWidth() / 3));
+    bounds.removeFromLeft(5);
+    inputLevelSlider.setBounds(bounds.removeFromLeft(bounds.getWidth() / 2));
+    bounds.removeFromLeft(5);
+    inputMeter.setBounds(bounds);
 }
 
 void InputControlArea::setEditor(OrbishAudioProcessorEditor* pluginEditor){

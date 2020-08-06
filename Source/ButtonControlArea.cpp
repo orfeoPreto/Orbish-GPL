@@ -28,12 +28,17 @@ void ButtonControlArea::paint (juce::Graphics& g){
 
 void ButtonControlArea::resized(){
     auto bounds = getLocalBounds();
-    auto controlWidth = bounds.getWidth() / 4;
-    transportControlArea.setBounds(bounds.removeFromLeft(controlWidth));
 
-    auto leftoverWidth = bounds.getWidth() / 4;
-    modeAndNavigationControlArea.setBounds(bounds.removeFromLeft(leftoverWidth));
-    globalControlArea.setBounds(bounds.removeFromLeft(leftoverWidth));
-    outputControlArea.setBounds(bounds.removeFromLeft(leftoverWidth));
-    inputControlArea.setBounds(bounds);
+    juce::Grid grid;
+    using Track = juce::Grid::TrackInfo;
+    using Fr = juce::Grid::Fr;
+
+    grid.templateRows = { Track(Fr(1)) };
+    grid.templateColumns = { Track(Fr(9)), Track(Fr(6)), Track(Fr(6)), Track(Fr(2)), Track(Fr(3)) };
+
+    grid.items = {
+        juce::GridItem(transportControlArea), juce::GridItem(modeAndNavigationControlArea), juce::GridItem(globalControlArea), juce::GridItem(outputControlArea), juce::GridItem(inputControlArea)
+    };
+
+    grid.performLayout(bounds);
 }
