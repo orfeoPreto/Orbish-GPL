@@ -3,49 +3,62 @@
 
     OutputControlArea.cpp
     Created: 3 Aug 2020 2:16:53pm
-    Author:  Aoriseth
+    Author:  Lennart Cockx
 
   ==============================================================================
 */
 
 #include <JuceHeader.h>
 #include "OutputControlArea.h"
+#include "PluginEditor.h"
 
 //==============================================================================
-OutputControlArea::OutputControlArea()
-{
-    // In your constructor, you should add any child components, and
-    // initialise any special settings that your component needs.
+OutputControlArea::OutputControlArea(){
+    addAndMakeVisible(outputMeter);
 
+    outputLevelLabel.setText("Output Level", NotificationType::dontSendNotification);
+    addAndMakeVisible(outputLevelLabel);
+
+    outputLevelSlider.setRange(-60, 6);
+    outputLevelSlider.setNumDecimalPlacesToDisplay(1);
+    outputLevelSlider.setTextBoxIsEditable(true);
+    outputLevelSlider.setTextValueSuffix(" db");
+    outputLevelSlider.addListener(this);
+    outputLevelSlider.textFromValueFunction = [this](double val){ return String(val, 1);};
+    outputLevelSlider.setTooltip("Adjust the level of the output signal for the active track");
+    outputLevelSlider.setSliderStyle(Slider::LinearBarVertical);
+    outputLevelSlider.setTextBoxStyle(Slider::TextEntryBoxPosition::NoTextBox, true, 0, 0);
+    outputLevelSlider.setPopupDisplayEnabled(true, false, this);
+    addAndMakeVisible(outputLevelSlider);
 }
 
-OutputControlArea::~OutputControlArea()
-{
+OutputControlArea::~OutputControlArea(){
+    outputMeter.setLookAndFeel(nullptr);
 }
 
-void OutputControlArea::paint (juce::Graphics& g)
-{
-    /* This demo code just fills the component's background and
-       draws some placeholder text to get you started.
-
-       You should replace everything in this method with your own
-       drawing code..
-    */
-
+void OutputControlArea::paint (juce::Graphics& g){
     g.fillAll (getLookAndFeel().findColour (juce::ResizableWindow::backgroundColourId));   // clear the background
 
-    g.setColour (juce::Colours::grey);
+    g.setColour (juce::Colours::black);
     g.drawRect (getLocalBounds(), 1);   // draw an outline around the component
-
-    g.setColour (juce::Colours::white);
-    g.setFont (14.0f);
-    g.drawText ("OutputControlArea", getLocalBounds(),
-                juce::Justification::centred, true);   // draw some placeholder text
 }
 
-void OutputControlArea::resized()
-{
-    // This method is where you should set the bounds of any child
-    // components that your component contains..
+void OutputControlArea::resized(){
+    auto bounds = getLocalBounds().reduced(10);
 
+    outputLevelLabel.setBounds(bounds.removeFromTop(15));
+    bounds.reduce(10, 10);
+    outputLevelSlider.setBounds(bounds.removeFromLeft(bounds.getWidth() / 2).reduced(10));
+    outputMeter.setBounds(bounds.reduced(10));
+}
+
+void OutputControlArea::setEditor(OrbishAudioProcessorEditor* pluginEditor){
+    editor = pluginEditor;
+    outputMeter.setMeterSource(editor->getProcessor().getOutputMeterSource());
+    
+}
+
+void OutputControlArea::sliderValueChanged(Slider* slider){
+    if (slider == &outputLevelSlider) {
+    }
 }

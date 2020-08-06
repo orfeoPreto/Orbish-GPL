@@ -54,17 +54,13 @@ projectXml("<project />"), processor (p), thumbnailCache (5), thumbnail (32, for
     inputMeter->setLookAndFeel (editorLookAndFeel);
     inputMeter->setMeterSource (processor.getInputMeterSource());
     inputMeter->setMeterFlags(FFAU::LevelMeter::Minimal);
-    
-    outputMeter = std::make_shared<FFAU::LevelMeter>();
-    outputMeter->setLookAndFeel (editorLookAndFeel);
-    outputMeter->setMeterSource (processor.getOutputMeterSource());
-    outputMeter->setMeterFlags(FFAU::LevelMeter::Minimal);
 
     for (auto track : processor.tracks) {
        doCreateTrack(track->Index);
     }
 
     auto buttonControlArea = &infoAndControlArea.controlArea.buttonControlArea;
+    buttonControlArea->outputControlArea.setEditor(this);
 
     // Mode control attachments
     auto modeControlArea = &buttonControlArea->modeAndNavigationControlArea.modeControlArea;
@@ -171,26 +167,8 @@ projectXml("<project />"), processor (p), thumbnailCache (5), thumbnail (32, for
                 return String (val, 1);
         };
 
-    outputLevelSlider.setRange(-60, 6);
-    outputLevelSlider.setNumDecimalPlacesToDisplay(1);
-    outputLevelSlider.setTextBoxIsEditable(true);
-    outputLevelSlider.setTextValueSuffix(" db");
-    outputLevelSlider.addListener(this);
-    outputLevelAttachment.reset (new SliderAttachment (valueTreeState, "outputLevel", outputLevelSlider));
-    
-    outputLevelSlider.setSliderStyle (Slider::LinearBarVertical);
-    outputLevelSlider.setTextBoxStyle(Slider::TextEntryBoxPosition::NoTextBox, true, 0, 0);
-    outputLevelSlider.setPopupDisplayEnabled (true, false, this);
-    rightInnerSide.addAndMakeVisible(outputLevelSlider);
-    outputLevelLabel.setText("Output Level", NotificationType::dontSendNotification);
-    outputLevelLabel.attachToComponent(&outputLevelSlider, false);
-    outputLevelSlider.textFromValueFunction = [this] (double val)
-        {
-                return String (val, 1);
-        };
-    outputLevelSlider.setTooltip("Adjust the level of the output signal for the active track");
-
-    rightInnerSide.addAndMakeVisible(outputSliderComp);
+    auto outputControlArea = &buttonControlArea->outputControlArea;
+    outputLevelAttachment.reset (new SliderAttachment (valueTreeState, "outputLevel", outputControlArea->outputLevelSlider));
     
     globalVolumeSlider.setRange(-120, 6);
     globalVolumeSlider.setNumDecimalPlacesToDisplay(2);
@@ -212,7 +190,6 @@ projectXml("<project />"), processor (p), thumbnailCache (5), thumbnail (32, for
 
     rightInnerSide.addAndMakeVisible(globalSliderComp);
     leftSide.addAndMakeVisible(inputMeter.get());
-    rightSide.addAndMakeVisible(outputMeter.get());
 
     headerArea.setEditor(this);
     addAndMakeVisible(headerArea);
@@ -508,7 +485,6 @@ OrbishAudioProcessorEditor::~OrbishAudioProcessorEditor()
 	processor.guiAlive = false;
     Thread::sleep(200);
     inputMeter->setLookAndFeel(nullptr);
-    outputMeter->setLookAndFeel(nullptr);
     setLookAndFeel(nullptr);
 }
 
@@ -636,10 +612,6 @@ void OrbishAudioProcessorEditor::toggleAutoTrigger(){
 
 void OrbishAudioProcessorEditor::changeInputLevel(){
     //processor.processInputLevelChange(inputLevelSlider.getValue());
-}
-
-void OrbishAudioProcessorEditor::changeOutputLevel(){
-    //processor.processOutputLevelChange(outputLevelSlider.getValue());
 }
 
 void OrbishAudioProcessorEditor::changeGlobalMix(){
@@ -921,13 +893,11 @@ void OrbishAudioProcessorEditor::resized()
     inputLevelSlider.setBounds (r.removeFromLeft(r.getWidth() * .5f).reduced(controlMargin + 3));
     r = rightInnerSide.getLocalBounds();
     s = r.removeFromLeft(r.getWidth() * .5f);
-    outputLevelSlider.setBounds(s.removeFromBottom(s.getHeight() * .5f).reduced(controlMargin + 3));
 
     globalVolumeSlider.setBounds(r.removeFromBottom(r.getHeight() * .5f).reduced(controlMargin + 3));
     r = leftSide.getLocalBounds().removeFromBottom(leftSide.getHeight() * .5f).reduced(5, 0);
     inputMeter->setBounds(r.withBottomY(inputLevelSlider.getBottom()));
     r = rightSide.getLocalBounds().removeFromBottom(rightSide.getHeight() * .5f).reduced(5, 0);
-    outputMeter->setBounds(r.withBottomY(outputLevelSlider.getBottom()));
 
     makeTracks();
 	groupLabel.setBounds(860, 5, 100, 15);
@@ -963,6 +933,10 @@ void OrbishAudioProcessorEditor::setTracksDirty(){
 
 void OrbishAudioProcessorEditor::toggleLayout(){
     tracksLayoutHorizontal = !tracksLayoutHorizontal;
+}
+
+OrbishAudioProcessor& OrbishAudioProcessorEditor::getProcessor(){
+    return processor;
 }
 
 
@@ -1010,9 +984,6 @@ void OrbishAudioProcessorEditor::updateTrackAreaSize()
 void OrbishAudioProcessorEditor::sliderValueChanged (Slider* slider) {
     if(slider == &inputLevelSlider){
         inputLevelSlider.onValueChange = [this]() { changeInputLevel(); };
-    }
-    if(slider == &outputLevelSlider){
-        outputLevelSlider.onValueChange = [this]() { changeOutputLevel(); };
     }
     if(slider == &globalVolumeSlider){
         globalVolumeSlider.onValueChange = [this]() { changeGlobalMix(); };

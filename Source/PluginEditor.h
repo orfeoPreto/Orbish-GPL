@@ -73,7 +73,6 @@ public:
     void toggleRedo();
     void toggleAutoTrigger();
     void changeInputLevel();
-    void changeOutputLevel();
     void changeGlobalMix();
     void handleInputLevel();
     void handleOutputLevel();
@@ -123,6 +122,7 @@ public:
 	int getTrackRowHeight(int);
     void setTracksDirty();
     void toggleLayout();
+    OrbishAudioProcessor& getProcessor();
 
 private:
     OpenGLContext openGLContext;
@@ -146,7 +146,6 @@ private:
     Rectangle<int> playHead;
 	std::shared_ptr<ValueTree> loopTree;
     Component inputSliderComp;
-    Component outputSliderComp;
     Component globalSliderComp;
     bool tracksLayoutHorizontal = true;
     Component transportInfoArea {};
@@ -157,7 +156,6 @@ private:
 	bool showDialogWindow(String title, String message, AlertWindow::AlertIconType icon, String firstButtonText, String secondButtonText);
     AudioVisualiserComponent inputDisplay {2};
     std::shared_ptr<FFAU::LevelMeter> inputMeter;
-    std::shared_ptr<FFAU::LevelMeter> outputMeter;
     std::shared_ptr<FFAU::LevelMeterLookAndFeel> lnf;
     AudioFormatManager formatManager;                    // [3]
     std::unique_ptr<AudioFormatReaderSource> readerSource;
@@ -217,9 +215,7 @@ private:
     Slider inputLevelSlider { "Input Level"};
     std::unique_ptr<SliderAttachment> inputLevelAttachment;
     exu::Label inputLevelLabel { "Input Level" };
-    Slider outputLevelSlider { "Output Level"};
     std::unique_ptr<SliderAttachment> outputLevelAttachment;
-    exu::Label outputLevelLabel { "Output Level" };
     Slider globalVolumeSlider { "Global Volume"};
     std::unique_ptr<SliderAttachment> globalMixAttachment;
     exu::Label globalVolumeLabel { "Global Volume" };
