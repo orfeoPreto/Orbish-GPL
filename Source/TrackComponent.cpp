@@ -280,6 +280,12 @@ void TrackComponent::paint(Graphics& g){
     witness.setStrokeThickness (2.0f);
     
   for (auto l: Loops) {
+      if (activeLoop == l->getIndex()){
+          l->setColour(juce::ProgressBar::backgroundColourId, juce::Colours::white);
+      }
+      else{
+          l->setColour(juce::ProgressBar::backgroundColourId, juce::Colour(0xff707070));
+      }
         addAndMakeVisible(l);
     }
 

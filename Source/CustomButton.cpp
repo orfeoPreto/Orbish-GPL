@@ -9,16 +9,27 @@
 */
 
 #include "CustomButton.h"
+#include "PluginEditor.h"
 
-CustomButton::CustomButton(const String& name, bool isPushButton, juce::Button::Listener* listener): TextButton (name){
+CustomButton::CustomButton(const String& name, bool isPushButton, OrbishAudioProcessorEditor* pluginEditor) : TextButton(name) {
+    this->addListener(pluginEditor);
     this->pushButton = isPushButton;
-    if (pushButton){
+    if (pushButton) {
         setColour(TextButton::ColourIds::textColourOnId, juce::Colour(0xff707070));
     }
 
     setToggleState(false, NotificationType::sendNotification);
     setClickingTogglesState(true);
-    addListener(listener);
+}
+
+CustomButton::CustomButton(const String& name, bool isPushButton): TextButton (name){
+    this->pushButton = isPushButton;
+    if (pushButton) {
+        setColour(TextButton::ColourIds::textColourOnId, juce::Colour(0xff707070));
+    }
+
+    setToggleState(false, NotificationType::sendNotification);
+    setClickingTogglesState(true);
 }
 
 CustomButton::~CustomButton(){

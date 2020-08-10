@@ -1,47 +1,28 @@
-/*
-  ==============================================================================
-
-    This file was auto-generated!
-
-    It contains the basic framework code for a JUCE plugin editor.
-
-  ==============================================================================
-*/
-
 #include "PluginProcessor.h"
 #include "PluginEditor.h"
-//#include "../ffAudio/ff_meters.h"
 
 
 //==============================================================================
-OrbishAudioProcessorEditor::OrbishAudioProcessorEditor (OrbishAudioProcessor& p, AudioProcessorValueTreeState& apvts)
-: AudioProcessorEditor (&p),                              // [4]
-projectXml("<project />"), processor (p), thumbnailCache (5), thumbnail (32, formatManager, thumbnailCache), valueTreeState(apvts)
+OrbishAudioProcessorEditor::OrbishAudioProcessorEditor (OrbishAudioProcessor& p, AudioProcessorValueTreeState& apvts): 
+    AudioProcessorEditor (&p), 
+    projectXml("<project />"), 
+    processor (p), 
+    thumbnailCache (5), 
+    thumbnail (32, formatManager, thumbnailCache), 
+    valueTreeState(apvts)
 {
-	//processor.logger->logMessage("begin gui constructor");
     openGLContext.attachTo(*getTopLevelComponent());
 
     // Define the Look and Feel of the application
     auto editorLookAndFeel = new OrbishLookAndFeel();
     setLookAndFeel(editorLookAndFeel);
+    setResizable(true, false);
 
     // Setup project header
 	project = Project();
 	setProjectName(project.name);
-	headerComp.addAndMakeVisible(projectLabel);
-    projectLabel.setColour(Label::textColourId, findColour(TextButton::ColourIds::textColourOnId));
-    projectLabel.setFont(Font(18, Font::bold));
-    projectLabel.setJustificationType(Justification::centred);
-
-	initCommandManager();
-	mainMenu = std::make_unique<MainMenu>(this);
-	MenuBarModel* mm = mainMenu.get();
-	menuBar = std::make_unique<MenuBarComponent>(mm);
-	addAndMakeVisible(menuBar.get());
-	addAndMakeVisible(headerComp);
-    // Make sure that before the constructor has finished, you've set the
-    // editor's size to whatever you need it to be.
     
+    // Setup observers
     updateInputBuffer = &Observer::updateInputVisualiser;
     updateLoopBuffer = &Observer::updateLoopVisualiser;
     updatePlayPosition = &Observer::updatePlayHead;
@@ -49,378 +30,114 @@ projectXml("<project />"), processor (p), thumbnailCache (5), thumbnail (32, for
     newTrack = &Observer::askToCreateTrack;
     trackChange = &Observer::updateNextTrackNumber;
     trackRemoval = &Observer::removeTrack;
-    
     newLoop = &Observer::askToCreateLoop;
     loopChange = &Observer::updateNextLoopNumber;
     loopRemoval = &Observer::removeLoop;
-
     playChanged = &Observer::updatePlaying;
 
     processor.context->observer = this;
     thumbnail.addChangeListener (this);
     startTimer (20);
    
-    // setup level meters
-    inputMeter = std::make_shared<FFAU::LevelMeter> (); // See FFAU::LevelMeter::MeterFlags for options
-    inputMeter->setLookAndFeel (editorLookAndFeel);
-    inputMeter->setMeterSource (processor.getInputMeterSource());
-    inputMeter->setMeterFlags(FFAU::LevelMeter::Minimal);
-    
-    outputMeter = std::make_shared<FFAU::LevelMeter>();
-    outputMeter->setLookAndFeel (editorLookAndFeel);
-    outputMeter->setMeterSource (processor.getOutputMeterSource());
-    outputMeter->setMeterFlags(FFAU::LevelMeter::Minimal);
 
+    auto buttonControlArea = &infoAndControlArea.controlArea.buttonControlArea;
 
+    // Setup level meters
+    buttonControlArea->outputControlArea.setEditor(this);
+    outputLevelAttachment.reset(new SliderAttachment(valueTreeState, "outputLevel", buttonControlArea->outputControlArea.outputLevelSlider));
+
+    buttonControlArea->inputControlArea.setEditor(this);
+    inputLevelAttachment.reset(new SliderAttachment(valueTreeState, "inputLevel", buttonControlArea->inputControlArea.inputLevelSlider));
+    globalMixAttachment.reset(new SliderAttachment(valueTreeState, "globalMix", buttonControlArea->inputControlArea.globalVolumeSlider));
+
+    // Create tracks
     for (auto track : processor.tracks) {
        doCreateTrack(track->Index);
     }
-    timeSigLabel.setTooltip("Current time signature\nComes from the host");
 
+    // Mode control attachments
+    auto modeControlArea = &buttonControlArea->modeAndNavigationControlArea.modeControlArea;
+
+    recModeAttachment.reset (new AudioProcessorValueTreeState::ComboBoxAttachment (valueTreeState, "mode", modeControlArea->recModeCombo));
+    snapModeAttachment.reset (new AudioProcessorValueTreeState::ComboBoxAttachment (valueTreeState, "snap", modeControlArea->snapModeCombo));
+
+    // transport Button attachments
+    auto transportControlArea = &buttonControlArea->transportControlArea;
+    transportControlArea->setEditor(this);
+
+    recordAttachment.reset (new ButtonAttachment (valueTreeState, "record", transportControlArea->recordButton));
+    playAttachment.reset (new ButtonAttachment (valueTreeState, "play", transportControlArea->playButton));
+    stopAttachment.reset(new ButtonAttachment(valueTreeState, "stop", transportControlArea->stopButton));
+    clearAttachment.reset(new ButtonAttachment(valueTreeState, "reset", transportControlArea->clearButton));
+    muteAttachment.reset(new ButtonAttachment(valueTreeState, "mute", transportControlArea->muteButton));
+    soloAttachment.reset(new ButtonAttachment(valueTreeState, "solo", transportControlArea->soloButton));
+    monitorAttachment.reset(new ButtonAttachment(valueTreeState, "monitor", transportControlArea->monitorButton));
+    reverseAttachment.reset(new ButtonAttachment(valueTreeState, "reverse", transportControlArea->reverseButton));
+    undoAttachment.reset(new ButtonAttachment(valueTreeState, "undo", transportControlArea->undoButton));
+    redoAttachment.reset(new ButtonAttachment(valueTreeState, "redo", transportControlArea->redoButton));
+    bounceAttachment.reset(new ButtonAttachment(valueTreeState, "bounce", transportControlArea->bounceButton));
+    triggerAttachment.reset(new ButtonAttachment(valueTreeState, "trigger", transportControlArea->autoTriggerButton));
     
-	Array<StringArray> buttonRecModeNames;
-	buttonRecModeNames.add({ "Overdub", "Record multiple layers within same loop" });
-	buttonRecModeNames.add({ "Repeat","Record additional layer while extending loop size repeating previous layers" });
-	buttonRecModeNames.add({ "Append","Record new layer while extending without repeating previous layers" });
-	buttonRecModeNames.add({ "Overwrite", "overwrite content of current layer with new material, and extend original loop until recording ends" });
-	buttonRecModeNames.add({ "Punch","Record while replacing previous material on current layer" });
-
-	Array<StringArray> buttonSnapModeNames;
-	buttonSnapModeNames.add({ "No Sync", "Snap disabled, functionality goes into effect instantly" });
-	buttonSnapModeNames.add({ "Bar","Snaps to bar" });
-	buttonSnapModeNames.add({ "Beat","Snaps to the beat (bottom of time signature)" });
-
-    recModeAttachment.reset (new AudioProcessorValueTreeState::ComboBoxAttachment (valueTreeState, "mode", recModeCombo));
-    snapModeAttachment.reset (new AudioProcessorValueTreeState::ComboBoxAttachment (valueTreeState, "snap", snapModeCombo));
-
-	for (int i = 0; i < buttonRecModeNames.size(); ++i)
-	{
-		recModeCombo.addItem(buttonRecModeNames[i][0], i + 1);
-
-	}
-    for (int i = 0; i < buttonSnapModeNames.size(); ++i)
-    {
-        snapModeCombo.addItem(buttonSnapModeNames[i][0], i+1);
-
-    }
-    recModeCombo.setSelectedId(1);
-    String str = String("Overdub: Record multiple layers within same loop\n")    +
-                 String("Repeat: Record additional layer while extending loop size repeating previous layers\n") +
-                 String("Append: Record new layer while extending without repeating previous layers") +
-                 String("Overwrite: overwrite content of current layer with new material, and extend original loop until recording ends\n") +
-                 String("Punch: Record while replacing previous material on current layer\n");
-    recModeCombo.setTooltip(str);
-    snapModeCombo.setSelectedId(2);
-    str = String("No Sync: Snap disabled, functionality goes into effect instantly\n")    +
-                 String("Bar: Snaps to bar\n") +
-                 String("Beat: Snaps to the beat (bottom of time signature)");
-    snapModeCombo.setTooltip(str);
+    // Global Button attachments
+    auto globalControlArea = &buttonControlArea->globalControlArea;
+    globalControlArea->setEditor(this);
     
-    activeLabel.setText("Active Track - OpenGL mode", NotificationType::dontSendNotification);
-
-    // Track Buttons
-
-    recordAttachment.reset (new ButtonAttachment (valueTreeState, "record", recordButton));
-    recordButton.setTooltip("Start/Stop recording on the active track");
-
-    playAttachment.reset (new ButtonAttachment (valueTreeState, "play", playButton));
-    playButton.setTooltip("Play/Pause the recorded material on the active track or group");
-
-    stopAttachment.reset(new ButtonAttachment(valueTreeState, "stop", stopButton));
-    stopButton.setTooltip("Stop playing on the active track or group");
-
-    clearAttachment.reset(new ButtonAttachment(valueTreeState, "reset", clearButton));
-    clearButton.setTooltip("Clear the active track");
-
-    muteAttachment.reset(new ButtonAttachment(valueTreeState, "mute", muteButton));
-    muteButton.setTooltip("Mute the active track or group");
-
-    soloAttachment.reset(new ButtonAttachment(valueTreeState, "solo", soloButton));
-    soloButton.setTooltip("Play exclusively the active track or group");
-
-    monitorAttachment.reset(new ButtonAttachment(valueTreeState, "monitor", monitorButton));
-    monitorButton.setTooltip("Listen to input audio when this track is active");
-
-    reverseAttachment.reset(new ButtonAttachment(valueTreeState, "reverse", reverseButton));
-    reverseButton.setTooltip("Reverse the audio on the active track");
-
-    undoAttachment.reset(new ButtonAttachment(valueTreeState, "undo", undoButton));
-    undoButton.setTooltip("Undo latest overdub recording");
-
-    redoAttachment.reset(new ButtonAttachment(valueTreeState, "redo", redoButton));
-    redoButton.setTooltip("Redo latest overdub recording");
-
-    bounceButton.setToggleState(true, NotificationType::sendNotification);
-    bounceAttachment.reset(new ButtonAttachment(valueTreeState, "bounce", bounceButton));
-    bounceButton.setTooltip("Flatten all overdub layers to one");
-
-    triggerAttachment.reset(new ButtonAttachment(valueTreeState, "trigger", autoTriggerButton));
-    autoTriggerButton.setTooltip("Start recording when input signal exceeds the predefined threshold");
-
-    // Global Buttons
-    globalLabel.setText("Global", NotificationType::dontSendNotification);
-
-    muteAllAttachment.reset (new ButtonAttachment (valueTreeState, "muteAll", muteAllButton));
-    muteAllButton.setTooltip("Mute all tracks");
-
-    stopAllAttachment.reset (new ButtonAttachment (valueTreeState, "stopAll", stopAllButton));
-    stopAllButton.setTooltip("Stop playing on all tracks");
-
-    startAllAttachment.reset (new ButtonAttachment (valueTreeState, "startAll", startAllButton));
-    startAllButton.setTooltip("Start playing on all tracks");
-
-    pauseAllAttachment.reset (new ButtonAttachment (valueTreeState, "pauseAll", pauseAllButton));
-    pauseAllButton.setTooltip("Pause all tracks");
-
-    clearAllAttachment.reset (new ButtonAttachment (valueTreeState, "resetAll", clearAllButton));
-    clearAllButton.setTooltip("Clear all tracks");
-
-	addToGroupAttachment.reset(new ButtonAttachment(valueTreeState, "addToGroup", addToGroupButton));
-    addToGroupButton.setTooltip("Add the active track to the selected group");
-
-	removeFromGroupAttachment.reset(new ButtonAttachment(valueTreeState, "removeFromGroup", removeFromGroupButton));
-    removeFromGroupButton.setTooltip("Remove the active track from the selected group");
-
-    createTracksLayoutButton();
+    muteAllAttachment.reset (new ButtonAttachment (valueTreeState, "muteAll", globalControlArea->muteAllButton));
+    stopAllAttachment.reset (new ButtonAttachment (valueTreeState, "stopAll", globalControlArea->stopAllButton));
+    startAllAttachment.reset (new ButtonAttachment (valueTreeState, "startAll", globalControlArea->startAllButton));
+    pauseAllAttachment.reset (new ButtonAttachment (valueTreeState, "pauseAll", globalControlArea->pauseAllButton));
+    clearAllAttachment.reset (new ButtonAttachment (valueTreeState, "resetAll", globalControlArea->clearAllButton));
     
-    // Loop Buttons
-    loopLabel.setText("Loops: ", NotificationType::dontSendNotification);
+    // Grouping buttons attachments
 
-    previousLoopAttachment.reset (new ButtonAttachment (valueTreeState, "previousLoop", previousLoopButton));
-    previousLoopButton.setTooltip("Go to previous loop on active track or group");
+    auto groupControlArea = &infoAndControlArea.controlArea.thumbnailAndGroupArea.groupControlArea;
+    addToGroupAttachment.reset(new ButtonAttachment(valueTreeState, "addToGroup", groupControlArea->addToGroupButton));
+    removeFromGroupAttachment.reset(new ButtonAttachment(valueTreeState, "removeFromGroup", groupControlArea->removeFromGroupButton));
+    groupAttachment.reset(new AudioProcessorValueTreeState::ComboBoxAttachment(valueTreeState, "selectGroup", groupControlArea->groupCombo));
 
-    activeLoopLabel.setText(String(activeLoop + 1), NotificationType::dontSendNotification);
-
-    nextLoopAttachment.reset (new ButtonAttachment (valueTreeState, "nextLoop", nextLoopButton));
-    nextLoopButton.setTooltip("Go to next loop on active track or group");
-
-    newLoopAttachment.reset (new ButtonAttachment (valueTreeState, "newLoop", newLoopButton));
-    newLoopButton.setTooltip("Create new loop on active track");
-
-    removeLoopAttachment.reset (new ButtonAttachment (valueTreeState, "removeLoop", removeLoopButton));
-    removeLoopButton.setTooltip("Remove latest loop from active track");
-    
-    globalVolumeSlider.setValue(0);
-    
-    loopConfigArea.addAndMakeVisible(loopLabel);
-    loopConfigArea.addAndMakeVisible(previousLoopButton);
-    loopConfigArea.addAndMakeVisible(activeLoopLabel);
-    loopConfigArea.addAndMakeVisible(nextLoopButton);
-    loopConfigArea.addAndMakeVisible(newLoopButton);
-    loopConfigArea.addAndMakeVisible(removeLoopButton);
-    
-    // Track buttons
-    trackLabel.setText("Tracks: ", NotificationType::dontSendNotification);
-
-    previousTrackAttachment.reset (new ButtonAttachment (valueTreeState, "previousTrack", previousTrackButton));
-    previousTrackButton.setTooltip("Go to previous track");
-
-    activeTrackLabel.setText(String(activeTrack + 1), NotificationType::dontSendNotification);
-
-    nextTrackAttachment.reset (new ButtonAttachment (valueTreeState, "nextTrack", nextTrackButton));
-    nextTrackButton.setTooltip("Go to next track");
-
-    newTrackAttachment.reset (new ButtonAttachment (valueTreeState, "newTrack", newTrackButton));
-    newTrackButton.setTooltip("Create new track");
-
-    removeTrackAttachment.reset (new ButtonAttachment (valueTreeState, "removeTrack", removeTrackButton));
-    removeTrackButton.setTooltip("Remove latest track");
-    
-    transportButtonArea.addAndMakeVisible(activeLabel);
-    transportButtonArea.addAndMakeVisible(recordButton);
-    transportButtonArea.addAndMakeVisible(playButton);
-    transportButtonArea.addAndMakeVisible(stopButton);
-    transportButtonArea.addAndMakeVisible(clearButton);
-    transportButtonArea.addAndMakeVisible(muteButton);
-    transportButtonArea.addAndMakeVisible(soloButton);
-    transportButtonArea.addAndMakeVisible(monitorButton);
-    transportButtonArea.addAndMakeVisible(reverseButton);
-    transportButtonArea.addAndMakeVisible(undoButton);
-    transportButtonArea.addAndMakeVisible(redoButton);
-    transportButtonArea.addAndMakeVisible(autoTriggerButton);
-	transportButtonArea.addAndMakeVisible(bounceButton);
-
-    transportButtonArea.addAndMakeVisible(loopLabel);
-    transportButtonArea.addAndMakeVisible(previousLoopButton);
-    transportButtonArea.addAndMakeVisible(activeLoopLabel);
-    transportButtonArea.addAndMakeVisible(nextLoopButton);
-    transportButtonArea.addAndMakeVisible(newLoopButton);
-    transportButtonArea.addAndMakeVisible(removeLoopButton);
-
-    loopConfigArea.addAndMakeVisible(globalLabel);
-    loopConfigArea.addAndMakeVisible(muteAllButton);
-    loopConfigArea.addAndMakeVisible(stopAllButton);
-    loopConfigArea.addAndMakeVisible(startAllButton);
-    loopConfigArea.addAndMakeVisible(pauseAllButton);
-    loopConfigArea.addAndMakeVisible(clearAllButton);
-	loopConfigArea.addAndMakeVisible(addToGroupButton);
-	loopConfigArea.addAndMakeVisible(removeFromGroupButton);
-
-    loopConfigArea.addAndMakeVisible(trackLabel);
-    loopConfigArea.addAndMakeVisible(previousTrackButton);
-    loopConfigArea.addAndMakeVisible(activeTrackLabel);
-    loopConfigArea.addAndMakeVisible(nextTrackButton);
-    loopConfigArea.addAndMakeVisible(newTrackButton);
-    loopConfigArea.addAndMakeVisible(removeTrackButton);
-    loopConfigArea.addAndMakeVisible(tracksLayoutButton);
-    
-    inputDisplay.setSamplesPerBlock(processor.context->maxBlockSize);
-    inputDisplay.setBufferSize(processor.context->samplesPerBlock);
-    inputDisplay.setColours(Colours::darkgrey, Colours::indianred);
-
-	groupLabel.setText("Group select: ", NotificationType::dontSendNotification);
-	headerComp.addAndMakeVisible(groupLabel);
-	groupAttachment.reset(new AudioProcessorValueTreeState::ComboBoxAttachment(valueTreeState, "selectGroup", groupCombo));
-
-	groupColours.add(Colours::aqua);
-	groupColours.add(Colours::coral);
-	groupColours.add(Colours::crimson);
-	groupColours.add(Colours::lemonchiffon);
-	groupColours.add(Colours::darkturquoise);
-	groupColours.add(Colours::fuchsia);
-	groupColours.add(Colours::orange);
-	groupColours.add(Colours::darksalmon);
-	groupColours.add(Colours::violet);
-	groupColours.add(Colours::cornflowerblue);
-
-    for (auto group: processor.groups)
-	{
-		groupCombo.addItem(group->Name, group->Index + 1);
-	}
-	groupCombo.setSelectedId(1);
-	headerComp.addAndMakeVisible(groupCombo);
-    groupCombo.setTooltip("Select a group, then add or remove tracks. \nAll tracks in the same group will act simultaneously for certain commands");
-    inputLevelSlider.setNumDecimalPlacesToDisplay(1);
-    
-    inputLevelSlider.setTextBoxIsEditable(true);
-    inputLevelSlider.setTextValueSuffix(" db");
-    inputLevelSlider.addListener(this);
-    inputLevelAttachment.reset (new SliderAttachment (valueTreeState, "inputLevel", inputLevelSlider));
-    inputLevelSlider.setSliderStyle (Slider::LinearBarVertical);
-    inputLevelSlider.setTextBoxStyle(Slider::TextEntryBoxPosition::NoTextBox, true, 0, 0);
-    inputLevelSlider.setPopupDisplayEnabled (true, false, this);
-    leftInnerSide.addAndMakeVisible(inputLevelSlider);
-    inputLevelLabel.setText("Input Level", NotificationType::dontSendNotification);
-    inputLevelLabel.attachToComponent(&inputLevelSlider, false);
-    inputLevelSlider.setTooltip("Adjust the level of the input signal for the active track");
-    leftInnerSide.addAndMakeVisible(inputSliderComp);
-    
-    inputLevelSlider.textFromValueFunction = [this] (double val)
-        {
-                return String (val, 1);
-        };
-
-    outputLevelSlider.setRange(-60, 6);
-    outputLevelSlider.setNumDecimalPlacesToDisplay(1);
-    outputLevelSlider.setTextBoxIsEditable(true);
-    outputLevelSlider.setTextValueSuffix(" db");
-    outputLevelSlider.addListener(this);
-    outputLevelAttachment.reset (new SliderAttachment (valueTreeState, "outputLevel", outputLevelSlider));
-    
-    outputLevelSlider.setSliderStyle (Slider::LinearBarVertical);
-    outputLevelSlider.setTextBoxStyle(Slider::TextEntryBoxPosition::NoTextBox, true, 0, 0);
-    outputLevelSlider.setPopupDisplayEnabled (true, false, this);
-    rightInnerSide.addAndMakeVisible(outputLevelSlider);
-    outputLevelLabel.setText("Output Level", NotificationType::dontSendNotification);
-    outputLevelLabel.attachToComponent(&outputLevelSlider, false);
-    outputLevelSlider.textFromValueFunction = [this] (double val)
-        {
-                return String (val, 1);
-        };
-    outputLevelSlider.setTooltip("Adjust the level of the output signal for the active track");
-
-    rightInnerSide.addAndMakeVisible(outputSliderComp);
-    
-    globalVolumeSlider.setRange(-120, 6);
-    globalVolumeSlider.setNumDecimalPlacesToDisplay(2);
-    globalVolumeSlider.setTextBoxIsEditable(true);
-    globalVolumeSlider.setTextValueSuffix(" db");
-    globalVolumeSlider.addListener(this);
-    globalMixAttachment.reset (new SliderAttachment (valueTreeState, "globalMix", globalVolumeSlider));
-    globalVolumeSlider.setSliderStyle (Slider::LinearBarVertical);
-    globalVolumeSlider.setTextBoxStyle(Slider::TextEntryBoxPosition::NoTextBox, true, 0, 0);
-    globalVolumeSlider.setPopupDisplayEnabled (true, false, this);
-    rightInnerSide.addAndMakeVisible(globalVolumeSlider);
-    globalVolumeLabel.setText("Global Level", NotificationType::dontSendNotification);
-    globalVolumeSlider.textFromValueFunction = [this] (double val)
-        {
-                return String (val, 1);
-        };
-    globalVolumeLabel.attachToComponent(&globalVolumeSlider, false);
-    globalVolumeSlider.setTooltip("Adjust the level of the general output signal");
-
-    rightInnerSide.addAndMakeVisible(globalSliderComp);
-    leftSide.addAndMakeVisible(inputMeter.get());
-    rightSide.addAndMakeVisible(outputMeter.get());
-    headerComp.addAndMakeVisible(timeSigLabel);
-    headerComp.addAndMakeVisible(bpmLabel);
-    headerComp.addAndMakeVisible(progressLabel);
-    headerComp.addAndMakeVisible(trackNumberLabel);
-    headerComp.addAndMakeVisible(loopNumberLabel);
-    headerComp.addAndMakeVisible(layerNumberLabel);
-    headerComp.addAndMakeVisible(groupNumberLabel);
-    headerComp.addAndMakeVisible(barWitness);
-    headerComp.addAndMakeVisible(beatWitness);
-    transportButtonArea.addAndMakeVisible(recModeCombo);
-    transportButtonArea.addAndMakeVisible(snapModeCombo);
-    transportButtonArea.addAndMakeVisible(recModeLabel);
-    transportButtonArea.addAndMakeVisible(snapModeLabel);
-    setSize (1100, 620);
-
-}
-
-void OrbishAudioProcessorEditor::createTracksLayoutButton()
-{
-    horizontalOutline = new DrawableComposite();
-    for (int i = 0; i<3; ++i) {
-        Path pth;
-        auto* line = new DrawablePath();
-        pth.addLineSegment(Line<float>{2, float(i) * 8, 30, float(i) * 8}, 4);
-        line->setPath(pth);
-        horizontalOutline->addChildComponent(line);
+    groupColours.add(Colours::aqua);
+    groupColours.add(Colours::coral);
+    groupColours.add(Colours::crimson);
+    groupColours.add(Colours::lemonchiffon);
+    groupColours.add(Colours::darkturquoise);
+    groupColours.add(Colours::fuchsia);
+    groupColours.add(Colours::orange);
+    groupColours.add(Colours::darksalmon);
+    groupColours.add(Colours::violet);
+    groupColours.add(Colours::cornflowerblue);
+    for (auto group : processor.groups){
+        groupControlArea->groupCombo.addItem(group->Name, group->Index + 1);
     }
 
-    verticalOutline = new DrawableComposite();
-    for (int i = 0; i<6; ++i) {
-        Path pth;
-        auto* block = new DrawablePath();
-        pth.addRectangle(Rectangle<int>{i % 3 * 10, i / 3 * 13, 5, 7});
-        block->setPath(pth);
-        verticalOutline->addChildComponent(block);
-    }
+    auto navigationControlArea = &buttonControlArea->modeAndNavigationControlArea.navigationControlArea;
 
-    tracksLayoutButton = new DrawableButton("Layout", DrawableButton::ImageFitted);
-    tracksLayoutButton->setColour(DrawableButton::backgroundOnColourId, Colour(0x40FFFFFF));
-    tracksLayoutButton->setColour(DrawableButton::backgroundColourId, Colour(0x40FFFFFF));
+    // Loop button attachments
+    previousLoopAttachment.reset (new ButtonAttachment (valueTreeState, "previousLoop", navigationControlArea->previousLoopButton));
+    nextLoopAttachment.reset (new ButtonAttachment (valueTreeState, "nextLoop", navigationControlArea->nextLoopButton));
+    newLoopAttachment.reset (new ButtonAttachment (valueTreeState, "newLoop", navigationControlArea->newLoopButton));
+    removeLoopAttachment.reset (new ButtonAttachment (valueTreeState, "removeLoop", navigationControlArea->removeLoopButton));
+    
+    // Track button attachments
+    previousTrackAttachment.reset (new ButtonAttachment (valueTreeState, "previousTrack", navigationControlArea->previousTrackButton));
+    nextTrackAttachment.reset (new ButtonAttachment (valueTreeState, "nextTrack", navigationControlArea->nextTrackButton));
+    newTrackAttachment.reset (new ButtonAttachment (valueTreeState, "newTrack", navigationControlArea->newTrackButton));
+    removeTrackAttachment.reset (new ButtonAttachment (valueTreeState, "removeTrack", navigationControlArea->removeTrackButton));
 
-    tracksLayoutButton->setImages(horizontalOutline, horizontalOutline, horizontalOutline, nullptr, verticalOutline, verticalOutline, verticalOutline, nullptr);
-    tracksLayoutButton->setTooltip("Toggles between horizontal and vertical layout of the tracks");
-    tracksLayoutButton->setToggleState(true, NotificationType::dontSendNotification);
-    tracksLayoutButton->setClickingTogglesState(true);
-    tracksLayoutButton->addListener(this);
+
+    // Audio Display
+    infoAndControlArea.controlArea.thumbnailAndGroupArea.thumbnailArea.setEditor(this);
+    headerArea.setEditor(this);
+
+    addAndMakeVisible(headerArea);
+    addAndMakeVisible(infoAndControlArea);
+    addAndMakeVisible(tracksArea);
+
+    setSize (1250, 650);
 }
 
-
-ApplicationCommandTarget* OrbishAudioProcessorEditor::getNextCommandTarget() { return nullptr; };
-
-void OrbishAudioProcessorEditor::getAllCommands(Array< CommandID >& commands) {
-	const CommandID ids[] = { CommandIDs::newProject,
-							  CommandIDs::open,
-							  CommandIDs::saveProjectAs,
-							  CommandIDs::saveProject,
-							  CommandIDs::showProjectSettings
-	};
-
-
-
-	commands.addArray(ids, numElementsInArray(ids));
-}
 
 void OrbishAudioProcessorEditor::showSettingsPage() {
-	settingsPage = std::make_shared<SettingsPage>(processor.loggingActive
-		, processor.context->maxUndoHistory
-        , nbrTracksInARow
-		, processor.context->delayCompensation );
+	settingsPage = std::make_shared<SettingsPage>(processor.loggingActive, processor.context->maxUndoHistory, nbrTracksInARow, processor.context->delayCompensation );
 	settingsPage->addListener(this);
 	addAndMakeVisible(*settingsPage);
 	resized();
@@ -428,55 +145,6 @@ void OrbishAudioProcessorEditor::showSettingsPage() {
 
 void OrbishAudioProcessorEditor::closeSettingsPage() {
 	settingsPage.reset();
-}
-
-
-void OrbishAudioProcessorEditor::getCommandInfo(CommandID commandID, ApplicationCommandInfo& result) {
-	switch (commandID)
-	{
-	case CommandIDs::newProject:
-		result.setInfo("New Project...", "Creates a new Loopable project", CommandCategories::general, 0);
-		result.defaultKeypresses.add(KeyPress('n', ModifierKeys::ctrlModifier, 0));
-		result.setActive(true);
-		break;
-	case CommandIDs::open:
-		result.setInfo("Open Project...", "Opens an existing Loopable project", CommandCategories::general, 0);
-		result.defaultKeypresses.add(KeyPress('o', ModifierKeys::ctrlModifier, 0));
-		break;
-	case CommandIDs::saveProject:
-		result.setInfo("Save Project...", "Saves the current Loopable project", CommandCategories::general, 0);
-		result.defaultKeypresses.add(KeyPress('s', ModifierKeys::ctrlModifier, 0));
-		break;
-	case CommandIDs::saveProjectAs:
-		result.setInfo("Save Project As...", "Saves the current Loopable project under a different name", CommandCategories::general, 0);
-		result.defaultKeypresses.add(KeyPress('a', ModifierKeys::ctrlModifier, 0));
-		break;
-	case CommandIDs::showProjectSettings:
-		result.setInfo("Show Settings...", "Show the project settings", CommandCategories::general, 0);
-		result.defaultKeypresses.add(KeyPress('p', ModifierKeys::ctrlModifier, 0));
-		break;
-
-	default:
-		break;
-	}
-
-}
-
-bool OrbishAudioProcessorEditor::perform(const InvocationInfo& info) {
-	switch (info.commandID) {
-	case CommandIDs::newProject:                createNewProject();
-		break;
-	case CommandIDs::open:                      askUserToOpenFile();
-		break;
-	case CommandIDs::saveProject:               saveProject();
-		break;
-	case CommandIDs::saveProjectAs:              project.newProject = true; saveProject();
-		break;
-	case CommandIDs::showProjectSettings:     showSettingsPage();
-		break;
-	default:                                    return false;
-	}
-	return true;
 }
 
 void OrbishAudioProcessorEditor::createNewProject() {
@@ -524,12 +192,12 @@ void OrbishAudioProcessorEditor::createNewProject() {
 	}
 	processor.initGroups();
 	processor.activeTrack->processResetChange();
-    groupCombo.setSelectedId(1);
+    infoAndControlArea.controlArea.thumbnailAndGroupArea.groupControlArea.groupCombo.setSelectedId(1);
 	project.newProject = true;
 	project.dirty = true;
 }
 void OrbishAudioProcessorEditor::setProjectName(String name) {
-	projectLabel.setText(name, NotificationType::dontSendNotification);
+    infoAndControlArea.infoArea.setProjectName(name);
 	project.name = name;
 }
 
@@ -546,7 +214,7 @@ void OrbishAudioProcessorEditor::saveProject() {
             | FileBrowserComponent::FileChooserFlags::saveMode
 			, nullptr))
 			project.directory = fc.getResult();
-        setProjectName(project.directory.getFileName());	//	
+        setProjectName(project.directory.getFileName());	
 		if (!project.directory.exists()) {
 			juce::Result result = project.directory.createDirectory();
 			if (result.failed()) {
@@ -596,8 +264,7 @@ void OrbishAudioProcessorEditor::saveProject() {
 	}
 	loopTree->appendChild(*gsv, nullptr);
 	std::unique_ptr<XmlElement> el = loopTree->createXml();
-	el->writeTo(project.directory.getChildFile(project.name + ".xml")
-                , XmlElement::TextFormat());
+	el->writeTo(project.directory.getChildFile(project.name + ".xml"), XmlElement::TextFormat());
 	project.newProject = false;
 	project.dirty = false;
 }
@@ -657,7 +324,7 @@ void OrbishAudioProcessorEditor::askUserToOpenFile() {
 		makeTracks();
 	}
 	processor.initGroups();
-    groupCombo.setSelectedId(1);
+    infoAndControlArea.controlArea.thumbnailAndGroupArea.groupControlArea.groupCombo.setSelectedId(1);
 	processor.activeTrack->processResetChange();
 	File dir = File(File::getSpecialLocation(File::userHomeDirectory));
 	if (dir.getChildFile("Orbish").exists()) {
@@ -688,61 +355,6 @@ bool OrbishAudioProcessorEditor::openFile(const File& file) {
 		}
 	}
 	return false;
-}
-
-void  OrbishAudioProcessorEditor::initCommandManager() {
-	commandManager.reset(new ApplicationCommandManager());
-	commandManager->registerAllCommandsForTarget(this);
-	commandManager->setFirstCommandTarget(this);
-}
-MenuBarModel* OrbishAudioProcessorEditor::getMenuModel() {
-	return mainMenu.get();
-}
-
-StringArray OrbishAudioProcessorEditor::getMenuNames() { return { "File",  "Settings" }; }
-
-void OrbishAudioProcessorEditor::createMenu(PopupMenu& menu, const String& menuName) {
-	if (menuName == "File")             createFileMenu(menu);
-	//else if (menuName == "Edit")        createEditMenu(menu);
-	else if (menuName == "Settings")        createSettingsMenu(menu);
-	else                                jassertfalse; // names have changed?
-}
-
-void OrbishAudioProcessorEditor::createFileMenu(PopupMenu& menu) {
-	menu.addCommandItem(commandManager.get(), CommandIDs::newProject);
-	menu.addCommandItem(commandManager.get(), CommandIDs::open);
-	menu.addCommandItem(commandManager.get(), CommandIDs::saveProjectAs);
-	menu.addCommandItem(commandManager.get(), CommandIDs::saveProject);
-	menu.addSeparator();
-
-#if ! JUCE_MAC
-/*
-	menu.addCommandItem(commandManager.get(), CommandIDs::showAboutWindow);
-	menu.addCommandItem(commandManager.get(), CommandIDs::showAppUsageWindow);
-	menu.addCommandItem(commandManager.get(), CommandIDs::checkForNewVersion);
-	menu.addCommandItem(commandManager.get(), CommandIDs::showGlobalPathsWindow);
-	menu.addSeparator();
-	*/
-	//menu.addCommandItem(commandManager.get(), StandardApplicationCommandIDs::quit);
-#endif
-
-}
-
-void OrbishAudioProcessorEditor::createEditMenu(PopupMenu& menu) {
-	menu.addCommandItem(commandManager.get(), StandardApplicationCommandIDs::undo);
-	menu.addCommandItem(commandManager.get(), StandardApplicationCommandIDs::redo);
-	menu.addSeparator();
-	menu.addCommandItem(commandManager.get(), StandardApplicationCommandIDs::cut);
-	menu.addCommandItem(commandManager.get(), StandardApplicationCommandIDs::copy);
-	menu.addCommandItem(commandManager.get(), StandardApplicationCommandIDs::paste);
-	menu.addCommandItem(commandManager.get(), StandardApplicationCommandIDs::del);
-	menu.addCommandItem(commandManager.get(), StandardApplicationCommandIDs::selectAll);
-	menu.addCommandItem(commandManager.get(), StandardApplicationCommandIDs::deselectAll);
-}
-
-void OrbishAudioProcessorEditor::createSettingsMenu(PopupMenu& menu)
-{
-	menu.addCommandItem(commandManager.get(), CommandIDs::showProjectSettings);
 }
 
 void OrbishAudioProcessorEditor::handleMidiMessages(const MidiBuffer& midiMessages){
@@ -799,47 +411,32 @@ void OrbishAudioProcessorEditor::handleMidiMessages(const MidiBuffer& midiMessag
     }
 }
 
-MenuManager::~MenuManager(){
-    
-}
-
-OrbishAudioProcessorEditor::~OrbishAudioProcessorEditor()
-{
+OrbishAudioProcessorEditor::~OrbishAudioProcessorEditor(){
 	processor.guiAlive = false;
     Thread::sleep(200);
-    inputMeter->setLookAndFeel(nullptr);
-    outputMeter->setLookAndFeel(nullptr);
     setLookAndFeel(nullptr);
 }
 
-void OrbishAudioProcessorEditor::changeListenerCallback (ChangeBroadcaster* source)
-{
-    if (source == &thumbnail)        
-		thumbnailChanged();
+void OrbishAudioProcessorEditor::changeListenerCallback (ChangeBroadcaster* source){
+           
 }
 
-void OrbishAudioProcessorEditor::thumbnailChanged()
-{
-    //repaint();
-}
-
-void OrbishAudioProcessorEditor::timerCallback()
-{
+void OrbishAudioProcessorEditor::timerCallback(){
     changeTrack();
-    transportInfoArea.repaint();
 	BufferForVisualisation* b;
 	if (processor.context->xchange->readBufferQueue->read_available()) {
 		processor.context->xchange->readBufferQueue->pop(b);
 		updateLoopVisualiser(*b->buffer, b->numSamples);
 		String s = String(pointer_sized_int(b));
-		//DBG("Deleting ptr:" + s);
 		delete b;
 	}
+
+    auto modeControlArea = &infoAndControlArea.controlArea.buttonControlArea.modeAndNavigationControlArea.modeControlArea;
 	if (processor.activeTrack->Recording || processor.activeTrack->Playing) {
-		recModeCombo.setEnabled(false);
+        modeControlArea->recModeCombo.setEnabled(false);
 	}
 	else {
-		recModeCombo.setEnabled(true);
+        modeControlArea->recModeCombo.setEnabled(true);
 	}
 }
 
@@ -889,139 +486,27 @@ String OrbishAudioProcessorEditor::saveBufferFromLoop(int trackIdx, int loopIdx)
 
 void OrbishAudioProcessorEditor::toggleRecord(){
 	project.dirty = true;
-    inputDisplay.clear();
+    infoAndControlArea.controlArea.thumbnailAndGroupArea.thumbnailArea.inputDisplay.clear();
 }
 
 
 
 void OrbishAudioProcessorEditor::toggleStop(){
     updatePlayHead(0, false);
-
 }
 
 void OrbishAudioProcessorEditor::toggleClear(){
-        //getFromProcessor
-    playButton.setToggleState(false, NotificationType::dontSendNotification);
+    infoAndControlArea.controlArea.buttonControlArea.transportControlArea.playButton.setToggleState(false, NotificationType::dontSendNotification);
     thumbnail.reset(processor.context->audioInputsCount, thumbnail.getNumSamplesFinished());
     updatePlayHead(0,false);
 }
 
-
-
-void OrbishAudioProcessorEditor::toggleMute(){
-    //processor.processMuteChange();
-}
-
-void OrbishAudioProcessorEditor::toggleMonitor(){
-    //processor.processMonitorChange();
-}
-
 void OrbishAudioProcessorEditor::toggleReverse(){
-        //getFromProcessor
     reverseState = (reverseState == On)?Off:On;
-    //processor.processReverseChange();
-}
-
-void OrbishAudioProcessorEditor::toggleUndo(){
-//   processor.processPreviousChange();
-}
-
-void OrbishAudioProcessorEditor::toggleRedo(){
-//   processor.processNextChange();
-}
-
-void OrbishAudioProcessorEditor::toggleAutoTrigger(){
-   //processor.processTriggerModeChange();
-}
-
-void OrbishAudioProcessorEditor::toggleMuteAll(bool mute){
-        //getFromProcessor
-    muteAllButton.setState(Button::buttonNormal);
-//    processor.processMuteAllChange(mute);
-}
-
-void OrbishAudioProcessorEditor::changeInputLevel(){
-    //processor.processInputLevelChange(inputLevelSlider.getValue());
-}
-
-void OrbishAudioProcessorEditor::changeOutputLevel(){
-    //processor.processOutputLevelChange(outputLevelSlider.getValue());
-}
-
-void OrbishAudioProcessorEditor::changeGlobalMix(){
-  //  processor.processMixChange(globalVolumeSlider.getValue());
-}
-
-void OrbishAudioProcessorEditor::changeRecordingMode(){
-
-}
-
-void OrbishAudioProcessorEditor::changeSnapMode(){
-}
-
-void OrbishAudioProcessorEditor::paintIfFileLoaded (Graphics& g, const Rectangle<int>& thumbnailBounds)
-{
-    Path pth{};
-    pth.addRectangle(thumbnailBounds.withSizeKeepingCentre(thumbnailBounds.getWidth()+10, thumbnailBounds.getHeight()+10));
-
-    g.setColour (findColour(TextButton::ColourIds::textColourOnId));
-    auto audioLength (thumbnail.getTotalLength());                                      // [12]
-    thumbnail.drawChannels (g,
-                            thumbnailBounds,
-                            0.0,
-                            audioLength,
-                            1.0f);
-    g.setColour (Colours::white);
-	playHead.setBounds(std::max(playHeadPosition - 2.0f, float(transportInfoArea.getX())), float(transportInfoArea.getY()), 2.0f,
-                        float(transportInfoArea.getHeight()));
-    g.setOpacity(0.4);
-	if (playHead.getX() < 0)playHead.setX(0);
-    g.fillRect(playHead);
-    auto c1 = Colour(0x00FFFFFF);
-    auto c2 = Colour(0x8FFFFF00);
-   // processor.logMessage("Calculating denominator for playhead trail size");
-    double tmpDenom = processor.samplesToBeats(float(*processor.activeTrack->LoopDuration));
-    int denominator = std::ceil(tmpDenom);
-  //  processor.logMessage("1st stage: " + String(denominator));
-    denominator = denominator / (processor.context->timeSigBottom * .25) ;
-  //  processor.logMessage("2nd stage: " + String(denominator));
-    denominator = denominator / processor.context->timeSigTop * (60 / processor.context->info->bpm);
- //   processor.logMessage("timesigTop: " + String(processor.context->timeSigTop));
- //   processor.logMessage("timeRatio: " + String(60 / processor.context->info->bpm));
-  //  processor.logMessage("bpm: " + String(processor.context->info->bpm));
-
- //   processor.logMessage("3rd stage: " + String(denominator));
-    denominator = jmin(jmax(denominator*2, 8),40);
-    if(processor.activeTrack->Playing){
-    if(reverseState == On){
-        float tailWidth =
-                std::min(transportInfoArea.getWidth() / denominator, transportInfoArea.getWidth() - (playHead.getX() - transportInfoArea.getX()));
-        auto tail = Rectangle<float>(playHead.getX() , transportInfoArea.getY(),tailWidth, transportInfoArea.getHeight());
-        g.setGradientFill( ColourGradient::horizontal( c2, c1, tail ));
-        g.fillRect(tail);
-    }else{
-        float tailWidth =
-                std::min(transportInfoArea.getWidth() / denominator, playHead.getX()-transportInfoArea.getX());
-        auto tail = Rectangle<float>(playHead.getX() - tailWidth, transportInfoArea.getY()
-                                    , tailWidth
-                                    , transportInfoArea.getHeight());
-        g.setGradientFill( ColourGradient::horizontal( c1, c2, tail ));
-        g.fillRect(tail);
-        }
-    }
-}
-
-void OrbishAudioProcessorEditor::paintIfNoFileLoaded (Graphics& g, const Rectangle<int>& thumbnailBounds)
-{
-    g.setColour (Colours::white);
-    Path pth{};
-    pth.addRectangle(thumbnailBounds.withSizeKeepingCentre(thumbnailBounds.getWidth()+10, thumbnailBounds.getHeight()+10));
-
-    g.setColour (findColour(Label::textColourId));
-    g.drawFittedText ("No Loop", thumbnailBounds, Justification::centred, 1.0f);
 }
 
 void OrbishAudioProcessorEditor::updateInputVisualiser(const AudioBuffer<float>& buffer, int numSamples){
+    infoAndControlArea.controlArea.thumbnailAndGroupArea.thumbnailArea.repaint();
 }
 
 void OrbishAudioProcessorEditor::updateLoopVisualiser(const AudioBuffer<float>& buffer, int numSamples){
@@ -1029,33 +514,17 @@ void OrbishAudioProcessorEditor::updateLoopVisualiser(const AudioBuffer<float>& 
     if (numSamples > 0) {
         thumbnail.addBlock (0, buffer, 0, numSamples);
     }
+    infoAndControlArea.controlArea.thumbnailAndGroupArea.thumbnailArea.repaint();
 }
 
 
 void OrbishAudioProcessorEditor::updatePlayHead(int position, bool reverse){
-    reverseState = (reverse)?ToggleState::On:ToggleState::Off;
-       if(reverseState == On){
-        if(thumbnail.getTotalLength() > 0){
-            float audioPosition = jmax(.0f,float(thumbnail.getNumSamplesFinished() - position));
-            playHeadPosition = ((audioPosition / thumbnail.getNumSamplesFinished()) * transportInfoArea.getWidth() + transportInfoArea.getX());
-        }else{
-            playHeadPosition = thumbnail.getNumSamplesFinished()-1;
-        }
-    }else{
-        if(thumbnail.getTotalLength() > 0){
-            float audioPosition = position;
-            playHeadPosition = ((audioPosition / thumbnail.getNumSamplesFinished()) * transportInfoArea.getWidth() + transportInfoArea.getX());
-        }else{
-            playHeadPosition = 0;
-        }
-    }
-    playHeadPosition = jmax(playHeadPosition,.0f);
+    reverseState = (reverse) ? ToggleState::On : ToggleState::Off;
+    infoAndControlArea.controlArea.thumbnailAndGroupArea.thumbnailArea.updatePlayHead(position, reverse);
 }
 
 //==============================================================================
-void OrbishAudioProcessorEditor::paint (Graphics& g)
-{
-    // (Our component is opaque, so we must completely fill the background with a solid colour)
+void OrbishAudioProcessorEditor::paint (Graphics& g){
     g.fillAll(getLookAndFeel().findColour(ResizableWindow::backgroundColourId));
 
     if(start){
@@ -1064,86 +533,40 @@ void OrbishAudioProcessorEditor::paint (Graphics& g)
 
         g.drawFittedText ("Orbish", getLocalBounds(), Justification::top, 1);
         g.setColour(Colours::black);
-        g.fillRect(toolCanvas);
-        
-        leftSide.paint(g);
-        g.fillRect(leftSide.getBounds());
-        addAndMakeVisible(leftSide);
-
-        rightSide.paint(g);
-        g.fillRect(rightSide.getBounds());
-        addAndMakeVisible(rightSide);
-        rightInnerSide.paint(g);
-        g.fillRect(rightInnerSide.getBounds());
-        addAndMakeVisible(rightInnerSide);
-        leftInnerSide.paint(g);
-        g.fillRect(leftInnerSide.getBounds());
-        addAndMakeVisible(leftInnerSide);
-        
-        g.setGradientFill(ColourGradient(Colours::black,(float) transportInfoArea.getX(),(float) transportInfoArea.getY(), Colours::transparentBlack, (float) transportInfoArea.getX() + (float) transportInfoArea.getWidth(), (float) transportInfoArea.getY() + (float) transportInfoArea.getHeight(), false));
-        transportInfoArea.paint(g);
-        g.fillRect(transportInfoArea.getBounds());
-        addAndMakeVisible(transportInfoArea);
-        loopDisplayArea.paint(g);
-        g.fillRect(loopDisplayArea.getBounds());
-        addAndMakeVisible(loopDisplayArea);
-        transportButtonArea.paint(g);
-        g.fillRect(transportButtonArea.getBounds());
-        addAndMakeVisible(transportButtonArea);
-        loopConfigArea.paint(g);
-        g.fillRect(loopConfigArea.getBounds());
-        addAndMakeVisible(loopConfigArea);
+       
         g.fillRect(tracksViewport.getBounds());
 
         tracksViewport.setViewedComponent(&trackArea, false);
         tracksViewport.setScrollBarsShown(true, false);
         tracksViewport.setScrollBarThickness(20);
         addAndMakeVisible(tracksViewport);
-            start = false;
+        start = false;
     }
 
     if (thumbnail.getNumChannels() == 0 || thumbnail.getTotalLength() <= 0) {
-            paintIfNoFileLoaded (g, transportInfoArea.getBounds());
+        infoAndControlArea.controlArea.thumbnailAndGroupArea.thumbnailArea.setFileLoaded(false);
     }
     else {
-            paintIfFileLoaded (g, transportInfoArea.getBounds());
+        infoAndControlArea.controlArea.thumbnailAndGroupArea.thumbnailArea.setFileLoaded(true);
     }
     g.setColour(Colours::greenyellow);
     highlightActiveTrack(g);
     paintInfoSection(g);
 
-    if(processor.activeTrack->Recording){
-        recordButton.setColour(TextButton::textColourOnId, Colours::white);
-        recordButton.setColour(TextButton::buttonOnColourId, Colour(0x8FFC0B0B));
-    }else{
-        auto t = this->getTimerInterval();
-        if(processor.activeTrack->isRecordingArmed() && (t%1000)%2 > 0){
-            recordButton.setColour(TextButton::textColourOnId, Colour(0xFFFC0B0B));
-        }else{
-            recordButton.setColour(TextButton::textColourOnId, Colour(0x8FFC0B0B));
-        }
-    }
-    recordButton.setColour(TextButton::textColourOffId, Colour(0xAFFC0B0B));
+    auto transportControlArea = &infoAndControlArea.controlArea.buttonControlArea.transportControlArea;
 
     if(processor.activeTrack->Playing){
         if(processor.activeTrack->isPlayArmed()){
-            if(!playButton.getToggleState()){
-                playButton.triggerClick();
+            if(!transportControlArea->playButton.getToggleState()) {
+                transportControlArea->playButton.triggerClick();
             }
-            playButton.setColour(TextButton::textColourOnId, Colours::white);
-        }else{
-            playButton.setColour(TextButton::textColourOnId, Colour(0xFF2ACD01));
-            
         }
-        playButton.setColour(TextButton::buttonOnColourId, Colour(0x8F2ACD01));
-    }else{
-        if(processor.activeTrack->isPlayArmed()){
-            playButton.setColour(TextButton::textColourOnId, Colour(0xFF2ACD01));
-        }else{
-            playButton.setColour(TextButton::textColourOnId, Colour(Colours::darkgreen));
-            if(playButton.getToggleState()){
-                playButton.setToggleState(false, NotificationType::sendNotification);
-                playButton.setState(Button::buttonNormal);
+    }
+    else {
+        if (!processor.activeTrack->isPlayArmed()) {
+            if (transportControlArea->playButton.getToggleState()) {
+                transportControlArea->playButton.setToggleState(false, NotificationType::sendNotification);
+                transportControlArea->playButton.setState(Button::buttonNormal);
             }
         }
     }
@@ -1156,20 +579,16 @@ void OrbishAudioProcessorEditor::paint (Graphics& g)
         trackArea.repaint();
         tracksDirty = false;
     }
-
-    playButton.setColour(TextButton::textColourOffId, Colour(0xAF2ACD01));
 }
 
 void OrbishAudioProcessorEditor::paintInfoSection(Graphics& g){
     String timeSig = String(processor.context->info->timeSigNumerator) + "/" + String(processor.context->info->timeSigDenominator);
-    if(timeSig != timeSigLabel.getText()){
-        timeSigLabel.setText(timeSig, NotificationType::dontSendNotification);
-        timeSigLabel.touch();
+    if(timeSig != infoAndControlArea.infoArea.getTimeSignature()){
+        infoAndControlArea.infoArea.setTimeSignature(timeSig);
     }
     auto bpmStr = "bpm: " + String(processor.context->info->bpm, 1);
-    if(bpmStr != bpmLabel.getText()){
-        bpmLabel.setText(bpmStr, NotificationType::dontSendNotification);
-        bpmLabel.touch();
+    if(bpmStr != infoAndControlArea.infoArea.getBeatsPerMinute()){
+        infoAndControlArea.infoArea.setBeatsPerMinute(bpmStr);
     }
     
     float totalSubDiv = processor.samplesToBeats(*processor.activeTrack->CurrentPlayingIndex);
@@ -1179,21 +598,20 @@ void OrbishAudioProcessorEditor::paintInfoSection(Graphics& g){
     float rest = std::modf(totalSubDiv, &garbage);
     int subSubDiv = rest * 4 + 1;
     String progress = String(bars) + ". " + String(beats) + ". " + String(subSubDiv);
-    if (progress !=  progressLabel.getText()) {
-    progressLabel.setText(progress, NotificationType::dontSendNotification);
+    if (progress !=  infoAndControlArea.infoArea.getProgress()) {
+        infoAndControlArea.infoArea.setProgress(progress);
     }
-    progressLabel.setTooltip("Shows the progress of the loop while playing\n Time progress is synced to the host");
     auto trackNbr = "Track: "+String(processor.activeTrack->Index + 1);
-    if (trackNbr != trackNumberLabel.getText()) {
-        trackNumberLabel.setText(trackNbr, NotificationType::dontSendNotification);
+    if (trackNbr != infoAndControlArea.infoArea.getTrackNumber()) {
+        infoAndControlArea.infoArea.setTrackNumber(trackNbr);
     }
     auto loopNbr = "Loop: "+String(tracks[activeTrack]->getActiveLoop() + 1);
-    if (loopNbr != loopNumberLabel.getText()) {
-        loopNumberLabel.setText(loopNbr, NotificationType::dontSendNotification);
+    if (loopNbr != infoAndControlArea.infoArea.getLoopNumber()) {
+        infoAndControlArea.infoArea.setLoopNumber(loopNbr);
     }
     auto layerNbr = "Layer: " + String(*processor.activeTrack->CurrentTop + 1);
-    if (layerNbr != layerNumberLabel.getText()) {
-        layerNumberLabel.setText(layerNbr, NotificationType::dontSendNotification);
+    if (layerNbr != infoAndControlArea.infoArea.getLayerNumber()) {
+        infoAndControlArea.infoArea.setLayerNumber(layerNbr);
     }
 	auto grp = processor.getTrackGroup(processor.activeTrack);
 	String groupName = "";
@@ -1201,134 +619,35 @@ void OrbishAudioProcessorEditor::paintInfoSection(Graphics& g){
 		groupName = grp->Name;
 	}
     groupName = "Group: " + String(groupName);
-    if (groupNumberLabel.getText() != groupName){
-        groupNumberLabel.setText(groupName, NotificationType::dontSendNotification);
+    if (infoAndControlArea.infoArea.getGroupNumber() != groupName){
+        infoAndControlArea.infoArea.setGroupNumber(groupName);
     }
     if (processor.activeTrack->Playing) {
-        Path path;
-        path.addEllipse(300,35,10,10);
-        barWitness.setPath (path);
-        barWitness.setFill (Colours::green);
-        barWitness.setStrokeFill (Colours::greenyellow);
-        if((beats == 1 && subSubDiv == 1 && rest < (processor.context->bpm * 0.003f))){
-            barWitness.setAlpha(1);
-        }else{
-            barWitness.setAlpha(0.2);
+        if ((beats == 1 && subSubDiv == 1 && rest < (processor.context->bpm * 0.003f))){
+            infoAndControlArea.infoArea.updateBarWitness(1);
+        } else {
+            infoAndControlArea.infoArea.updateBarWitness(0.2);   
         }
-        barWitness.setStrokeThickness (2.0f);
-        
-        Path path2;
-        path2.addEllipse(320,35,10,10);
-        beatWitness.setPath (path2);
-        beatWitness.setFill (Colours::orangered);
-        beatWitness.setStrokeFill (Colours::orange);
         if(processor.activeTrack->Playing && subSubDiv == 1 && rest < (processor.context->bpm * 0.003f)){
-            beatWitness.setAlpha(1);
+            infoAndControlArea.infoArea.updateBeatWitness(1);
         }else{
-            beatWitness.setAlpha(0.2);
+            infoAndControlArea.infoArea.updateBeatWitness(0.2);
         }
-        beatWitness.setStrokeThickness (2.0f);
     }
-
-
 }
 
-void OrbishAudioProcessorEditor::resized()
-{
+void OrbishAudioProcessorEditor::resized() {
 	if (nullptr != settingsPage.get()) {
 		settingsPage->setBounds(getX(), getY(), getWidth(), getHeight());
 	}
-	menuBar->setBounds(0, 0, getWidth(), 20);
-	headerComp.setBounds(getX(), getY() +20, getWidth(), 60);
-    toolCanvas.setBounds(getWidth()/100, getHeight()/12 + 30, getWidth()*.98 , getHeight() - getHeight()/12-50 );
 
-    // This is generally where you'll want to lay out the positions of any
-    // subcomponents in your editor..
-    int containerMargin = 1;
-    int controlMargin = 2;
-	projectLabel.setBounds(450, 5, 200, 20);
-    activeLabel.setBounds(10, 10, 200, 20);
-    recordButton.setBounds(10, 40, 50, 20);
-    playButton.setBounds(65, 40, 50, 20);
-    stopButton.setBounds(120, 40, 50, 20);
-    clearButton.setBounds(175, 40, 50, 20);
-    muteButton.setBounds(230, 40, 50, 20);
-    soloButton.setBounds(285, 40, 50, 20);
-    monitorButton.setBounds(10, 65, 50, 20);
-    reverseButton.setBounds(65, 65, 50, 20);
-    undoButton.setBounds(120, 65, 50, 20);
-    redoButton.setBounds(175, 65, 50, 20);
-    bounceButton.setBounds(230, 65, 50, 20);
-    autoTriggerButton.setBounds(285, 65, 50, 20);
-
-    loopLabel.setBounds(5, 95, 50, 20);
-    previousLoopButton.setBounds(60, 95, 25, 20);
-    activeLoopLabel.setBounds(95, 95, 30, 20);
-    nextLoopButton.setBounds(130, 95, 25, 20);
-    newLoopButton.setBounds(160, 95, 25, 20);
-    removeLoopButton.setBounds(190, 95, 25, 20);
-    
-    globalLabel.setBounds(10, 10, 200, 20);
-    muteAllButton.setBounds(10, 40, 50, 20);
-    stopAllButton.setBounds(10, 65, 50, 20);
-    pauseAllButton.setBounds(65, 40, 50, 20);
-    startAllButton.setBounds(65, 65, 50, 20);
-    clearAllButton.setBounds(120, 40, 50, 20);
-	addToGroupButton.setBounds(190, 40, 50, 20);
-	removeFromGroupButton.setBounds(190, 65, 50, 20);
-
-    trackLabel.setBounds(5, 95, 50, 20);
-    previousTrackButton.setBounds(60, 95, 25, 20);
-    activeTrackLabel.setBounds(95, 95, 30, 20);
-    nextTrackButton.setBounds(130, 95, 25, 20);
-    newTrackButton.setBounds(160, 95, 25, 20);
-    removeTrackButton.setBounds(190, 95, 25, 20);
-    if(tracksLayoutButton != nullptr){
-        tracksLayoutButton->setBounds(250, 90, 25, 25);
-    }
-
-    leftSide.setBounds(toolCanvas.removeFromLeft(50).reduced(containerMargin));
-    rightSide.setBounds(toolCanvas.removeFromRight(50).reduced(containerMargin));
-    leftInnerSide.setBounds(toolCanvas.removeFromLeft(50).reduced(containerMargin));
-    rightInnerSide.setBounds(toolCanvas.removeFromRight(50).reduced(containerMargin));
-    transportInfoArea.setBounds(toolCanvas.removeFromTop(100).reduced(containerMargin));
-    loopDisplayArea.setBounds(toolCanvas.removeFromTop(40).reduced(containerMargin));
-    auto rect = toolCanvas.removeFromTop(120).reduced(containerMargin);
-    transportButtonArea.setBounds(rect);
-    loopConfigArea.setBounds(rect.removeFromRight(rect.getWidth() * .33f).reduced(containerMargin,0));
-    rect = toolCanvas;
-    rect.removeFromBottom(containerMargin + controlMargin + 1);
-    tracksViewport.setBounds(rect.reduced(containerMargin));
-
-    auto r = leftInnerSide.getLocalBounds();
-    auto s = r.removeFromTop(r.getHeight()/2);
-    inputLevelSlider.setBounds (r.removeFromLeft(r.getWidth() * .5f).reduced(controlMargin + 3));
-    r = rightInnerSide.getLocalBounds();
-    s = r.removeFromLeft(r.getWidth() * .5f);
-    outputLevelSlider.setBounds(s.removeFromBottom(s.getHeight() * .5f).reduced(controlMargin + 3));
-
-    globalVolumeSlider.setBounds(r.removeFromBottom(r.getHeight() * .5f).reduced(controlMargin + 3));
-    r = leftSide.getLocalBounds().removeFromBottom(leftSide.getHeight() * .5f).reduced(5, 0);
-    inputMeter->setBounds(r.withBottomY(inputLevelSlider.getBottom()));
-    r = rightSide.getLocalBounds().removeFromBottom(rightSide.getHeight() * .5f).reduced(5, 0);
-    outputMeter->setBounds(r.withBottomY(outputLevelSlider.getBottom()));
-
+    auto bounds = getLocalBounds();
+    auto headerHeight = 30;
+    headerArea.setBounds(bounds.removeFromTop(headerHeight));
+    infoAndControlArea.setBounds(bounds.removeFromTop(juce::jmax(80, bounds.getHeight()/2)));
+    tracksArea.setBounds(bounds);
+    tracksViewport.setBounds(bounds);
     makeTracks();
-    
-    timeSigLabel.setBounds(105,25,50,28);
-    bpmLabel.setBounds(170,25,70,28);
-    progressLabel.setBounds(340,25,100,28);
-    trackNumberLabel.setBounds(105, 5, 60, 15);
-    loopNumberLabel.setBounds(170, 5, 60, 15);
-    layerNumberLabel.setBounds(235, 5, 60, 15);
-	groupNumberLabel.setBounds(300, 5, 60, 15);
-	groupLabel.setBounds(860, 5, 100, 15);
-	groupCombo.setBounds(965, 5, 50, 25);
-    recModeCombo.setBounds(460, 40, 100, 25);
-    snapModeCombo.setBounds(460, 70, 100, 25);
-    recModeLabel.setBounds(340, 40, 100, 25);
-    snapModeLabel.setBounds(340, 70, 100, 25);
-
 }
 
 void OrbishAudioProcessorEditor::highlightActiveTrack(Graphics& g){
@@ -1347,13 +666,41 @@ int OrbishAudioProcessorEditor::getTrackRowHeight(int rowIdx) {
 	return (rowIdx>0)?maxNbrLoops * tracks[0]->loopHeight + tracks[tmpRowIdx * nbrTracksInARow]->getY() + tracks[0]->loopHeight :0;
 }
 
+void OrbishAudioProcessorEditor::setTracksDirty(){
+    tracksDirty = true;
+}
+
+void OrbishAudioProcessorEditor::toggleLayout(){
+    tracksLayoutHorizontal = !tracksLayoutHorizontal;
+}
+
+OrbishAudioProcessor* OrbishAudioProcessorEditor::getProcessor(){
+    return &processor;
+}
+
+AudioThumbnail* OrbishAudioProcessorEditor::getThumbnailInstance(){
+    return &thumbnail;
+}
+
+bool OrbishAudioProcessorEditor::getReverseState(){
+    if (reverseState == Off ){
+        return true;
+    }
+    else {
+        return false;
+    }
+}
+
 
 void OrbishAudioProcessorEditor::makeTracks(){
     
     trackArea.setBounds(tracksViewport.getBounds());
     updateTrackBounds();
     for (auto t : tracks) {
-        auto i = t->getIndex();
+        auto indexOfActiveTrack = t->getIndex();
+        if (activeTrack == indexOfActiveTrack){
+            infoAndControlArea.infoArea.setGroupNumber(t->Group);
+        }
         auto tr = t->getAudioTrack();
 		auto grp = processor.getTrackGroup(tr);
 		String groupName = "";
@@ -1366,11 +713,9 @@ void OrbishAudioProcessorEditor::makeTracks(){
 		t->GroupColour = grpCol;
     }
     repaint(tracksViewport.getBounds());
-    updateTrackAreaSize();
 }
 
-void OrbishAudioProcessorEditor::updateTrackAreaSize()
-{
+void OrbishAudioProcessorEditor::updateTrackAreaSize(){
     std::vector<int> height; int sum = 0;
     height.reserve(20);
     for (auto track : tracks) {
@@ -1383,22 +728,7 @@ void OrbishAudioProcessorEditor::updateTrackAreaSize()
     }
     int totalHeight = (tracksLayoutHorizontal) ? tracks.size() * (55) + 5 : (sum)+5;
     int diff = trackArea.getHeight() - totalHeight;
-    if (getHeight() < 600 - diff || getHeight() > 900 - diff) {
-        setSize(getWidth(), std::min(std::max(getHeight() - diff, 600), 900));
-    }
     trackArea.setSize(trackArea.getWidth(), std::max(tracksViewport.getHeight(), totalHeight));
-}
-
-void OrbishAudioProcessorEditor::sliderValueChanged (Slider* slider) {
-    if(slider == &inputLevelSlider){
-        inputLevelSlider.onValueChange = [this]() { changeInputLevel(); };
-    }
-    if(slider == &outputLevelSlider){
-        outputLevelSlider.onValueChange = [this]() { changeOutputLevel(); };
-    }
-    if(slider == &globalVolumeSlider){
-        globalVolumeSlider.onValueChange = [this]() { changeGlobalMix(); };
-    }
 }
 
 void OrbishAudioProcessorEditor::clicked(Button* button) {
@@ -1423,58 +753,12 @@ void OrbishAudioProcessorEditor::sliderChanged(Slider* slider) {
 }
 
 void OrbishAudioProcessorEditor::buttonClicked(Button* button){
-    if(button == &recordButton){
-        recordButton.onClick = [this]() { toggleRecord(); };
-    }
-    if(button == &stopButton){
-        stopButton.onClick = [this]() { toggleStop(); };
-    }
-    if(button == &clearButton || button == &clearAllButton){
-        button->onClick = [this]() { toggleClear(); };
-    }
-    if(button == &muteButton){
-        muteButton.onClick = [this]() { toggleMute(); };
-    }
-    if(button == &soloButton){
-    }
-    if(button == &monitorButton){
-        monitorButton.onClick = [this]() { toggleMonitor(); };
-    }
-    if(button == &reverseButton){
-        reverseButton.onClick = [this]() { toggleReverse(); };
-    }
-    if(button == &undoButton){
-        undoButton.onClick = [this]() { toggleUndo(); };
-    }
-    if(button == &redoButton){
-        redoButton.onClick = [this]() { toggleRedo(); };
-    }
-    if(button == &autoTriggerButton){
-        autoTriggerButton.onClick = [this]() { toggleAutoTrigger(); };
-    }
-    if(button == &muteAllButton){
-        button->onClick = [this] { toggleMuteAll((bool)muteAllButton.getToggleStateValue().getValue()); };
-    }
-	if (button == &addToGroupButton) {
-		button->onClick = [this] {
-			makeTracks();
-		};
-	}
-	if (button == &removeFromGroupButton) {
-		button->onClick = [this] {
-			makeTracks();
-		};
-	}
-
-    if(button == tracksLayoutButton){
-        tracksLayoutHorizontal = !tracksLayoutHorizontal;
-        tracksDirty = true;
-        repaint();
-        resized();
-    }
 	if (button == &settingsPage->closeSettingsButton) {
 		closeSettingsPage();
 	}
+}
+
+void OrbishAudioProcessorEditor::sliderValueChanged(Slider* slider){
 }
 
 void OrbishAudioProcessorEditor::mouseDown(const MouseEvent &event) {
@@ -1525,8 +809,10 @@ void OrbishAudioProcessorEditor::updateNextLoopNumber(int trackNumber, int loopN
 	if (tracks.size() > trackNumber && trackNumber >= 0 && loopNumber >= 0) {
 		auto t = tracks[trackNumber];
 		t->setActiveLoop(loopNumber);
-        activeLoopLabel.setText(String(tracks[activeTrack]->getActiveLoop() + 1), NotificationType::dontSendNotification);
-        loopNumberLabel.setText(String(tracks[activeTrack]->getActiveLoop() + 1), NotificationType::dontSendNotification);
+        infoAndControlArea.infoArea.setLoopNumber(String(tracks[activeTrack]->getActiveLoop() + 1));
+        auto navigationControlArea = &infoAndControlArea.controlArea.buttonControlArea.modeAndNavigationControlArea.navigationControlArea;
+        navigationControlArea->setActiveLoop(String(tracks[activeTrack]->getActiveLoop() + 1));
+        
 		tracksDirty = true;
 	}
 }
@@ -1544,9 +830,13 @@ void OrbishAudioProcessorEditor::changeTrack(){
     }
     tracksDirty = true;
     activeTrack=nextTrackNumber;
-    activeTrackLabel.setText(String(activeTrack + 1), NotificationType::dontSendNotification);
-    activeLoopLabel.setText(String(tracks[activeTrack]->getActiveLoop() + 1), NotificationType::dontSendNotification);
-    loopNumberLabel.setText(String(tracks[activeTrack]->getActiveLoop() + 1), NotificationType::dontSendNotification);
+
+    infoAndControlArea.infoArea.setTrackNumber(String(activeTrack + 1));
+    infoAndControlArea.infoArea.setLoopNumber(String(tracks[activeTrack]->getActiveLoop() + 1));
+
+    auto navigationControlArea = &infoAndControlArea.controlArea.buttonControlArea.modeAndNavigationControlArea.navigationControlArea;
+    navigationControlArea->setActiveTrack(String(activeTrack + 1));
+    navigationControlArea->setActiveLoop(String(tracks[activeTrack]->getActiveLoop() + 1));
     trackNumberUpdated = false;
 }
 
@@ -1601,11 +891,6 @@ void OrbishAudioProcessorEditor::askToCreateTrack(){
     doCreateTrack(tracks.size());
     makeTracks();
     project.dirty = true;
-}
-
-
-void OrbishAudioProcessorEditor::createTrack(){
-    // moved to askToCreateTrack
 }
 
 
