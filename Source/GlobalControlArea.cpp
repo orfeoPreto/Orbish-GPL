@@ -102,6 +102,9 @@ void GlobalControlArea::createTracksLayoutButton()
 }
 
 void GlobalControlArea::buttonClicked(Button* button){
+    if (editor == nullptr ){
+        return;
+    }
     if (button == &muteAllButton) {
         toggleMuteAll((bool)muteAllButton.getToggleStateValue().getValue());
     }

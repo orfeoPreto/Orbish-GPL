@@ -84,8 +84,6 @@ public:
     void buttonClicked (Button* button) override;
     void sliderValueChanged (Slider* slider) override;
     void changeListenerCallback (ChangeBroadcaster* source) override;
-    void paintIfFileLoaded (Graphics& g, const Rectangle<int>& thumbnailBounds);
-    void paintIfNoFileLoaded (Graphics& g, const Rectangle<int>& thumbnailBounds);
     void timerCallback() override;
     void mouseDown(const MouseEvent &event) override;
 	void makeTracks();

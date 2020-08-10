@@ -1,21 +1,16 @@
-/*
-  ==============================================================================
-
-    This file was auto-generated!
-
-    It contains the basic framework code for a JUCE plugin editor.
-
-  ==============================================================================
-*/
-
 #include "PluginProcessor.h"
 #include "PluginEditor.h"
 
 
 //==============================================================================
-OrbishAudioProcessorEditor::OrbishAudioProcessorEditor (OrbishAudioProcessor& p, AudioProcessorValueTreeState& apvts)
-: AudioProcessorEditor (&p),                              // [4]
-projectXml("<project />"), processor (p), thumbnailCache (5), thumbnail (32, formatManager, thumbnailCache), valueTreeState(apvts){
+OrbishAudioProcessorEditor::OrbishAudioProcessorEditor (OrbishAudioProcessor& p, AudioProcessorValueTreeState& apvts): 
+    AudioProcessorEditor (&p), 
+    projectXml("<project />"), 
+    processor (p), 
+    thumbnailCache (5), 
+    thumbnail (32, formatManager, thumbnailCache), 
+    valueTreeState(apvts)
+{
     openGLContext.attachTo(*getTopLevelComponent());
 
     // Define the Look and Feel of the application
@@ -44,9 +39,10 @@ projectXml("<project />"), processor (p), thumbnailCache (5), thumbnail (32, for
     thumbnail.addChangeListener (this);
     startTimer (20);
    
+
     auto buttonControlArea = &infoAndControlArea.controlArea.buttonControlArea;
 
-    // setup level meters
+    // Setup level meters
     buttonControlArea->outputControlArea.setEditor(this);
     outputLevelAttachment.reset(new SliderAttachment(valueTreeState, "outputLevel", buttonControlArea->outputControlArea.outputLevelSlider));
 
@@ -54,6 +50,7 @@ projectXml("<project />"), processor (p), thumbnailCache (5), thumbnail (32, for
     inputLevelAttachment.reset(new SliderAttachment(valueTreeState, "inputLevel", buttonControlArea->inputControlArea.inputLevelSlider));
     globalMixAttachment.reset(new SliderAttachment(valueTreeState, "globalMix", buttonControlArea->inputControlArea.globalVolumeSlider));
 
+    // Create tracks
     for (auto track : processor.tracks) {
        doCreateTrack(track->Index);
     }
@@ -91,7 +88,7 @@ projectXml("<project />"), processor (p), thumbnailCache (5), thumbnail (32, for
     pauseAllAttachment.reset (new ButtonAttachment (valueTreeState, "pauseAll", globalControlArea->pauseAllButton));
     clearAllAttachment.reset (new ButtonAttachment (valueTreeState, "resetAll", globalControlArea->clearAllButton));
     
-    // Grouping buttons
+    // Grouping buttons attachments
 
     auto groupControlArea = &infoAndControlArea.controlArea.thumbnailAndGroupArea.groupControlArea;
     addToGroupAttachment.reset(new ButtonAttachment(valueTreeState, "addToGroup", groupControlArea->addToGroupButton));
@@ -120,7 +117,7 @@ projectXml("<project />"), processor (p), thumbnailCache (5), thumbnail (32, for
     newLoopAttachment.reset (new ButtonAttachment (valueTreeState, "newLoop", navigationControlArea->newLoopButton));
     removeLoopAttachment.reset (new ButtonAttachment (valueTreeState, "removeLoop", navigationControlArea->removeLoopButton));
     
-    // Track buttons
+    // Track button attachments
     previousTrackAttachment.reset (new ButtonAttachment (valueTreeState, "previousTrack", navigationControlArea->previousTrackButton));
     nextTrackAttachment.reset (new ButtonAttachment (valueTreeState, "nextTrack", navigationControlArea->nextTrackButton));
     newTrackAttachment.reset (new ButtonAttachment (valueTreeState, "newTrack", navigationControlArea->newTrackButton));
@@ -129,21 +126,18 @@ projectXml("<project />"), processor (p), thumbnailCache (5), thumbnail (32, for
 
     // Audio Display
     infoAndControlArea.controlArea.thumbnailAndGroupArea.thumbnailArea.setEditor(this);
-   
     headerArea.setEditor(this);
+
     addAndMakeVisible(headerArea);
     addAndMakeVisible(infoAndControlArea);
     addAndMakeVisible(tracksArea);
 
-    setSize (1400, 650);
+    setSize (1250, 650);
 }
 
 
 void OrbishAudioProcessorEditor::showSettingsPage() {
-	settingsPage = std::make_shared<SettingsPage>(processor.loggingActive
-		, processor.context->maxUndoHistory
-        , nbrTracksInARow
-		, processor.context->delayCompensation );
+	settingsPage = std::make_shared<SettingsPage>(processor.loggingActive, processor.context->maxUndoHistory, nbrTracksInARow, processor.context->delayCompensation );
 	settingsPage->addListener(this);
 	addAndMakeVisible(*settingsPage);
 	resized();
@@ -509,14 +503,6 @@ void OrbishAudioProcessorEditor::toggleClear(){
 
 void OrbishAudioProcessorEditor::toggleReverse(){
     reverseState = (reverseState == On)?Off:On;
-}
-
-void OrbishAudioProcessorEditor::paintIfFileLoaded (Graphics& g, const Rectangle<int>& thumbnailBounds){
-    
-}
-
-void OrbishAudioProcessorEditor::paintIfNoFileLoaded (Graphics& g, const Rectangle<int>& thumbnailBounds){
-    
 }
 
 void OrbishAudioProcessorEditor::updateInputVisualiser(const AudioBuffer<float>& buffer, int numSamples){

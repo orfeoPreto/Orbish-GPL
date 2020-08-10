@@ -96,6 +96,9 @@ void ThumbnailArea::setEditor(OrbishAudioProcessorEditor* pluginEditor){
 }
 
 void ThumbnailArea::updatePlayHead(int position, bool reverse){
+    if (editor == nullptr) {
+        return;
+    }
     auto thumbnail = editor->getThumbnailInstance();
     auto bounds = getLocalBounds();
 

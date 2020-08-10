@@ -3,7 +3,7 @@
 
     ControlArea.cpp
     Created: 1 Aug 2020 3:22:34pm
-    Author:  lenna
+    Author:  Lennart Cockx
 
   ==============================================================================
 */
