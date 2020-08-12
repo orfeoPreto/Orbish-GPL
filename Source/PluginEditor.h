@@ -87,13 +87,12 @@ public:
     void timerCallback() override;
     void mouseDown(const MouseEvent &event) override;
 	void makeTracks();
-    void updateTrackAreaSize();
     void highlightActiveTrack(Graphics& g);
     void paintInfoSection(Graphics&);
     void askToCreateTrack() override;
     void askToCreateLoop() override;
     void updateTrackBounds();
-	String saveBufferFromLoop(int, int);
+    String saveBufferFromLoop(int, int);
 	void createNewProject();
 	void saveProject();
 	void askUserToOpenFile();
@@ -139,7 +138,7 @@ private:
     std::unique_ptr<AudioProcessorValueTreeState::ComboBoxAttachment> recModeAttachment;
     std::unique_ptr<AudioProcessorValueTreeState::ComboBoxAttachment> snapModeAttachment;
     Component trackArea {};
-    Viewport  tracksViewport;
+    Viewport  tracksViewport{};
     FFAU::LevelMeterSource outputMeterSource;
     bool start = true;
     bool thumbnailDirty = true;

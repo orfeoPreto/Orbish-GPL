@@ -50,11 +50,6 @@ OrbishAudioProcessorEditor::OrbishAudioProcessorEditor (OrbishAudioProcessor& p,
     inputLevelAttachment.reset(new SliderAttachment(valueTreeState, "inputLevel", buttonControlArea->inputControlArea.inputLevelSlider));
     globalMixAttachment.reset(new SliderAttachment(valueTreeState, "globalMix", buttonControlArea->inputControlArea.globalVolumeSlider));
 
-    // Create tracks
-    for (auto track : processor.tracks) {
-       doCreateTrack(track->Index);
-    }
-
     // Mode control attachments
     auto modeControlArea = &buttonControlArea->modeAndNavigationControlArea.modeControlArea;
 
@@ -123,7 +118,6 @@ OrbishAudioProcessorEditor::OrbishAudioProcessorEditor (OrbishAudioProcessor& p,
     newTrackAttachment.reset (new ButtonAttachment (valueTreeState, "newTrack", navigationControlArea->newTrackButton));
     removeTrackAttachment.reset (new ButtonAttachment (valueTreeState, "removeTrack", navigationControlArea->removeTrackButton));
 
-
     // Audio Display
     infoAndControlArea.controlArea.thumbnailAndGroupArea.thumbnailArea.setEditor(this);
     headerArea.setEditor(this);
@@ -131,6 +125,17 @@ OrbishAudioProcessorEditor::OrbishAudioProcessorEditor (OrbishAudioProcessor& p,
     addAndMakeVisible(headerArea);
     addAndMakeVisible(infoAndControlArea);
     addAndMakeVisible(tracksArea);
+
+    tracksViewport.setViewedComponent(&trackArea, false);
+    tracksViewport.setScrollBarsShown(true, false);
+    tracksViewport.setScrollBarThickness(20);
+    tracksViewport.setScrollBarPosition(false, true);
+    addAndMakeVisible(tracksViewport);
+
+    // Create tracks
+    for (auto track : processor.tracks) {
+        doCreateTrack(track->Index);
+    }
 
     setSize (1250, 650);
 }
@@ -527,32 +532,14 @@ void OrbishAudioProcessorEditor::updatePlayHead(int position, bool reverse){
 void OrbishAudioProcessorEditor::paint (Graphics& g){
     g.fillAll(getLookAndFeel().findColour(ResizableWindow::backgroundColourId));
 
-    if(start){
-        g.setColour (Colours::white);
-        g.setFont (15.0f);
-
-        g.drawFittedText ("Orbish", getLocalBounds(), Justification::top, 1);
-        g.setColour(Colours::black);
-       
-        g.fillRect(tracksViewport.getBounds());
-
-        tracksViewport.setViewedComponent(&trackArea, false);
-        tracksViewport.setScrollBarsShown(true, false);
-        tracksViewport.setScrollBarThickness(20);
-        addAndMakeVisible(tracksViewport);
-        start = false;
-    }
-
     if (thumbnail.getNumChannels() == 0 || thumbnail.getTotalLength() <= 0) {
         infoAndControlArea.controlArea.thumbnailAndGroupArea.thumbnailArea.setFileLoaded(false);
     }
     else {
         infoAndControlArea.controlArea.thumbnailAndGroupArea.thumbnailArea.setFileLoaded(true);
     }
-    g.setColour(Colours::greenyellow);
-    highlightActiveTrack(g);
-    paintInfoSection(g);
 
+    paintInfoSection(g);
     auto transportControlArea = &infoAndControlArea.controlArea.buttonControlArea.transportControlArea;
 
     if(processor.activeTrack->Playing){
@@ -645,8 +632,8 @@ void OrbishAudioProcessorEditor::resized() {
     auto headerHeight = 30;
     headerArea.setBounds(bounds.removeFromTop(headerHeight));
     infoAndControlArea.setBounds(bounds.removeFromTop(juce::jmax(80, bounds.getHeight()/2)));
-    tracksArea.setBounds(bounds);
     tracksViewport.setBounds(bounds);
+    
     makeTracks();
 }
 
@@ -693,8 +680,6 @@ bool OrbishAudioProcessorEditor::getReverseState(){
 
 
 void OrbishAudioProcessorEditor::makeTracks(){
-    
-    trackArea.setBounds(tracksViewport.getBounds());
     updateTrackBounds();
     for (auto t : tracks) {
         auto indexOfActiveTrack = t->getIndex();
@@ -712,23 +697,6 @@ void OrbishAudioProcessorEditor::makeTracks(){
 		t->Group = groupName;
 		t->GroupColour = grpCol;
     }
-    repaint(tracksViewport.getBounds());
-}
-
-void OrbishAudioProcessorEditor::updateTrackAreaSize(){
-    std::vector<int> height; int sum = 0;
-    height.reserve(20);
-    for (auto track : tracks) {
-        auto i = track->getIndex();
-        if (i % nbrTracksInARow == 0) { height.push_back(0); }
-        height[i / nbrTracksInARow] = jmax(height[i / nbrTracksInARow], track->getHeight());
-    }
-    for (int i = 0; i < height.size(); ++i) {
-        sum += height[i];
-    }
-    int totalHeight = (tracksLayoutHorizontal) ? tracks.size() * (55) + 5 : (sum)+5;
-    int diff = trackArea.getHeight() - totalHeight;
-    trackArea.setSize(trackArea.getWidth(), std::max(tracksViewport.getHeight(), totalHeight));
 }
 
 void OrbishAudioProcessorEditor::clicked(Button* button) {
@@ -840,17 +808,41 @@ void OrbishAudioProcessorEditor::changeTrack(){
     trackNumberUpdated = false;
 }
 
-void OrbishAudioProcessorEditor::updateTrackBounds()
-{
-    for(auto track: tracks)
-    {
+void OrbishAudioProcessorEditor::updateTrackBounds(){
+    auto tracksHeight = 0; 
+    if (tracksLayoutHorizontal){
+        tracksHeight = tracks.size() * 55 + 10;
+    }
+    else {
+        std::map<int, int> rowHeights;
+        for (auto track : tracks){
+            auto row = track->getIndex() / nbrTracksInARow + 1;
+            auto rowMaxLoops = rowHeights.find(row);
+            if (rowMaxLoops == rowHeights.end()){
+                rowHeights.insert(rowHeights.end(), std::pair<int, int>(row, track->Loops.size()));
+            }
+            else{
+                if (rowMaxLoops->second < track->Loops.size()){
+                    rowHeights.erase(rowMaxLoops);
+                    rowHeights.insert(rowHeights.end(), std::pair<int, int>(row, track->Loops.size()));
+                }
+            }
+        }
+        for (auto row: rowHeights){
+            tracksHeight += row.second*18+20;
+        }
+        tracksHeight += 10;
+    }
+    trackArea.setBounds(tracksViewport.getX(), tracksViewport.getY(), tracksViewport.getWidth(), tracksHeight);
+
+    for (auto track : tracks) {
         track->horizontalLayout = tracksLayoutHorizontal;
         auto index = track->getIndex();
         if (!tracksLayoutHorizontal) {
-            track->setBounds(5 + (index % nbrTracksInARow * (840 / nbrTracksInARow)), (getTrackRowHeight(index / nbrTracksInARow)) + 5, 840 / nbrTracksInARow, 20 + 18 * track->Loops.size());
+            track->setBounds(5 + (index % nbrTracksInARow * (tracksViewport.getMaximumVisibleWidth() / nbrTracksInARow)), (getTrackRowHeight(index / nbrTracksInARow)) + 5, tracksViewport.getMaximumVisibleWidth() / nbrTracksInARow - 10, 20 + 18 * track->Loops.size());
         }
         else {
-            track->setBounds(5, index * (55) + 5, trackArea.getWidth() - 2 * 5, 50);
+            track->setBounds(5, index * (55) + 5, tracksViewport.getMaximumVisibleWidth() - 10, 50);
         }
     }
 }
@@ -907,6 +899,7 @@ void OrbishAudioProcessorEditor::doCreateTrack(int trackNumber) {
 		auto* t = new TrackComponent(trackNumber, prg, tracksLayoutHorizontal, audioTrack);
 		t->addMouseListener(this, true);
 		tracks.add(t);
+        trackArea.addAndMakeVisible(t);
 	}
 	else {
         for(auto l : *loops){

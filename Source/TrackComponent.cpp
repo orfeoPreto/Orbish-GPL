@@ -31,13 +31,14 @@ TrackComponent::TrackComponent(int index, std::vector<double*> progress, bool& l
 
 
     addAndMakeVisible(witness);
+
     trackNameLabel.setText(this->getName(), NotificationType::sendNotification);
     trackNameLabel.setFont(Font(10.0f));
     trackNameLabel.setColour(Label::textWhenEditingColourId, Colours::white);
     trackNameLabel.setEditable(false,true,false);
-
     trackNameLabel.addListener(this);
     addAndMakeVisible(trackNameLabel);
+
     trackNumberLabel.setFont(Font(10.0f));
     trackNumberLabel.setText(String(index+1), NotificationType::dontSendNotification);
     trackNumberLabel.addListener(this);
