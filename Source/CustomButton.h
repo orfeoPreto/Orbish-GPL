@@ -15,12 +15,14 @@ class OrbishAudioProcessorEditor;
 
 class CustomButton : public juce::TextButton {
 public:
-    CustomButton(const String&, bool, OrbishAudioProcessorEditor*);
+    CustomButton(const String&, bool, bool);
     CustomButton(const String&, bool);
     ~CustomButton();
 
     bool isPushButton();
+    bool isSquareButton();
 
 private:
-    bool pushButton;
+    bool pushButton = false;
+    bool squareButton = false;
 };

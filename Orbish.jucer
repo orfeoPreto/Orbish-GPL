@@ -13,6 +13,14 @@
         <FILE id="C51pop" name="button-base-hover.png" compile="0" resource="1"
               file="resources/Bases/button-base-hover.png"/>
         <FILE id="OUW2a1" name="button-base.png" compile="0" resource="1" file="resources/Bases/button-base.png"/>
+        <FILE id="Aa8asT" name="square-button-base-active.png" compile="0"
+              resource="1" file="resources/Bases/square-button-base-active.png"/>
+        <FILE id="b6kFH9" name="square-button-base-clicked.png" compile="0"
+              resource="1" file="resources/Bases/square-button-base-clicked.png"/>
+        <FILE id="gDj6kz" name="square-button-base-hover.png" compile="0" resource="1"
+              file="resources/Bases/square-button-base-hover.png"/>
+        <FILE id="HA1pVQ" name="square-button-base.png" compile="0" resource="1"
+              file="resources/Bases/square-button-base.png"/>
       </GROUP>
     </GROUP>
     <GROUP id="{BBA6A5B7-B8B2-FF89-C2B6-EE59F1E7D235}" name="exu">

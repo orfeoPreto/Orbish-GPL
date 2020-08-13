@@ -75,49 +75,53 @@ OrbishLookAndFeel::~OrbishLookAndFeel() {
 
 }
 
+
+
 void OrbishLookAndFeel::drawButtonBackground(juce::Graphics& g, juce::Button& button, const juce::Colour& backgroundColour, bool isHovering, bool isButtonDown) {
     g.setColour(juce::Colour(0xff262626));
     g.fillRect(button.getLocalBounds());
 
+    auto buttonShape = isSquareButton(&button) ? ButtonShape::SQUARE : ButtonShape::RECTANGULAR;
+
     if (isPushButton(&button)){
-        drawPushButton(g, button, backgroundColour, isHovering, isButtonDown);
+        drawPushButton(g, button, backgroundColour, isHovering, isButtonDown, buttonShape);
     }
     else{
-        drawToggleButton(g, button, backgroundColour, isHovering, isButtonDown);
+        drawToggleButton(g, button, backgroundColour, isHovering, isButtonDown, buttonShape);
     }
 }
 
-void OrbishLookAndFeel::drawPushButton(juce::Graphics& g, juce::Button& button, const juce::Colour& backgroundColour, bool isHovering, bool isButtonDown){
+void OrbishLookAndFeel::drawPushButton(juce::Graphics& g, juce::Button& button, const juce::Colour& backgroundColour, bool isHovering, bool isButtonDown, ButtonShape shape){
     Image image;
     if (isButtonDown) {
-        image = ImageFileFormat::loadFrom(BinaryData::buttonbaseclicked_png, BinaryData::buttonbaseclicked_pngSize);
+        image = getImageForButton(shape, ButtonState::CLICKED);
     }
     else if (isHovering) {
-        image = ImageFileFormat::loadFrom(BinaryData::buttonbasehover_png, BinaryData::buttonbasehover_pngSize);
+        image = getImageForButton(shape, ButtonState::HOVERING);
     }
     else {
-        image = ImageFileFormat::loadFrom(BinaryData::buttonbase_png, BinaryData::buttonbase_pngSize);
+        image = getImageForButton(shape, ButtonState::BASE);
     }
     auto bounds = button.getLocalBounds();
     g.drawImageWithin(image, 0, 0, bounds.getWidth(), bounds.getHeight(), RectanglePlacement(), false);
 }
 
-void OrbishLookAndFeel::drawToggleButton(juce::Graphics& g, juce::Button& button, const juce::Colour& backgroundColour, bool isHovering, bool isButtonDown){
+void OrbishLookAndFeel::drawToggleButton(juce::Graphics& g, juce::Button& button, const juce::Colour& backgroundColour, bool isHovering, bool isButtonDown, ButtonShape shape) {
     Image image;
-    if ((button.getToggleState() && isButtonDown)){
-        image = ImageFileFormat::loadFrom(BinaryData::buttonbasehover_png, BinaryData::buttonbasehover_pngSize);
+    if ((button.getToggleState() && isButtonDown)) {
+        image = getImageForButton(shape, ButtonState::HOVERING);
     }
-    else if (isButtonDown || (button.getToggleState() && isHovering)){
-        image = ImageFileFormat::loadFrom(BinaryData::buttonbaseclicked_png, BinaryData::buttonbaseclicked_pngSize);
+    else if (isButtonDown || (button.getToggleState() && isHovering)) {
+        image = getImageForButton(shape, ButtonState::CLICKED);
     }
     else if (isHovering) {
-        image = ImageFileFormat::loadFrom(BinaryData::buttonbasehover_png, BinaryData::buttonbasehover_pngSize);
+        image = getImageForButton(shape, ButtonState::HOVERING);
     }
-    else if (button.getToggleState()){
-        image = ImageFileFormat::loadFrom(BinaryData::buttonbaseactive_png, BinaryData::buttonbaseactive_pngSize);
+    else if (button.getToggleState()) {
+        image = getImageForButton(shape, ButtonState::ACTIVE);
     }
-    else{
-        image = ImageFileFormat::loadFrom(BinaryData::buttonbase_png, BinaryData::buttonbase_pngSize);
+    else {
+        image = getImageForButton(shape, ButtonState::BASE);
     }
     auto bounds = button.getLocalBounds();
     g.drawImageWithin(image, 0, 0, bounds.getWidth(), bounds.getHeight(), RectanglePlacement(), false);
@@ -130,4 +134,33 @@ bool OrbishLookAndFeel::isPushButton(juce::Button* button){
         }
     }
     return false;
+}
+
+bool OrbishLookAndFeel::isSquareButton(juce::Button* button) {
+    if (auto orbishButton = dynamic_cast<CustomButton*>(button)) {
+        if (orbishButton->isSquareButton()) {
+            return true;
+        }
+    }
+    return false;
+}
+
+Image OrbishLookAndFeel::getImageForButton(ButtonShape shape, ButtonState state){
+    if (shape == ButtonShape::SQUARE){
+        switch (state) {
+            case ButtonState::BASE: return ImageFileFormat::loadFrom(BinaryData::squarebuttonbase_png, BinaryData::squarebuttonbase_pngSize);
+            case ButtonState::HOVERING: return ImageFileFormat::loadFrom(BinaryData::squarebuttonbasehover_png, BinaryData::squarebuttonbasehover_pngSize);
+            case ButtonState::CLICKED: return ImageFileFormat::loadFrom(BinaryData::squarebuttonbaseclicked_png, BinaryData::squarebuttonbaseclicked_pngSize);
+            case ButtonState::ACTIVE: return ImageFileFormat::loadFrom(BinaryData::squarebuttonbaseactive_png, BinaryData::squarebuttonbaseactive_pngSize);
+        }
+    }
+    else{
+        switch (state) {
+        case ButtonState::BASE: return ImageFileFormat::loadFrom(BinaryData::buttonbase_png, BinaryData::buttonbase_pngSize);
+        case ButtonState::HOVERING: return ImageFileFormat::loadFrom(BinaryData::buttonbasehover_png, BinaryData::buttonbasehover_pngSize);
+        case ButtonState::CLICKED: return ImageFileFormat::loadFrom(BinaryData::buttonbaseclicked_png, BinaryData::buttonbaseclicked_pngSize);
+        case ButtonState::ACTIVE: return ImageFileFormat::loadFrom(BinaryData::buttonbaseactive_png, BinaryData::buttonbaseactive_pngSize);
+        }
+    }
+    return ImageFileFormat::loadFrom(BinaryData::buttonbase_png, BinaryData::buttonbase_pngSize);
 }

@@ -27,17 +27,17 @@ public:
 
     exu::Label loopLabel{ "Loops: " };
     exu::Label activeLoopLabel{ "1" };
-    CustomButton previousLoopButton{ "<", true };
-    CustomButton nextLoopButton{ ">", true };
-    CustomButton newLoopButton{ "+", true };
-    CustomButton removeLoopButton{ "-", true };
+    CustomButton previousLoopButton{ "<", true, true };
+    CustomButton nextLoopButton{ ">", true, true };
+    CustomButton newLoopButton{ "+", true, true };
+    CustomButton removeLoopButton{ "-", true, true };
 
     exu::Label trackLabel{ "Tracks: " };
     exu::Label activeTrackLabel{ "1" };
-    CustomButton previousTrackButton{ "<", true };
-    CustomButton nextTrackButton{ ">", true };
-    CustomButton newTrackButton{ "+", true};
-    CustomButton removeTrackButton{ "-", true};
+    CustomButton previousTrackButton{ "<", true, true };
+    CustomButton nextTrackButton{ ">", true, true };
+    CustomButton newTrackButton{ "+", true, true };
+    CustomButton removeTrackButton{ "-", true, true };
 
     void setActiveLoop(String);
     void setActiveTrack(String);

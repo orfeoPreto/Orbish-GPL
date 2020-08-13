@@ -20,8 +20,20 @@ namespace BinaryData
     extern const char*   buttonbase_png;
     const int            buttonbase_pngSize = 1191;
 
+    extern const char*   squarebuttonbaseactive_png;
+    const int            squarebuttonbaseactive_pngSize = 5990;
+
+    extern const char*   squarebuttonbaseclicked_png;
+    const int            squarebuttonbaseclicked_pngSize = 7022;
+
+    extern const char*   squarebuttonbasehover_png;
+    const int            squarebuttonbasehover_pngSize = 3673;
+
+    extern const char*   squarebuttonbase_png;
+    const int            squarebuttonbase_pngSize = 2503;
+
     // Number of elements in the namedResourceList and originalFileNames arrays.
-    const int namedResourceListSize = 4;
+    const int namedResourceListSize = 8;
 
     // Points to the start of a list of resource names.
     extern const char* namedResourceList[];

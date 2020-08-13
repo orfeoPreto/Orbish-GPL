@@ -13,13 +13,14 @@
 
 //==============================================================================
 NavigationControlArea::NavigationControlArea(){
-    loopLabel.setText("Loops: ", NotificationType::dontSendNotification);
+    loopLabel.setText("Loop", NotificationType::dontSendNotification);
     addAndMakeVisible(loopLabel);
 
     previousLoopButton.setTooltip("Go to previous loop on active track or group");
     addAndMakeVisible(previousLoopButton);
 
     activeLoopLabel.setText("1", NotificationType::dontSendNotification);
+    activeLoopLabel.setJustificationType(Justification::centred);
     addAndMakeVisible(activeLoopLabel);
 
     nextLoopButton.setTooltip("Go to next loop on active track or group");
@@ -33,13 +34,14 @@ NavigationControlArea::NavigationControlArea(){
     
 
 
-    trackLabel.setText("Tracks: ", NotificationType::dontSendNotification);
+    trackLabel.setText("Track", NotificationType::dontSendNotification);
     addAndMakeVisible(trackLabel);
 
     previousTrackButton.setTooltip("Go to previous track");
     addAndMakeVisible(previousTrackButton);
 
     activeTrackLabel.setText("1", NotificationType::dontSendNotification);
+    activeTrackLabel.setJustificationType(Justification::centred);
     addAndMakeVisible(activeTrackLabel);
 
     nextTrackButton.setTooltip("Go to next track");
@@ -75,13 +77,13 @@ void NavigationControlArea::resized(){
     // Loop navigation
     auto loopButtonArea = bounds.removeFromLeft(bounds.getWidth() / 2).reduced(10);
     auto loopNavArea = loopButtonArea.removeFromLeft(loopButtonArea.getWidth() * 3 / 5);
-
+    
     loopLabel.setBounds(loopNavArea.removeFromTop(15));
     auto buttonWidth = loopNavArea.getWidth() / 3;
     previousLoopButton.setBounds(loopNavArea.removeFromLeft(buttonWidth));
     activeLoopLabel.setBounds(loopNavArea.removeFromLeft(buttonWidth));
     nextLoopButton.setBounds(loopNavArea);
-    newLoopButton.setBounds(loopButtonArea.removeFromTop(loopButtonArea.getWidth()/2));
+    newLoopButton.setBounds(loopButtonArea.removeFromTop(loopButtonArea.getHeight()/2));
     removeLoopButton.setBounds(loopButtonArea);
 
     // Track navigation
@@ -93,7 +95,7 @@ void NavigationControlArea::resized(){
     previousTrackButton.setBounds(trackNavArea.removeFromLeft(buttonWidth));
     activeTrackLabel.setBounds(trackNavArea.removeFromLeft(buttonWidth));
     nextTrackButton.setBounds(trackNavArea);
-    newTrackButton.setBounds(trackButtonArea.removeFromTop(trackButtonArea.getWidth() / 2));
+    newTrackButton.setBounds(trackButtonArea.removeFromTop(trackButtonArea.getHeight() / 2));
     removeTrackButton.setBounds(trackButtonArea);
 
 }

@@ -11,9 +11,8 @@
 #include "CustomButton.h"
 #include "PluginEditor.h"
 
-CustomButton::CustomButton(const String& name, bool isPushButton, OrbishAudioProcessorEditor* pluginEditor) : TextButton(name) {
-    this->addListener(pluginEditor);
-    this->pushButton = isPushButton;
+CustomButton::CustomButton(const String& name, bool isPushButton) : TextButton(name) {
+    pushButton = isPushButton;
     if (pushButton) {
         setColour(TextButton::ColourIds::textColourOnId, juce::Colour(0xff707070));
     }
@@ -22,8 +21,9 @@ CustomButton::CustomButton(const String& name, bool isPushButton, OrbishAudioPro
     setClickingTogglesState(true);
 }
 
-CustomButton::CustomButton(const String& name, bool isPushButton): TextButton (name){
-    this->pushButton = isPushButton;
+CustomButton::CustomButton(const String& name, bool isPushButton, bool isSquareButton) : TextButton(name) {
+    pushButton = isPushButton;
+    squareButton = isSquareButton;
     if (pushButton) {
         setColour(TextButton::ColourIds::textColourOnId, juce::Colour(0xff707070));
     }
@@ -37,4 +37,8 @@ CustomButton::~CustomButton(){
 
 bool CustomButton::isPushButton(){
     return pushButton;
+}
+
+bool CustomButton::isSquareButton(){
+    return squareButton;
 }
