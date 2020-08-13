@@ -137,7 +137,7 @@ OrbishAudioProcessorEditor::OrbishAudioProcessorEditor (OrbishAudioProcessor& p,
         doCreateTrack(track->Index);
     }
 
-    setSize (1250, 650);
+    setSize (1300, 800);
 }
 
 
@@ -540,6 +540,9 @@ void OrbishAudioProcessorEditor::paint (Graphics& g){
     }
 
     paintInfoSection(g);
+    g.setColour(Colours::black);
+    g.drawRoundedRectangle(tracksViewport.getBoundsInParent().expanded(5).toFloat(), 4.0f, 1.0f);
+
     auto transportControlArea = &infoAndControlArea.controlArea.buttonControlArea.transportControlArea;
 
     if(processor.activeTrack->Playing){
@@ -632,7 +635,7 @@ void OrbishAudioProcessorEditor::resized() {
     auto headerHeight = 30;
     headerArea.setBounds(bounds.removeFromTop(headerHeight));
     infoAndControlArea.setBounds(bounds.removeFromTop(juce::jmax(80, bounds.getHeight()/2)));
-    tracksViewport.setBounds(bounds);
+    tracksViewport.setBounds(bounds.reduced(15));
     
     makeTracks();
 }

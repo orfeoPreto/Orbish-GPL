@@ -58,20 +58,17 @@ ModeControlArea::~ModeControlArea(){
 }
 
 void ModeControlArea::paint (juce::Graphics& g){
-    g.fillAll (getLookAndFeel().findColour (juce::ResizableWindow::backgroundColourId));   // clear the background
-
-    g.setColour (juce::Colours::black);
-    g.drawRect (getLocalBounds(), 1);   // draw an outline around the component
 
 }
 
 void ModeControlArea::resized(){
 
-    auto bounds = getLocalBounds().reduced(10);
+    auto bounds = getLocalBounds().reduced(5);
 
     juce::Grid grid;
     using Track = juce::Grid::TrackInfo;
     using Fr = juce::Grid::Fr;
+    grid.setGap(Grid::Px(10));
 
     grid.templateRows = { Track(Fr(1)), Track(Fr(1)) };
     grid.templateColumns = { Track(Fr(1)), Track(Fr(1)) };

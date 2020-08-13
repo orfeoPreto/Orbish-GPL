@@ -73,7 +73,7 @@ void TransportControlArea::paint (juce::Graphics& g){
 
 void TransportControlArea::resized(){
 
-    auto bounds = getLocalBounds().reduced(10);
+    auto bounds = getLocalBounds().reduced(15);
     activeLabel.setBounds(bounds.removeFromTop(15));
     
     juce::Grid grid;

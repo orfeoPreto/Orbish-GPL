@@ -24,7 +24,7 @@ void ModeAndNavigationControlArea::paint (juce::Graphics& g){
 }
 
 void ModeAndNavigationControlArea::resized(){
-    auto bounds = getLocalBounds();
+    auto bounds = getLocalBounds().reduced(10);
 
     modeControlArea.setBounds(bounds.removeFromTop(bounds.getHeight() / 2));
     navigationControlArea.setBounds(bounds);

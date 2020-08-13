@@ -35,11 +35,11 @@ void GroupControlArea::paint (juce::Graphics& g){
     g.fillAll (getLookAndFeel().findColour (juce::ResizableWindow::backgroundColourId));   // clear the background
 
     g.setColour (juce::Colours::black);
-    g.drawRect (getLocalBounds(), 1);   // draw an outline around the component
+    g.drawRoundedRectangle(getLocalBounds().reduced(5).toFloat(), 4.0f, 1.0f);
 }
 
 void GroupControlArea::resized(){
-    auto bounds = getLocalBounds().reduced(10);
+    auto bounds = getLocalBounds().reduced(15);
 
     groupLabel.setBounds(bounds.removeFromTop(15));
     groupCombo.setBounds(bounds.removeFromTop(bounds.getHeight() / 2).reduced(10));

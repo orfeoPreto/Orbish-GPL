@@ -40,15 +40,10 @@ GlobalControlArea::~GlobalControlArea(){
 }
 
 void GlobalControlArea::paint (juce::Graphics& g){
-
-    g.fillAll (getLookAndFeel().findColour (juce::ResizableWindow::backgroundColourId));   // clear the background
-
-    g.setColour (juce::Colours::black);
-    g.drawRect (getLocalBounds(), 1);   // draw an outline around the component
 }
 
 void GlobalControlArea::resized(){
-    auto bounds = getLocalBounds().reduced(10);
+    auto bounds = getLocalBounds().reduced(15);
     globalLabel.setBounds(bounds.removeFromTop(15));
 
     juce::Grid grid;

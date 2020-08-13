@@ -58,17 +58,13 @@ NavigationControlArea::~NavigationControlArea(){
 }
 
 void NavigationControlArea::paint (juce::Graphics& g){
-    g.fillAll (getLookAndFeel().findColour (juce::ResizableWindow::backgroundColourId));   // clear the background
-
-    g.setColour (juce::Colours::black);
-    g.drawRect (getLocalBounds(), 1);   // draw an outline around the component
 
     auto bounds = getLocalBounds();
     auto loopButtonArea = bounds.removeFromLeft(bounds.getWidth() / 2).reduced(5);
     auto trackButtonArea = bounds.reduced(5);
 
-    g.drawRect(loopButtonArea);
-    g.drawRect(trackButtonArea);
+    g.drawRoundedRectangle(loopButtonArea.toFloat(), 4.0f, 0.5f);
+    g.drawRoundedRectangle(trackButtonArea.toFloat(), 4.0f, 0.5f);
 }
 
 void NavigationControlArea::resized(){

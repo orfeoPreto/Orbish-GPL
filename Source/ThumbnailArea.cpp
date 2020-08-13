@@ -25,9 +25,9 @@ void ThumbnailArea::paint (juce::Graphics& g){
     g.fillAll (getLookAndFeel().findColour (juce::ResizableWindow::backgroundColourId));   // clear the background
 
     g.setColour (juce::Colours::black);
-    g.drawRect (getLocalBounds(), 1);   // draw an outline around the component
+    g.drawRoundedRectangle(getLocalBounds().reduced(5).toFloat(), 4.0f, 1.0f);
 
-    auto bounds = getLocalBounds();
+    auto bounds = getLocalBounds().reduced(5);
 
     inputDisplay.setBounds(bounds);
     if (editor == nullptr ){

@@ -24,6 +24,12 @@ ButtonControlArea::~ButtonControlArea(){
 }
 
 void ButtonControlArea::paint (juce::Graphics& g){
+    auto bounds = transportControlArea.getBoundsInParent();
+    bounds.enlargeIfAdjacent(modeAndNavigationControlArea.getBoundsInParent());
+    bounds.enlargeIfAdjacent(globalControlArea.getBoundsInParent());
+
+    g.setColour(Colours::black);
+    g.drawRoundedRectangle(bounds.reduced(5).toFloat(), 4.0f, 1.0f);
 }
 
 void ButtonControlArea::resized(){
@@ -34,7 +40,7 @@ void ButtonControlArea::resized(){
     using Fr = juce::Grid::Fr;
 
     grid.templateRows = { Track(Fr(1)) };
-    grid.templateColumns = { Track(Fr(9)), Track(Fr(6)), Track(Fr(6)), Track(Fr(2)), Track(Fr(3)) };
+    grid.templateColumns = { Track(Fr(9)), Track(Fr(6)), Track(Fr(5)), Track(Fr(2)), Track(Fr(3)) };
 
     grid.items = {
         juce::GridItem(transportControlArea), juce::GridItem(modeAndNavigationControlArea), juce::GridItem(globalControlArea), juce::GridItem(outputControlArea), juce::GridItem(inputControlArea)
