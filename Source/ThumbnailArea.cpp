@@ -95,7 +95,7 @@ void ThumbnailArea::setEditor(OrbishAudioProcessorEditor* pluginEditor){
     inputDisplay.setBufferSize(editor->getProcessor()->context->samplesPerBlock);
 }
 
-void ThumbnailArea::updatePlayHead(int position, bool reverse){
+void ThumbnailArea::updatePlayHead(int position){
     if (editor == nullptr) {
         return;
     }

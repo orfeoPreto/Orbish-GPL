@@ -739,38 +739,48 @@ OrbishAudioProcessor::OrbishAudioProcessor() :
                                     context->info->timeSigDenominator = info.timeSigDenominator;
                                     context->info->timeSigNumerator = info.timeSigNumerator;
                                     context->info->ppqPositionOfLastBarStart = info.ppqPositionOfLastBarStart;
-
-                                    
                                 }
 
                                 void OrbishAudioProcessor::realign(){
-									int df = context->info->timeInSamples
-										% (context->samplesPerBeat * context->timeSigTop);
-                                    if (context->info->isPlaying
-										  && df
-											< context->samplesPerBlock) {
-										logMessage(String("spb:") + String(context->samplesPerBeat) + String("\nNum: ") + String(context->timeSigTop)
-											+ String("\nsamplesPerBlock: ") + String(context->samplesPerBlock)
-											+ String("\timeInSamples: ") + String(context->info->timeInSamples)
-											+ String("\nfps: ") + String(context->sampleRate)
-											+ String("\ndf: ") + String(df));
-                                        if (!hostHasPlayed)hostHasPlayed = true;
-                                        auto diffHost = differenceFromClosestBeatInSamples(int(context->info->timeInSamples));
-                                        if (abs(diffHost) < context->samplesPerBlock * 0.5f) {
-                                            for(auto track:tracks){
-                                                auto diffPlugin = differenceFromClosestBeatInSamples(*track->CurrentPlayingIndex);
-												logMessage(String("diffHost:") + String(diffHost) + String("\ndiffPlugin: ") + String(diffPlugin));
-                                                int diff = diffHost - diffPlugin;
-                                                if (abs(diff) > 0) {
-                                                    if (!((diff < 0 && *track->CurrentPlayingIndex < abs(diffHost))
-                                                        || (diffHost > 0 && *track->CurrentPlayingIndex > * track->LoopDuration - diffHost))) {
-                                                        track->RealignOffset = diffHost;
-														logMessage(String("realign at:") + String(context->info->ppqPosition) + String("\ndiff: ")+String(diff));
-                                                    }
-                                                }
-                                            }
-                                        }
-                                    }
+                                 int df = int(quartersToSamples(context->info->ppqPosition)) % (context->samplesPerBeat * context->timeSigTop * 4);
+                                 if (context->info->isPlaying && df < context->samplesPerBeat) {
+                                  //                                        logMessage(String("spb:") + String(context->samplesPerBeat) + String("\nNum: ") + String(context->timeSigTop)
+                                  //                                            + String("\nsamplesPerBlock: ") + String(context->samplesPerBlock)
+                                  //                                            + String("\nmaxBlockSize: ") + String(context->maxBlockSize)
+                                  //
+                                  //                                            + String("\timeInSamplesFromPpq: ") + String(int(quartersToSamples(context->info->ppqPosition)))
+                                  //                                            + String("\nfps: ") + String(context->sampleRate)
+                                   //                                           logMessage(String("\ndf: ") + String(df));
+                                                                           if (!hostHasPlayed)hostHasPlayed = true;
+                                  auto diffHost = differenceFromClosestBeatInSamples(int(quartersToSamples(context->info->ppqPosition)));
+                                  //                                        if (abs(diffHost) < context->samplesPerBlock * 0.5f) {
+                                  if (abs(diffHost) < context->samplesPerBlock * 0.5f) {
+                                                                               for(auto track:tracks){
+                                                                                   auto diffPlugin = differenceFromClosestBeatInSamples(*track->CurrentPlayingIndex);
+                                  //                                                logMessage(String("diffHost:") + String(diffHost) + String("\ndiffPlugin: ") + String(diffPlugin));
+                                 int diff=0;
+                                   if(((diffHost<0)&&(diffPlugin>0)) || ((diffPlugin<0)&&(diffHost>0))){
+                                       if(abs(diffHost)+abs(diffPlugin) > context->samplesPerBeat*0.5f){
+                                           diff = context->samplesPerBeat - abs(diffHost) - abs(diffPlugin);
+                                       }
+                                  }else{
+                                      diff = diffHost - diffPlugin;
+                                  }
+                                  if (abs(diff) > 0) {
+                                      if (!((diff < 0 && *track->CurrentPlayingIndex < abs(diff))
+                                        || (diff > 0 && *track->CurrentPlayingIndex > * track->LoopDuration - diff))) {
+                                  //  if(abs(diff)<context->samplesPerBlock){
+                                  auto sign = diff/abs(diff);
+                                  diff = std::min(abs(diff),context->samplesPerBlock);
+                                          track->RealignOffset = diff * sign;
+                                  //                                                            logMessage(String("realign at:") + String(conte xt->info->ppqPosition) + String("\ndiff: ")+String(diff));
+                                  // }
+                                                                                       }
+                                  //                                                }
+                                                                               }
+                                                                           }
+                                                                       }
+                                                                   }
                                 }
 
                                 void OrbishAudioProcessor::captureTrigger(int startRecordingSample){
@@ -1372,13 +1382,10 @@ OrbishAudioProcessor::OrbishAudioProcessor() :
                                         activeTrack->Recording = false;
                                         activeTrack->setRecordingArmed(false);
                                     }
-                                    if (guiAlive) {
-                                        (context->observer->*(context->observer->updateInputBuffer)) (*context->buffer, context->buffer->getNumSamples());
-                                    }
                                 }
 
                                 void OrbishAudioProcessor::handlePlaybackBlock(OrbishContext* context, int start, int stop) {
-                                    int samplesToRead = context->samplesPerBlock;
+                                    int samplesToRead = context->maxBlockSize;
 
                                     DBG("Start: " + String(start));
                                     DBG("Stop: " + String(stop));
@@ -1414,8 +1421,8 @@ OrbishAudioProcessor::OrbishAudioProcessor() :
                                                         currentPlayBuffer--;
                                                     }
                                                 }
-                                                start = (start >= context->samplesPerBlock) ? 0 : std::max(start, 0);
-                                                stop = (stop < 0) ? context->samplesPerBlock : std::min(stop, context->samplesPerBlock);
+                                                start = (start >= context->maxBlockSize) ? 0 : std::max(start, 0);
+                                                stop = (stop < 0) ? context->maxBlockSize : std::min(stop, context->maxBlockSize);
                                                 int fadeIn, fadeOut;
                                                 fadeIn = fadeOut = 0;
                                                 int sourceIndex = index + start;
@@ -1441,7 +1448,7 @@ OrbishAudioProcessor::OrbishAudioProcessor() :
                                                     for (int l = 0; currentPlayBuffer > -1 && l < currentPlayBuffer + 1; l++) {
                                                         for (uint32 c = 0; c < context->audioInputsCount;++c) {
                                                             AudioBuffer<float> temp{};
-                                                            temp.setSize(context->audioInputsCount, context->samplesPerBlock);
+                                                            temp.setSize(context->audioInputsCount, context->maxBlockSize);
                                                             temp.clear();
                                                             if (track->FirstPlaybackBuffer || track->FirstSoloBuffer || track->LastMuteBuffer || track->Realigned) {
                                                                 fadeIn = std::min(samplesToRead, context->fadeTime);
@@ -1468,9 +1475,9 @@ OrbishAudioProcessor::OrbishAudioProcessor() :
                                                                     , (*track->Layers)[l]->Buffer->getReadPointer(c, *track->LoopDuration - 1)
                                                                     , track->EndFadeOffset);
                                                             }
-                                                            if (*track->CurrentPlayingIndex == *track->LoopDuration - context->samplesPerBlock && track->BeginFadeOffset > 0) {
+                                                            if (*track->CurrentPlayingIndex == *track->LoopDuration - context->maxBlockSize && track->BeginFadeOffset > 0) {
                                                                 temp.addFrom(c
-                                                                    , context->samplesPerBlock - track->BeginFadeOffset
+                                                                    , context->maxBlockSize - track->BeginFadeOffset
                                                                     , (*track->Layers)[l]->Buffer->getReadPointer(c, 0)
                                                                     , track->BeginFadeOffset);
                                                             }
@@ -1480,7 +1487,7 @@ OrbishAudioProcessor::OrbishAudioProcessor() :
                                                                 , jmax(samplesToRead - fadeIn - fadeOut, 0));
 
                                                             if (track->Reverse) {
-                                                                temp.reverse(c, 0, context->samplesPerBlock);
+                                                                temp.reverse(c, 0, context->maxBlockSize);
                                                             }
                                                             context->buffer->addFrom(c
                                                                 , 0

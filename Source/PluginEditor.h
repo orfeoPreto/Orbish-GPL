@@ -41,6 +41,21 @@ enum ToggleState
     On,
     Off
 };
+
+enum CallBackFlags {
+  shouldUpdateThumbnail    = 0x01,
+  shouldUpdatePlayHead     = 0x02,
+  shouldHandleMidi   = 0x04,
+  shouldCreateTrack  = 0x08,
+  shouldChangeTrack    = 0x10,
+  shouldRemoveTrack      = 0x20,
+  shouldCreateLoop      = 0x40,
+  shouldChangeLoop      = 0x80,
+  shouldRemoveLoop      = 0x100,
+  shouldUpdatePlayState   = 0x200
+};
+
+
 typedef AudioProcessorValueTreeState::SliderAttachment SliderAttachment;
 typedef AudioProcessorValueTreeState::ButtonAttachment ButtonAttachment;
 
@@ -66,18 +81,26 @@ public:
     void toggleStop();
     void toggleClear();
     void toggleReverse();
-    void removeTrack(int) override;
-    void removeLoop() override;
-    void updatePlaying(int trackNumber) override;
+    void askToRemoveTrack(int) override;
+    void removeTrack();
+    void askToRemoveLoop() override;
+    void removeLoop();
+    void doRemoveLoop();
+    void askToUpdatePlayState(int trackNumber) override;
+    void updatePlayState();
+    void doUpdatePlayState();
     void doRemoveTrack();
     void mouseDrag(const MouseEvent& event) override;
-    void updateInputVisualiser(const AudioBuffer<float>& buffer, int numSamples) override;
-    void updateLoopVisualiser(const AudioBuffer<float>& buffer, int numSamples) override;
-    void updatePlayHead(int position, bool reverse) override;
-    void handleMidiMessages(const MidiBuffer& midiMessages) override;
+    void updateLoopVisualiser(const AudioBuffer<float>& buffer, int numSamples);
+    void askToUpdatePlayHead(int position, bool reverse) override;
+    void updatePlayHead();
+    void doHandleMidiMessages(const MidiBuffer& midiMessages);
     void changeTrack() ;
-    void updateNextTrackNumber(int trackNumber) override;
-    void updateNextLoopNumber(int trackNumber, int loopNumber) override;
+    void doChangeTrack() ;
+    void createLoop();
+    void doCreateLoop();
+    void askToChangeTrack(int trackNumber) override;
+    void askToChangeLoop(int trackNumber, int loopNumber) override;
 	String saveBuffer(int trackIdx, int loopIdx, int layerIdx, File dir, String name);
 	void clicked(Button*) override;
 	void sliderChanged(Slider*) override;
@@ -90,6 +113,7 @@ public:
     void highlightActiveTrack(Graphics& g);
     void paintInfoSection(Graphics&);
     void askToCreateTrack() override;
+    void createTrack();
     void askToCreateLoop() override;
     void updateTrackBounds();
     String saveBufferFromLoop(int, int);
@@ -107,10 +131,17 @@ public:
     OrbishAudioProcessor* getProcessor();
     AudioThumbnail* getThumbnailInstance();
     bool getReverseState();
-
+    void setUpObserverCallbacks();
+    void askToHandleMidiMessages(const MidiBuffer& midiMessages) override;
+    void doUpdatePlayHead();
+    void changeLoop();
+    void doChangeLoop();
+    
 private:
+    uint flags;
+    MidiBuffer processedMidi;
     OpenGLContext openGLContext;
-
+    int playHeadPosition=0;
     HeaderArea headerArea{};
     InfoAndControlArea infoAndControlArea{};
     TrackArea tracksArea{};
@@ -122,10 +153,6 @@ private:
 	XmlDocument projectXml;
     void doCreateTrack(int);
     OrbishAudioProcessor& processor;
-    int trackToRemove = 0;
-    bool shouldCreateTrack = false;
-    bool shouldCreateLoop = false;
-    bool shouldRemoveLoop = false;
 	std::shared_ptr<ValueTree> loopTree;
     bool tracksLayoutHorizontal = true;
 	DialogWindow* dialog;
@@ -192,8 +219,10 @@ private:
 	
     int nextTrackNumber = 0;
     int nextLoopNumber = -1;
-
-    bool trackNumberUpdated = false;
+    int trackToRemove = -1;
+    int trackToChange = -1;
+    int updatedTrackNumber = -1;
+    
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (OrbishAudioProcessorEditor)
 };
 
