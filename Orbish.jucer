@@ -6,6 +6,24 @@
   <MAINGROUP id="MOZJJ5" name="Orbish">
     <GROUP id="{40BAF4D8-7324-156C-E5E8-0098A128DC2C}" name="resources">
       <GROUP id="{DD2D5306-C731-51D8-E32F-F8D89EB36CF7}" name="buttons">
+        <GROUP id="{BD718B04-2107-227F-693C-404D10211C8B}" name="LayoutChange">
+          <FILE id="hKuBdX" name="layout-change-left-active.png" compile="0"
+                resource="1" file="resources/Bases/layout-change/layout-change-left-active.png"/>
+          <FILE id="IT7XwW" name="layout-change-left-base.png" compile="0" resource="1"
+                file="resources/Bases/layout-change/layout-change-left-base.png"/>
+          <FILE id="zPw0te" name="layout-change-left-clicked.png" compile="0"
+                resource="1" file="resources/Bases/layout-change/layout-change-left-clicked.png"/>
+          <FILE id="rqno1j" name="layout-change-left-hover.png" compile="0" resource="1"
+                file="resources/Bases/layout-change/layout-change-left-hover.png"/>
+          <FILE id="zqST2A" name="layout-change-right-active.png" compile="0"
+                resource="1" file="resources/Bases/layout-change/layout-change-right-active.png"/>
+          <FILE id="QJ2RCT" name="layout-change-right-base.png" compile="0" resource="1"
+                file="resources/Bases/layout-change/layout-change-right-base.png"/>
+          <FILE id="h1LU6C" name="layout-change-right-clicked.png" compile="0"
+                resource="1" file="resources/Bases/layout-change/layout-change-right-clicked.png"/>
+          <FILE id="Z7QNFa" name="layout-change-right-hover.png" compile="0"
+                resource="1" file="resources/Bases/layout-change/layout-change-right-hover.png"/>
+        </GROUP>
         <FILE id="gXjgB7" name="button-base-active.png" compile="0" resource="1"
               file="resources/Bases/button-base-active.png"/>
         <FILE id="EAeIva" name="button-base-clicked.png" compile="0" resource="1"

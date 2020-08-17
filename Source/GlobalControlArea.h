@@ -32,7 +32,8 @@ public:
     CustomButton startAllButton{ "Start", true};
     CustomButton pauseAllButton{ "Pause", false};
     CustomButton clearAllButton{ "Clear", true};
-    DrawableButton tracksLayoutButton{"Layout", DrawableButton::ImageFitted };
+    DrawableButton tracksLayoutLeft{"Layout-Left", DrawableButton::ImageStretched };
+    DrawableButton tracksLayoutRight{ "Layout-Right", DrawableButton::ImageStretched };
 
     void setEditor(OrbishAudioProcessorEditor* editor);
 

@@ -107,6 +107,7 @@ public:
     OrbishAudioProcessor* getProcessor();
     AudioThumbnail* getThumbnailInstance();
     bool getReverseState();
+    bool isTrackLayoutHorizontal();
 
 private:
     OpenGLContext openGLContext;

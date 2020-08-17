@@ -33,7 +33,6 @@ GlobalControlArea::GlobalControlArea(){
     addAndMakeVisible(pauseAllButton);
 
     createTracksLayoutButton();
-    addAndMakeVisible(tracksLayoutButton);
 }
 
 GlobalControlArea::~GlobalControlArea(){
@@ -46,9 +45,13 @@ void GlobalControlArea::resized(){
     auto bounds = getLocalBounds().reduced(15);
     globalLabel.setBounds(bounds.removeFromTop(15));
 
-    juce::Grid grid;
     using Track = juce::Grid::TrackInfo;
     using Fr = juce::Grid::Fr;
+
+    Component trackLayoutButtonArea{};
+
+    juce::Grid grid;
+    
 
     grid.templateRows = { Track(Fr(1)), Track(Fr(1)), Track(Fr(1)) };
     grid.templateColumns = { Track(Fr(1)), Track(Fr(1)) };
@@ -56,44 +59,54 @@ void GlobalControlArea::resized(){
     grid.items = {
         juce::GridItem(muteAllButton), juce::GridItem(startAllButton),
         juce::GridItem(stopAllButton), juce::GridItem(clearAllButton),
-        juce::GridItem(pauseAllButton), juce::GridItem(tracksLayoutButton)
+        juce::GridItem(pauseAllButton), juce::GridItem(trackLayoutButtonArea)
     };
 
     grid.performLayout(bounds);
+    
+    auto trackLayoutButtonBounds = trackLayoutButtonArea.getBoundsInParent();
+    tracksLayoutLeft.setBounds(trackLayoutButtonBounds.removeFromLeft(trackLayoutButtonBounds.getWidth() / 2));
+    tracksLayoutRight.setBounds(trackLayoutButtonBounds);
+    
 }
 
 void GlobalControlArea::setEditor(OrbishAudioProcessorEditor* pluginEditor){
     editor = pluginEditor;
 }
 
-void GlobalControlArea::createTracksLayoutButton()
-{
-    auto horizontalOutline = new DrawableComposite();
-    for (int i = 0; i < 3; ++i) {
-        Path pth;
-        auto* line = new DrawablePath();
-        pth.addLineSegment(Line<float>{2, float(i) * 8, 30, float(i) * 8}, 4);
-        line->setPath(pth);
-        horizontalOutline->addChildComponent(line);
-    }
+void GlobalControlArea::createTracksLayoutButton(){
+    auto leftBase = new DrawableImage();
+    leftBase->setImage(ImageFileFormat::loadFrom(BinaryData::layoutchangeleftbase_png, BinaryData::layoutchangeleftbase_pngSize));
+    auto leftHover = new DrawableImage();
+    leftHover->setImage(ImageFileFormat::loadFrom(BinaryData::layoutchangelefthover_png, BinaryData::layoutchangelefthover_pngSize));
+    auto leftClicked = new DrawableImage();
+    leftClicked->setImage(ImageFileFormat::loadFrom(BinaryData::layoutchangeleftclicked_png, BinaryData::layoutchangeleftclicked_pngSize));
+    auto leftActive = new DrawableImage();
+    leftActive->setImage(ImageFileFormat::loadFrom(BinaryData::layoutchangeleftactive_png, BinaryData::layoutchangeleftactive_pngSize));
 
-    auto verticalOutline = new DrawableComposite();
-    for (int i = 0; i < 6; ++i) {
-        Path pth;
-        auto* block = new DrawablePath();
-        pth.addRectangle(Rectangle<int>{i % 3 * 10, i / 3 * 13, 5, 7});
-        block->setPath(pth);
-        verticalOutline->addChildComponent(block);
-    }
+    tracksLayoutLeft.setImages(leftBase, leftHover, leftClicked, nullptr, leftActive, leftHover, leftClicked, nullptr);
+    tracksLayoutLeft.setTooltip("Toggles between horizontal and vertical layout of the tracks");
+    tracksLayoutLeft.setToggleState(true, NotificationType::dontSendNotification);
+    tracksLayoutLeft.addListener(this);
+    tracksLayoutLeft.setConnectedEdges(Button::ConnectedEdgeFlags::ConnectedOnRight);
+    addAndMakeVisible(tracksLayoutLeft);
 
-    tracksLayoutButton.setColour(DrawableButton::backgroundOnColourId, Colour(0x40FFFFFF));
-    tracksLayoutButton.setColour(DrawableButton::backgroundColourId, Colour(0x40FFFFFF));
 
-    tracksLayoutButton.setImages(horizontalOutline, horizontalOutline, horizontalOutline, nullptr, verticalOutline, verticalOutline, verticalOutline, nullptr);
-    tracksLayoutButton.setTooltip("Toggles between horizontal and vertical layout of the tracks");
-    tracksLayoutButton.setToggleState(true, NotificationType::dontSendNotification);
-    tracksLayoutButton.setClickingTogglesState(true);
-    tracksLayoutButton.addListener(this);
+    auto rightBase = new DrawableImage();
+    rightBase->setImage(ImageFileFormat::loadFrom(BinaryData::layoutchangerightbase_png, BinaryData::layoutchangerightbase_pngSize));
+    auto rightHover = new DrawableImage();
+    rightHover->setImage(ImageFileFormat::loadFrom(BinaryData::layoutchangerighthover_png, BinaryData::layoutchangerighthover_pngSize));
+    auto rightClicked = new DrawableImage();
+    rightClicked->setImage(ImageFileFormat::loadFrom(BinaryData::layoutchangerightclicked_png, BinaryData::layoutchangerightclicked_pngSize));
+    auto rightActive = new DrawableImage();
+    rightActive->setImage(ImageFileFormat::loadFrom(BinaryData::layoutchangerightactive_png, BinaryData::layoutchangerightactive_pngSize));
+
+    tracksLayoutRight.setImages(rightBase, rightHover, rightClicked, nullptr, rightActive, rightHover, rightClicked, nullptr);
+    tracksLayoutRight.setTooltip("Toggles between horizontal and vertical layout of the tracks");
+    tracksLayoutRight.setToggleState(false, NotificationType::dontSendNotification);
+    tracksLayoutRight.addListener(this);
+    tracksLayoutRight.setConnectedEdges(Button::ConnectedEdgeFlags::ConnectedOnLeft);
+    addAndMakeVisible(tracksLayoutRight);
 }
 
 void GlobalControlArea::buttonClicked(Button* button){
@@ -106,8 +119,24 @@ void GlobalControlArea::buttonClicked(Button* button){
     if (button == &clearAllButton) {
         editor->toggleClear();
     }
-    if (button == &tracksLayoutButton) {
-        editor->toggleLayout();
+    if (button == &tracksLayoutLeft) {
+        if (!editor->isTrackLayoutHorizontal()){
+            editor->toggleLayout();
+            tracksLayoutLeft.setToggleState(true, NotificationType::dontSendNotification);
+            tracksLayoutRight.setToggleState(false, NotificationType::dontSendNotification);
+        }
+
+        editor->setTracksDirty();
+        editor->repaint();
+        editor->resized();
+    }
+    if (button == &tracksLayoutRight) {
+        if (editor->isTrackLayoutHorizontal()) {
+            editor->toggleLayout();
+            tracksLayoutLeft.setToggleState(false, NotificationType::dontSendNotification);
+            tracksLayoutRight.setToggleState(true, NotificationType::dontSendNotification);
+        }
+
         editor->setTracksDirty();
         editor->repaint();
         editor->resized();

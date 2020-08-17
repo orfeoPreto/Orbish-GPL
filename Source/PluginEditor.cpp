@@ -681,6 +681,10 @@ bool OrbishAudioProcessorEditor::getReverseState(){
     }
 }
 
+bool OrbishAudioProcessorEditor::isTrackLayoutHorizontal(){
+    return tracksLayoutHorizontal;
+}
+
 
 void OrbishAudioProcessorEditor::makeTracks(){
     updateTrackBounds();

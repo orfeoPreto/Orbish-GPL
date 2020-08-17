@@ -32,6 +32,9 @@ OrbishLookAndFeel::OrbishLookAndFeel() {
     setColour(juce::TextButton::ColourIds::buttonColourId, darkGrey);
     setColour(juce::TextButton::ColourIds::buttonOnColourId, yellow);
 
+    setColour(DrawableButton::ColourIds::backgroundColourId, darkGrey);
+    setColour(DrawableButton::ColourIds::backgroundOnColourId, darkGrey);
+
     // tracks
     setColour(TrackComponent::ColourIds::backgroundColourId, darkGrey);
     setColour(TrackComponent::ColourIds::activeBackgroundColourId, lightGrey);
