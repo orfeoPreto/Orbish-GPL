@@ -76,8 +76,8 @@ void TrackComponent::addLoop(double& p){
     resized();
 }
 
-void TrackComponent::setActive(bool active){
-    this->active = active;
+void TrackComponent::setActive(bool isActive){
+    this->active = isActive;
 }
 
 bool TrackComponent::isActive(){
@@ -157,9 +157,9 @@ void TrackComponent::resized(){
     setBounds(newBounds);
     trackNumberLabel.setBounds(margin , margin, buttonSize + 5, buttonSize);
 
-    highlighter.setBounds(margin*2 + buttonSize , 1.5f*margin, buttonSize * .8f , buttonSize *.8f);
-	groupLabel.setBounds(margin + 1.7f * (margin + buttonSize), margin, buttonSize * 2, buttonSize);
-    trackNameLabel.setBounds(2.5f * (margin + buttonSize), margin, 100, buttonSize);
+    highlighter.setBounds(margin*2 + buttonSize , int(1.5f*margin), int(buttonSize * .8f) , int(buttonSize *.8f));
+	groupLabel.setBounds(int(margin + 1.7f) * (margin + buttonSize), margin, buttonSize * 2, buttonSize);
+    trackNameLabel.setBounds(int(2.5f * (margin + buttonSize)), margin, 100, buttonSize);
     int startHorizontalLoop = trackNameLabel.getX() + trackNameLabel.getWidth() - buttonSize;
     auto r = getLocalBounds();
     if(!horizontalLayout){
@@ -296,15 +296,15 @@ void TrackComponent::parentSizeChanged() {
     resized();
 }
 
-void TrackComponent::buttonClicked (Button* button) {
+void TrackComponent::buttonClicked (Button* ) {
     
 }
 
-void TrackComponent::sliderValueChanged (Slider* slider) {
+void TrackComponent::sliderValueChanged (Slider* ) {
     
 }
 
-void TrackComponent::changeListenerCallback (ChangeBroadcaster* source) {
+void TrackComponent::changeListenerCallback (ChangeBroadcaster* ) {
     
 }
 

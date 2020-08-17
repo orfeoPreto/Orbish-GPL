@@ -226,7 +226,7 @@ void Track::parameterChanged(const String &parameterID, float newValue) {
     }else if (parameterID == "removeLoop") {
         processRemoveLoop();
     }else if (parameterID == "loopSelect") {
-        processLoopChange(newValue);
+        processLoopChange(int(newValue));
     }
 
 }
@@ -313,7 +313,7 @@ void Track::BounceAllHistory() {
 	if(Layers->size() < 1){
 		return;
 	}
-	if ((*Layers)[Layers->size() - 1]->Buffer->getNumChannels() < context->audioInputsCount) {
+	if (uint((*Layers)[Layers->size() - 1]->Buffer->getNumChannels()) < context->audioInputsCount) {
 		--limit;
 	}
 	if (limit < 1) {
@@ -411,7 +411,7 @@ void Track::StopRecordingAfter()
             const int tail = recordedCount % *LoopDuration;
             for (auto segments = recordedCount / *LoopDuration, h = 1; segments>0; --segments, ++h) {
                 for (int i = 0; i < *CurrentTop; i++) {
-                    for(int j = 0; j < context->audioInputsCount;j++){
+                    for(uint j = 0; j < context->audioInputsCount;j++){
                         (*Layers)[i]->Buffer->copyFrom(j, h * *LoopDuration, (*Layers)[i]->Buffer->getReadPointer(j), (segments>0)?*LoopDuration:tail, 1);
                     }
                     (*Layers)[i]->Buffer->applyGain(context->feedback);
@@ -622,7 +622,7 @@ void Track::UpdateLoopVisualizer(){
 		&& *CurrentTop >= 0) {
         BufferForVisualisation* b;
         context->xchange->writeBufferQueue->pop(b);
-        for (int i = 0; i < context->audioInputsCount; ++i) {
+        for (uint i = 0; i < context->audioInputsCount; ++i) {
 			int index = std::max((*Layers)[*CurrentTop]->Dirty ? *CurrentTop : *CurrentTop - 1, 0);
 
             b->buffer->copyFrom(i, 0, *(*Layers)[index]->Buffer, i, 0, *LoopDuration);
@@ -635,7 +635,7 @@ void Track::UpdateLoopVisualizer(){
 
 void Track::RemoveLoopBefore(){
     if(loops.size() > 1){
-        if (ActiveLoop->Index == loops.size() -1){
+        if (ActiveLoop->Index == uint(loops.size() -1)){
             ChangeLoopBefore(ActiveLoop->Index -1);
             RunAfters.push_back(&Track::RemoveLoopAfter);
         }else{
@@ -793,8 +793,8 @@ void Track::processRemoveLoop(){
 void Track::setMuteArmed(bool newValue){
     if(isActive()){
         auto p = params.getParameter("mute");
-        if(p->getValue() != newValue){
-            p->setValueNotifyingHost(p->convertTo0to1(newValue));
+        if(p->getValue() != float(newValue)){
+            p->setValueNotifyingHost(p->convertTo0to1(float(newValue)));
         }
     }
     state->setProperty("mute", newValue, nullptr);
@@ -803,8 +803,8 @@ void Track::setMuteArmed(bool newValue){
 void Track::setSoloArmed(bool newValue){
     if(isActive()){
         auto p = params.getParameter("solo");
-        if(p->getValue() != newValue){
-            p->setValueNotifyingHost(p->convertTo0to1(newValue));
+        if(p->getValue() != float(newValue)){
+            p->setValueNotifyingHost(p->convertTo0to1(float(newValue)));
         }
     }
     state->setProperty("solo", newValue, nullptr);
@@ -813,8 +813,8 @@ void Track::setSoloArmed(bool newValue){
 void Track::setStopArmed(bool newValue){
     if(isActive()){
         auto p = params.getParameter("stop");
-        if(p->getValue() != newValue){
-            p->setValueNotifyingHost(p->convertTo0to1(newValue));
+        if(p->getValue() != float(newValue)){
+            p->setValueNotifyingHost(p->convertTo0to1(float(newValue)));
         }
     }
     state->setProperty("stop", newValue, nullptr);
@@ -840,8 +840,8 @@ void Track::setOutputLevel(float newValue){
 void Track::setReverseArmed(bool newValue){
     if(isActive()){
         auto p = params.getParameter("reverse");
-        if(p->getValue() != newValue){
-            p->setValueNotifyingHost(p->convertTo0to1(newValue));
+        if(p->getValue() != float(newValue)){
+            p->setValueNotifyingHost(p->convertTo0to1(float(newValue)));
         }
     }
     state->setProperty("reverse", newValue, nullptr);
@@ -849,8 +849,8 @@ void Track::setReverseArmed(bool newValue){
 void Track::setPlayArmed(bool newValue){
     if(isActive()){
         auto p = params.getParameter("play");
-        if(p->getValue() != newValue){
-            p->setValueNotifyingHost(p->convertTo0to1(newValue));
+        if(p->getValue() != float(newValue)){
+            p->setValueNotifyingHost(p->convertTo0to1(float(newValue)));
         }
     }
     state->setProperty("play", newValue, nullptr);
@@ -858,8 +858,8 @@ void Track::setPlayArmed(bool newValue){
 void Track::setMonitoring(bool newValue){
     if(isActive()){
         auto p = params.getParameter("monitor");
-        if(p->getValue() != newValue){
-            p->setValueNotifyingHost(p->convertTo0to1(newValue));
+        if(p->getValue() != float(newValue)){
+            p->setValueNotifyingHost(p->convertTo0to1(float(newValue)));
         }
     }
     state->setProperty("monitoring", newValue, nullptr);
@@ -867,8 +867,8 @@ void Track::setMonitoring(bool newValue){
 void Track::setRecordingArmed(bool newValue){
     if(isActive()){
         auto* p = params.getParameter("record");
-        if(p->getValue() != newValue){
-            p->setValueNotifyingHost(p->convertTo0to1(newValue));
+        if(p->getValue() != float(newValue)){
+            p->setValueNotifyingHost(p->convertTo0to1(float(newValue)));
         }
     }
     state->setProperty("record", newValue, nullptr);
@@ -876,8 +876,8 @@ void Track::setRecordingArmed(bool newValue){
 void Track::setAutoTrigger(bool newValue){
     if(isActive()){
         auto p = params.getParameter("trigger");
-        if(p->getValue() != newValue){
-            p->setValueNotifyingHost(p->convertTo0to1(newValue));
+        if(p->getValue() != float(newValue)){
+            p->setValueNotifyingHost(p->convertTo0to1(float(newValue)));
         }
     }
     state->setProperty("trigger", newValue, nullptr);

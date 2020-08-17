@@ -358,7 +358,7 @@ OrbishAudioProcessorEditor::~OrbishAudioProcessorEditor(){
     setLookAndFeel(nullptr);
 }
 
-void OrbishAudioProcessorEditor::changeListenerCallback (ChangeBroadcaster* source){
+void OrbishAudioProcessorEditor::changeListenerCallback (ChangeBroadcaster* ){
            
 }
 
@@ -451,7 +451,7 @@ void OrbishAudioProcessorEditor::toggleStop(){
 
 void OrbishAudioProcessorEditor::toggleClear(){
     infoAndControlArea.controlArea.buttonControlArea.transportControlArea.playButton.setToggleState(false, NotificationType::dontSendNotification);
-    thumbnail.reset(processor.context->audioInputsCount, thumbnail.getNumSamplesFinished());
+    thumbnail.reset(processor.context->audioInputsCount, processor.context->sampleRate, thumbnail.getNumSamplesFinished());
     playHeadPosition = 0;
     reverseState = ToggleState::Off;
     updatePlayHead();}
@@ -506,7 +506,7 @@ void OrbishAudioProcessorEditor::paint (Graphics& g){
     }
 }
 
-void OrbishAudioProcessorEditor::paintInfoSection(Graphics& g){
+void OrbishAudioProcessorEditor::paintInfoSection(Graphics&){
     String timeSig = String(processor.context->info->timeSigNumerator) + "/" + String(processor.context->info->timeSigDenominator);
     if(timeSig != infoAndControlArea.infoArea.getTimeSignature()){
         infoAndControlArea.infoArea.setTimeSignature(timeSig);
@@ -516,12 +516,12 @@ void OrbishAudioProcessorEditor::paintInfoSection(Graphics& g){
         infoAndControlArea.infoArea.setBeatsPerMinute(bpmStr);
     }
     
-    float totalSubDiv = processor.samplesToBeats(*processor.activeTrack->CurrentPlayingIndex);
-    double garbage;
-    int bars = totalSubDiv / processor.context->info->timeSigNumerator + 1;
-    int beats = fmod(totalSubDiv,processor.context->info->timeSigNumerator) + 1;
+    float totalSubDiv = float(processor.samplesToBeats(*processor.activeTrack->CurrentPlayingIndex));
+    float garbage;
+    int bars = int(totalSubDiv / processor.context->info->timeSigNumerator + 1);
+    int beats = int(fmod(totalSubDiv,processor.context->info->timeSigNumerator) + 1);
     float rest = std::modf(totalSubDiv, &garbage);
-    int subSubDiv = rest * 4 + 1;
+    int subSubDiv = int(rest) * 4 + 1;
     String progress = String(bars) + ". " + String(beats) + ". " + String(subSubDiv);
     if (progress !=  infoAndControlArea.infoArea.getProgress()) {
         infoAndControlArea.infoArea.setProgress(progress);
@@ -656,13 +656,13 @@ void OrbishAudioProcessorEditor::clicked(Button* button) {
 
 void OrbishAudioProcessorEditor::sliderChanged(Slider* slider) {
 	if (slider == &settingsPage->maxUndoHistorySlider) {
-		 processor.context->maxUndoHistory = slider->getValue(); 
+		 processor.context->maxUndoHistory = int(slider->getValue()); 
 	}
 	if (slider == &settingsPage->latencySlider) {
-		processor.context->delayCompensation = slider->getValue();
+		processor.context->delayCompensation = int(slider->getValue());
 	}
     if (slider == &settingsPage->tracksPerRowSlider) {
-         nbrTracksInARow = slider->getValue();
+         nbrTracksInARow = int(slider->getValue());
 	}
 }
 
@@ -672,7 +672,7 @@ void OrbishAudioProcessorEditor::buttonClicked(Button* button){
 	}
 }
 
-void OrbishAudioProcessorEditor::sliderValueChanged(Slider* slider){
+void OrbishAudioProcessorEditor::sliderValueChanged(Slider* ){
 }
 
 void OrbishAudioProcessorEditor::mouseDown(const MouseEvent &event) {
@@ -1026,6 +1026,7 @@ void OrbishAudioProcessorEditor::doRemoveLoop(){
 void OrbishAudioProcessorEditor::doUpdatePlayState()
 {
     auto updatedTrack = tracks[updatedTrackNumber];
+	if (nullptr == updatedTrack)return;
     updatedTrack->setRecording(updatedTrack->getAudioTrack()->Recording);
     updatedTrack->setPlaying(updatedTrack->getAudioTrack()->Playing);
     updatedTrack->setMuted(updatedTrack->getAudioTrack()->Muted);

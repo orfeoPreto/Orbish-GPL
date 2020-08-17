@@ -52,7 +52,7 @@ struct Blinker : public Component, public Timer, public SettableTooltipClient
         }
 
        // g.fillAll();
-        g.fillEllipse(0,0, getWidth(), getHeight());
+        g.fillEllipse(0,0, float(getWidth()), float(getHeight()));
     }
 
     void timerCallback() override

@@ -20,7 +20,7 @@ ControlArea::ControlArea(){
 ControlArea::~ControlArea(){
 }
 
-void ControlArea::paint (juce::Graphics& g){
+void ControlArea::paint (juce::Graphics&){
 }
 
 void ControlArea::resized(){
