@@ -38,7 +38,7 @@ GlobalControlArea::GlobalControlArea(){
 GlobalControlArea::~GlobalControlArea(){
 }
 
-void GlobalControlArea::paint (juce::Graphics& g){
+void GlobalControlArea::paint (juce::Graphics&){
 }
 
 void GlobalControlArea::resized(){
@@ -143,6 +143,6 @@ void GlobalControlArea::buttonClicked(Button* button){
     }
 }
 
-void GlobalControlArea::toggleMuteAll(bool mute) {
+void GlobalControlArea::toggleMuteAll(bool) {
     muteAllButton.setState(Button::buttonNormal);
 }

@@ -20,43 +20,39 @@ public:
      Observer() {}
 
     typedef void (Observer::*UpdateBuffer) (const AudioBuffer<float>&, int);
-    UpdateBuffer updateInputBuffer;
-    UpdateBuffer updateLoopBuffer;
+    UpdateBuffer updateLoopBuffer = 0;
     typedef void (Observer::*UpdatePosition) (int, bool);
-    UpdatePosition updatePlayPosition;
+    UpdatePosition updatePlayPosition = 0;
     typedef void (Observer::*HandleMidi) (const MidiBuffer&);
-    HandleMidi handleMidi;
+    HandleMidi handleMidi = 0;
     typedef void (Observer::*NewTrack) ();
-    NewTrack newTrack;
+    NewTrack newTrack = 0;
     typedef void (Observer::*TrackChange) (int);
-    TrackChange trackChange;
+    TrackChange trackChange = 0;
     typedef void (Observer::*TrackRemoval) (int);
-    TrackRemoval trackRemoval;
-    
+    TrackRemoval trackRemoval = 0;
     typedef void (Observer::*NewLoop) ();
-    NewLoop newLoop;
+    NewLoop newLoop = 0;
     typedef void (Observer::*LoopChange) (int, int);
-    LoopChange loopChange;
+    LoopChange loopChange = 0;
     typedef void (Observer::*LoopRemoval) ();
-    LoopRemoval loopRemoval;
-
+    LoopRemoval loopRemoval = 0;
     typedef void (Observer::* PlayChanged)(int);
-    PlayChanged playChanged;
+    PlayChanged playChanged = 0;
     
-    virtual void updateInputVisualiser (const AudioBuffer<float>& buffer, int numSamples) {};
-    virtual void updateLoopVisualiser (const AudioBuffer<float>& buffer, int numSamples) {};
-    virtual void updatePlayHead(int position, bool reverse) {};
-    virtual void handleMidiMessages(const MidiBuffer& midiMessages) {};
+    virtual void updateLoopVisualiser (const AudioBuffer<float>& , int ) {};
+    virtual void askToUpdatePlayHead(int , bool ) {};
+    virtual void askToHandleMidiMessages(const MidiBuffer& ) {};
     
     virtual void askToCreateTrack() {};
-    virtual void updateNextTrackNumber(int trackNumber) {};
-    virtual void removeTrack(int trackNumber) {};
+    virtual void askToChangeTrack(int ) {};
+    virtual void askToRemoveTrack(int ) {};
     
     virtual void askToCreateLoop() {};
-    virtual void updateNextLoopNumber(int trackNumber, int loopNumber) {};
-    virtual void removeLoop() {};
+    virtual void askToChangeLoop(int , int ) {};
+    virtual void askToRemoveLoop() {};
 
-    virtual void updatePlaying(int trackNumber) {};
+    virtual void askToUpdatePlayState(int ) {};
 
 };
 #endif /* Observer_hpp */

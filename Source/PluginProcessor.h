@@ -88,31 +88,31 @@ public:
     void captureTrigger(int startRecordingSample);
     float samplesPerMinute = 0;
     float secondsPerSample = 0;
-    inline float quartersToSamples(float position)
+    inline double quartersToSamples(double position)
     {
         return position * samplesPerMinute / context->bpm;
     }
     
-    inline float beatsToSamples(float position)
+    inline double beatsToSamples(double position)
     {
-        return position * samplesPerMinute / context->bpm * context->timeSigBottom * .25;
+        return position * samplesPerMinute / context->bpm * context->timeSigBottom * .25f;
     }
     
-    inline float samplesToQuarters(float samples)
+    inline double samplesToQuarters(double samples)
     {
         return samples * context->bpm / (samplesPerMinute);
     }
-    inline float samplesToBeats(float samples)
+    inline double samplesToBeats(double samples)
     {
         return samples * context->bpm / samplesPerMinute * (context->timeSigBottom * .25);
     }
     
-    inline float differenceFromClosestBeatInSamples(int position){
+    inline double differenceFromClosestBeatInSamples(int position){
         auto diff = position % context->samplesPerBeat;
         if (diff > context->samplesPerBeat/2){
             diff = diff - context->samplesPerBeat;
         }
-        return diff;
+        return double(diff);
     }
 
 
@@ -122,14 +122,14 @@ public:
     void processStartAllChange();
     void processPauseAllChange(bool pause);
     void processResetAllChange();
-    void processTrackChange(int newTrackIndex);
+    void processTrackChange(uint newTrackIndex);
     void processNewTrack();
     void processRemoveTrack(int);
     void processGroupSelect(int);
     void processAddToGroup(int);
     void processRemoveFromGroup(int);
-    void handleRecordBlock(OrbishContext* context, int start, int stop);
-    void handlePlaybackBlock(OrbishContext* context, int start, int stop);
+    void handleRecordBlock(int start, int stop);
+    void handlePlaybackBlock(int start, int stop);
     void addTrack(bool);
     void askTrackChange(int trackNumber);
 	void askLoopChange(int loopNumber);

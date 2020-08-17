@@ -45,28 +45,28 @@ void ThumbnailArea::paint (juce::Graphics& g){
         auto audioLength(thumbnail->getTotalLength());                                      // [12]
         thumbnail->drawChannels(g, bounds, 0.0, audioLength, 1.0f);
         g.setColour(Colours::white);
-        playHead.setBounds(std::max(playHeadPosition - 2.0f, float(bounds.getX())), float(bounds.getY()), 2.0f, float(bounds.getHeight()));
-        g.setOpacity(0.4);
+        playHead.setBounds(std::max(int(playHeadPosition) - 2, bounds.getX()), bounds.getY(), 2, bounds.getHeight());
+        g.setOpacity(.4f);
         if (playHead.getX() < 0)playHead.setX(0);
         g.fillRect(playHead);
         auto c1 = Colour(0x00FFFFFF);
         auto c2 = Colour(0x8FFFFF00);
         double tmpDenom = processor->samplesToBeats(float(*processor->activeTrack->LoopDuration));
-        int denominator = std::ceil(tmpDenom);
-        denominator = denominator / (processor->context->timeSigBottom * .25);
-        denominator = denominator / processor->context->timeSigTop * (60 / processor->context->info->bpm);
+        int denominator = int(std::ceil(tmpDenom));
+        denominator = int(denominator / (processor->context->timeSigBottom * .25));
+        denominator = int(denominator / processor->context->timeSigTop) * int(60 / processor->context->info->bpm);
         denominator = jmin(jmax(denominator * 2, 8), 40);
         if (processor->activeTrack->Playing) {
             if (editor->getReverseState() == On) {
                 float tailWidth =
-                    std::min(bounds.getWidth() / denominator, bounds.getWidth() - (playHead.getX() - bounds.getX()));
-                auto tail = Rectangle<float>(playHead.getX(), bounds.getY(), tailWidth, bounds.getHeight());
+                    float(std::min(bounds.getWidth() / denominator, bounds.getWidth() - (playHead.getX() - bounds.getX())));
+                auto tail = Rectangle<float>(float(playHead.getX()), float(bounds.getY()), tailWidth, float(bounds.getHeight()));
                 g.setGradientFill(ColourGradient::horizontal(c2, c1, tail));
                 g.fillRect(tail);
             }
             else {
-                float tailWidth = std::min(bounds.getWidth() / denominator, playHead.getX() - bounds.getX());
-                auto tail = Rectangle<float>(playHead.getX() - tailWidth, bounds.getY(), tailWidth, bounds.getHeight());
+                float tailWidth = float(std::min(bounds.getWidth() / denominator, playHead.getX() - bounds.getX()));
+                auto tail = Rectangle<float>(float(playHead.getX() - tailWidth), float(bounds.getY()), tailWidth, float(bounds.getHeight()));
                 g.setGradientFill(ColourGradient::horizontal(c1, c2, tail));
                 g.fillRect(tail);
             }
@@ -78,7 +78,7 @@ void ThumbnailArea::paint (juce::Graphics& g){
         pth.addRectangle(bounds.withSizeKeepingCentre(bounds.getWidth() + 10, bounds.getHeight() + 10));
 
         g.setColour(findColour(Label::textColourId));
-        g.drawFittedText("No Loop", bounds, Justification::centred, 1.0f);
+        g.drawFittedText("No Loop", bounds, Justification::centred, 1);
     }
 }
 
@@ -95,7 +95,7 @@ void ThumbnailArea::setEditor(OrbishAudioProcessorEditor* pluginEditor){
     inputDisplay.setBufferSize(editor->getProcessor()->context->samplesPerBlock);
 }
 
-void ThumbnailArea::updatePlayHead(int position, bool reverse){
+void ThumbnailArea::updatePlayHead(int position){
     if (editor == nullptr) {
         return;
     }
@@ -108,12 +108,12 @@ void ThumbnailArea::updatePlayHead(int position, bool reverse){
             playHeadPosition = ((audioPosition / thumbnail->getNumSamplesFinished()) * bounds.getWidth() + bounds.getX());
         }
         else {
-            playHeadPosition = thumbnail->getNumSamplesFinished() - 1;
+            playHeadPosition = float(thumbnail->getNumSamplesFinished() - 1);
         }
     }
     else {
         if (thumbnail->getTotalLength() > 0) {
-            float audioPosition = position;
+            float audioPosition = float(position);
             playHeadPosition = ((audioPosition / thumbnail->getNumSamplesFinished()) * bounds.getWidth() + bounds.getX());
         }
         else {

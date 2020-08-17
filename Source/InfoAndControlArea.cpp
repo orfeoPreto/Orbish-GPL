@@ -21,7 +21,7 @@ InfoAndControlArea::InfoAndControlArea(){
 InfoAndControlArea::~InfoAndControlArea(){
 }
 
-void InfoAndControlArea::paint (juce::Graphics& g){
+void InfoAndControlArea::paint (juce::Graphics&){
 }
 
 void InfoAndControlArea::resized(){

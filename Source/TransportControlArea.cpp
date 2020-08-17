@@ -68,7 +68,7 @@ TransportControlArea::~TransportControlArea(){
 
 }
 
-void TransportControlArea::paint (juce::Graphics& g){
+void TransportControlArea::paint (juce::Graphics&){
 }
 
 void TransportControlArea::resized(){

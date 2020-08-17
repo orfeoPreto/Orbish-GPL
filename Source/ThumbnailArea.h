@@ -31,7 +31,7 @@ public:
     void setEditor(OrbishAudioProcessorEditor*);
     AudioVisualiserComponent inputDisplay{ 2 };
 
-    void updatePlayHead(int, bool);
+    void updatePlayHead(int);
 
 private:
 
@@ -39,7 +39,7 @@ private:
     bool fileLoaded = false;
     float playHeadPosition = 0;
 
-    void timerCallback();
+    void timerCallback() override;
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (ThumbnailArea)
 };
