@@ -88,12 +88,17 @@ void OrbishLookAndFeel::drawButtonBackground(juce::Graphics& g, juce::Button& bu
 
     if (isHovering){
         button.setColour(TextButton::textColourOffId, Colours::whitesmoke);
+        button.setColour(TextButton::textColourOnId, Colours::whitesmoke);
     }
     else {
         button.setColour(TextButton::textColourOffId, findColour(TextButton::textColourOffId));
+        button.setColour(TextButton::textColourOnId, findColour(TextButton::textColourOnId));
     }
 
     if (isPushButton(&button)){
+        if (!isHovering){
+            button.setColour(TextButton::textColourOnId, findColour(TextButton::textColourOffId));
+        }
         drawPushButton(g, button, backgroundColour, isHovering, isButtonDown, buttonShape);
     }
     else{
