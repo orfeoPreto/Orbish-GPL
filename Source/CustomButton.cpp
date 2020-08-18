@@ -62,7 +62,7 @@ void CustomButton::paintButton(Graphics& g, bool shouldDrawButtonAsHighlighted, 
         auto bounds = getLocalBounds();
         bounds.reduce(getWidth() * 3 / 10, getHeight() * 3 / 10);
 
-        g.drawImageWithin(icon, bounds.getX(), bounds.getY(), bounds.getWidth(), bounds.getHeight(), false);
+        g.drawImage(icon, bounds.toFloat(), RectanglePlacement::centred, false);
     }
     else {
         lf.drawButtonText(g, *this, shouldDrawButtonAsHighlighted, shouldDrawButtonAsDown);

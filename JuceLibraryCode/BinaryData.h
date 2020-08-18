@@ -8,8 +8,26 @@
 
 namespace BinaryData
 {
+    extern const char*   clearicon_png;
+    const int            clearicon_pngSize = 495;
+
+    extern const char*   muteicon_png;
+    const int            muteicon_pngSize = 530;
+
+    extern const char*   playicon_png;
+    const int            playicon_pngSize = 449;
+
     extern const char*   recordicon_png;
     const int            recordicon_pngSize = 572;
+
+    extern const char*   redoicon_png;
+    const int            redoicon_pngSize = 4047;
+
+    extern const char*   stopicon_png;
+    const int            stopicon_pngSize = 275;
+
+    extern const char*   undoicon_png;
+    const int            undoicon_pngSize = 562;
 
     extern const char*   layoutchangeleftactive_png;
     const int            layoutchangeleftactive_pngSize = 4266;
@@ -60,7 +78,7 @@ namespace BinaryData
     const int            squarebuttonbase_pngSize = 2503;
 
     // Number of elements in the namedResourceList and originalFileNames arrays.
-    const int namedResourceListSize = 17;
+    const int namedResourceListSize = 23;
 
     // Points to the start of a list of resource names.
     extern const char* namedResourceList[];

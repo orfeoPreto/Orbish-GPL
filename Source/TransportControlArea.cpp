@@ -24,18 +24,22 @@ TransportControlArea::TransportControlArea(){
     
     playButton.addListener(this);
     playButton.setTooltip("Play/Pause the recorded material on the active track or group");
+    playButton.setIcon(ImageFileFormat::loadFrom(BinaryData::playicon_png, BinaryData::playicon_pngSize));
     addAndMakeVisible(playButton);
 
     stopButton.addListener(this);
     stopButton.setTooltip("Stop playing on the active track or group");
+    stopButton.setIcon(ImageFileFormat::loadFrom(BinaryData::stopicon_png, BinaryData::stopicon_pngSize));
     addAndMakeVisible(stopButton);
 
     clearButton.addListener(this);
     clearButton.setTooltip("Clear the active track");
+    clearButton.setIcon(ImageFileFormat::loadFrom(BinaryData::clearicon_png, BinaryData::clearicon_pngSize));
     addAndMakeVisible(clearButton);
 
     muteButton.addListener(this);
     muteButton.setTooltip("Mute the active track or group");
+    muteButton.setIcon(ImageFileFormat::loadFrom(BinaryData::muteicon_png, BinaryData::muteicon_pngSize));
     addAndMakeVisible(muteButton);
 
     soloButton.setTooltip("Play exclusively the active track or group");
@@ -51,10 +55,12 @@ TransportControlArea::TransportControlArea(){
 
     undoButton.addListener(this);
     undoButton.setTooltip("Undo latest overdub recording");
+    undoButton.setIcon(ImageFileFormat::loadFrom(BinaryData::undoicon_png, BinaryData::undoicon_pngSize));
     addAndMakeVisible(undoButton);
 
-    muteButton.addListener(this);
+    redoButton.addListener(this);
     redoButton.setTooltip("Redo latest overdub recording");
+    redoButton.setIcon(ImageFileFormat::loadFrom(BinaryData::redoicon_png, BinaryData::redoicon_pngSize));
     addAndMakeVisible(redoButton);
 
     bounceButton.setTooltip("Flatten all overdub layers to one");

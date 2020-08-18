@@ -18,15 +18,19 @@ GlobalControlArea::GlobalControlArea(){
     addAndMakeVisible(globalLabel);
 
     muteAllButton.setTooltip("Mute all tracks");
+    muteAllButton.setIcon(ImageFileFormat::loadFrom(BinaryData::muteicon_png, BinaryData::muteicon_pngSize));
     addAndMakeVisible(muteAllButton);
 
     startAllButton.setTooltip("Start playing on all tracks");
+    startAllButton.setIcon(ImageFileFormat::loadFrom(BinaryData::playicon_png, BinaryData::playicon_pngSize));
     addAndMakeVisible(startAllButton);
 
     stopAllButton.setTooltip("Stop playing on all tracks");
+    stopAllButton.setIcon(ImageFileFormat::loadFrom(BinaryData::stopicon_png, BinaryData::stopicon_pngSize));
     addAndMakeVisible(stopAllButton);
 
     clearAllButton.setTooltip("Clear all tracks");
+    clearAllButton.setIcon(ImageFileFormat::loadFrom(BinaryData::clearicon_png, BinaryData::clearicon_pngSize));
     addAndMakeVisible(clearAllButton);
 
     pauseAllButton.setTooltip("Pause all tracks");
