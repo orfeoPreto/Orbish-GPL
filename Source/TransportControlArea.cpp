@@ -19,6 +19,7 @@ TransportControlArea::TransportControlArea(){
 
     recordButton.addListener(this);
     recordButton.setTooltip("Start/Stop recording on the active track");
+    recordButton.setIcon(ImageFileFormat::loadFrom(BinaryData::recordicon_png, BinaryData::recordicon_pngSize));
     addAndMakeVisible(recordButton);
     
     playButton.addListener(this);

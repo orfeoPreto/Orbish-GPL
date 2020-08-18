@@ -21,8 +21,15 @@ public:
 
     bool isPushButton();
     bool isSquareButton();
+    bool isIconButton();
+
+    void setIcon(Image icon);
+
+    void paintButton(Graphics&, bool, bool) override;
 
 private:
     bool pushButton = false;
     bool squareButton = false;
+    bool iconButton = false;
+    Image icon;
 };

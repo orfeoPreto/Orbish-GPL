@@ -8,6 +8,9 @@
 
 namespace BinaryData
 {
+    extern const char*   recordicon_png;
+    const int            recordicon_pngSize = 572;
+
     extern const char*   layoutchangeleftactive_png;
     const int            layoutchangeleftactive_pngSize = 4266;
 
@@ -57,7 +60,7 @@ namespace BinaryData
     const int            squarebuttonbase_pngSize = 2503;
 
     // Number of elements in the namedResourceList and originalFileNames arrays.
-    const int namedResourceListSize = 16;
+    const int namedResourceListSize = 17;
 
     // Points to the start of a list of resource names.
     extern const char* namedResourceList[];

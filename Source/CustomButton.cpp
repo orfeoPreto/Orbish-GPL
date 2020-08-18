@@ -9,7 +9,6 @@
 */
 
 #include "CustomButton.h"
-#include "PluginEditor.h"
 
 CustomButton::CustomButton(const String& name, bool isPushButton) : TextButton(name) {
     pushButton = isPushButton;
@@ -41,4 +40,31 @@ bool CustomButton::isPushButton(){
 
 bool CustomButton::isSquareButton(){
     return squareButton;
+}
+
+bool CustomButton::isIconButton(){
+    return iconButton;
+}
+
+void CustomButton::setIcon(Image iconImage){
+    icon = iconImage;
+    iconButton = true;
+}
+
+void CustomButton::paintButton(Graphics& g, bool shouldDrawButtonAsHighlighted, bool shouldDrawButtonAsDown){
+    auto& lf = getLookAndFeel();
+
+    lf.drawButtonBackground(g, *this,
+        findColour(getToggleState() ? buttonOnColourId : buttonColourId),
+        shouldDrawButtonAsHighlighted, shouldDrawButtonAsDown);
+
+    if (iconButton){
+        auto bounds = getLocalBounds();
+        bounds.reduce(getWidth() * 3 / 10, getHeight() * 3 / 10);
+
+        g.drawImageWithin(icon, bounds.getX(), bounds.getY(), bounds.getWidth(), bounds.getHeight(), false);
+    }
+    else {
+        lf.drawButtonText(g, *this, shouldDrawButtonAsHighlighted, shouldDrawButtonAsDown);
+    }
 }
