@@ -43,7 +43,7 @@ void ButtonControlArea::resized(){
     grid.templateColumns = { Track(Fr(9)), Track(Fr(6)), Track(Fr(5)), Track(Fr(2)), Track(Fr(3)) };
 
     grid.items = {
-        juce::GridItem(transportControlArea), juce::GridItem(modeAndNavigationControlArea), juce::GridItem(globalControlArea), juce::GridItem(outputControlArea), juce::GridItem(inputControlArea)
+        juce::GridItem(transportControlArea), juce::GridItem(modeAndNavigationControlArea), juce::GridItem(globalControlArea), juce::GridItem(inputControlArea), juce::GridItem(outputControlArea)
     };
 
     grid.performLayout(bounds);

@@ -2,7 +2,7 @@
   ==============================================================================
 
     OutputControlArea.h
-    Created: 3 Aug 2020 2:16:53pm
+    Created: 3 Aug 2020 2:17:05pm
     Author:  Lennart Cockx
 
   ==============================================================================
@@ -29,7 +29,10 @@ public:
     Slider outputLevelSlider{ "Output Level" };
     exu::Label outputLevelLabel{ "Output Level" };
     Component outputSliderComp;
-    FFAU::LevelMeter outputMeter{FFAU::LevelMeter::Minimal};
+    FFAU::LevelMeter outputMeter{ FFAU::LevelMeter::Minimal };
+
+    Slider globalVolumeSlider{ "Global Volume" };
+    exu::Label globalVolumeLabel{ "Global Volume" };
 
     void setEditor(OrbishAudioProcessorEditor*);
 

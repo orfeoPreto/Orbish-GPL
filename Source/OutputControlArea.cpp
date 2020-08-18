@@ -2,7 +2,7 @@
   ==============================================================================
 
     OutputControlArea.cpp
-    Created: 3 Aug 2020 2:16:53pm
+    Created: 3 Aug 2020 2:17:05pm
     Author:  Lennart Cockx
 
   ==============================================================================
@@ -14,10 +14,12 @@
 
 //==============================================================================
 OutputControlArea::OutputControlArea(){
+
     addAndMakeVisible(outputMeter);
 
-    outputLevelLabel.setText("Output Level", NotificationType::dontSendNotification);
-    outputLevelLabel.attachToComponent(&outputLevelSlider, false);
+    // output slider
+    outputLevelLabel.setText("Output", NotificationType::dontSendNotification);
+    outputLevelLabel.setJustificationType(Justification::centred);
     addAndMakeVisible(outputLevelLabel);
 
     outputLevelSlider.setRange(-60, 6);
@@ -25,12 +27,30 @@ OutputControlArea::OutputControlArea(){
     outputLevelSlider.setTextBoxIsEditable(true);
     outputLevelSlider.setTextValueSuffix(" db");
     outputLevelSlider.addListener(this);
-    outputLevelSlider.textFromValueFunction = [this](double val){ return String(val, 1);};
+    outputLevelSlider.textFromValueFunction = [this](double val) { return String(val, 1); };
     outputLevelSlider.setTooltip("Adjust the level of the output signal for the active track");
     outputLevelSlider.setSliderStyle(Slider::LinearBarVertical);
     outputLevelSlider.setTextBoxStyle(Slider::TextEntryBoxPosition::NoTextBox, true, 0, 0);
     outputLevelSlider.setPopupDisplayEnabled(true, false, this);
     addAndMakeVisible(outputLevelSlider);
+
+    // global slider
+    globalVolumeLabel.setText("Global Level", NotificationType::dontSendNotification); //todo correctly position label
+    addAndMakeVisible(globalVolumeLabel);
+
+    globalVolumeSlider.setValue(0);
+    globalVolumeSlider.setRange(-120, 6);
+    globalVolumeSlider.setNumDecimalPlacesToDisplay(2);
+    globalVolumeSlider.setTextBoxIsEditable(true);
+    globalVolumeSlider.setTextValueSuffix(" db");
+    globalVolumeSlider.addListener(this);
+    globalVolumeSlider.setSliderStyle(Slider::LinearBarVertical);
+    globalVolumeSlider.setTextBoxStyle(Slider::TextEntryBoxPosition::NoTextBox, true, 0, 0);
+    globalVolumeSlider.setPopupDisplayEnabled(true, false, this);
+    globalVolumeSlider.textFromValueFunction = [this](double val){ return String(val, 1);};
+    globalVolumeSlider.setTooltip("Adjust the level of the general output signal");
+    addAndMakeVisible(globalVolumeSlider);
+
 }
 
 OutputControlArea::~OutputControlArea(){
@@ -47,8 +67,10 @@ void OutputControlArea::paint (juce::Graphics& g){
 void OutputControlArea::resized(){
     auto bounds = getLocalBounds().reduced(15);
 
-    outputLevelLabel.setBounds(bounds.removeFromTop(15));
-    outputLevelSlider.setBounds(bounds.removeFromLeft(bounds.getWidth() / 2));
+    outputLevelLabel.setBounds(bounds.removeFromBottom(20));
+    outputLevelSlider.setBounds(bounds.removeFromLeft(bounds.getWidth() / 3));
+    bounds.removeFromLeft(5);
+    globalVolumeSlider.setBounds(bounds.removeFromLeft(bounds.getWidth() / 2));
     bounds.removeFromLeft(5);
     outputMeter.setBounds(bounds);
 }
@@ -56,10 +78,12 @@ void OutputControlArea::resized(){
 void OutputControlArea::setEditor(OrbishAudioProcessorEditor* pluginEditor){
     editor = pluginEditor;
     outputMeter.setMeterSource(editor->getProcessor()->getOutputMeterSource());
-    
+
 }
 
 void OutputControlArea::sliderValueChanged(Slider* slider){
     if (slider == &outputLevelSlider) {
+    }
+    if (slider == &globalVolumeSlider){
     }
 }

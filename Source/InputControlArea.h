@@ -2,7 +2,7 @@
   ==============================================================================
 
     InputControlArea.h
-    Created: 3 Aug 2020 2:17:05pm
+    Created: 3 Aug 2020 2:16:53pm
     Author:  Lennart Cockx
 
   ==============================================================================
@@ -26,12 +26,9 @@ public:
     void paint (juce::Graphics&) override;
     void resized() override;
 
-    FFAU::LevelMeter inputMeter{FFAU::LevelMeter::Minimal};
+    FFAU::LevelMeter inputMeter{ FFAU::LevelMeter::Minimal };
     Slider inputLevelSlider{ "Input Level" };
     exu::Label inputLevelLabel{ "Input Level" };
-
-    Slider globalVolumeSlider{ "Global Volume" };
-    exu::Label globalVolumeLabel{ "Global Volume" };
 
     void setEditor(OrbishAudioProcessorEditor*);
 

@@ -2,7 +2,7 @@
   ==============================================================================
 
     InputControlArea.cpp
-    Created: 3 Aug 2020 2:17:05pm
+    Created: 3 Aug 2020 2:16:53pm
     Author:  Lennart Cockx
 
   ==============================================================================
@@ -14,10 +14,11 @@
 
 //==============================================================================
 InputControlArea::InputControlArea(){
+    
 
     // input slider/meter
-    inputLevelLabel.setText("Input Level", NotificationType::dontSendNotification);
-    inputLevelLabel.attachToComponent(&inputLevelSlider, false);
+    inputLevelLabel.setText("Input", NotificationType::dontSendNotification);
+    inputLevelLabel.setJustificationType(Justification::centred);
     addAndMakeVisible(inputLevelLabel);
 
     inputLevelSlider.setNumDecimalPlacesToDisplay(1);
@@ -28,29 +29,10 @@ InputControlArea::InputControlArea(){
     inputLevelSlider.setTextBoxStyle(Slider::TextEntryBoxPosition::NoTextBox, true, 0, 0);
     inputLevelSlider.setPopupDisplayEnabled(true, false, this);
     inputLevelSlider.setTooltip("Adjust the level of the input signal for the active track");
-    inputLevelSlider.textFromValueFunction = [this](double val){return String(val, 1);};
+    inputLevelSlider.textFromValueFunction = [this](double val) {return String(val, 1); };
     addAndMakeVisible(inputLevelSlider);
 
     addAndMakeVisible(inputMeter);
-
-    // global slider
-    globalVolumeLabel.setText("Global Level", NotificationType::dontSendNotification);
-    globalVolumeLabel.attachToComponent(&globalVolumeSlider, false);
-    addAndMakeVisible(globalVolumeLabel);
-
-    globalVolumeSlider.setValue(0);
-    globalVolumeSlider.setRange(-120, 6);
-    globalVolumeSlider.setNumDecimalPlacesToDisplay(2);
-    globalVolumeSlider.setTextBoxIsEditable(true);
-    globalVolumeSlider.setTextValueSuffix(" db");
-    globalVolumeSlider.addListener(this);
-    globalVolumeSlider.setSliderStyle(Slider::LinearBarVertical);
-    globalVolumeSlider.setTextBoxStyle(Slider::TextEntryBoxPosition::NoTextBox, true, 0, 0);
-    globalVolumeSlider.setPopupDisplayEnabled(true, false, this);
-    globalVolumeSlider.textFromValueFunction = [this](double val){ return String(val, 1);};
-    globalVolumeSlider.setTooltip("Adjust the level of the general output signal");
-    addAndMakeVisible(globalVolumeSlider);
-
 }
 
 InputControlArea::~InputControlArea(){
@@ -67,9 +49,7 @@ void InputControlArea::paint (juce::Graphics& g){
 void InputControlArea::resized(){
     auto bounds = getLocalBounds().reduced(15);
 
-    inputLevelLabel.setBounds(bounds.removeFromTop(15));
-    globalVolumeSlider.setBounds(bounds.removeFromLeft(bounds.getWidth() / 3));
-    bounds.removeFromLeft(5);
+    inputLevelLabel.setBounds(bounds.removeFromBottom(20));
     inputLevelSlider.setBounds(bounds.removeFromLeft(bounds.getWidth() / 2));
     bounds.removeFromLeft(5);
     inputMeter.setBounds(bounds);
@@ -78,12 +58,10 @@ void InputControlArea::resized(){
 void InputControlArea::setEditor(OrbishAudioProcessorEditor* pluginEditor){
     editor = pluginEditor;
     inputMeter.setMeterSource(editor->getProcessor()->getInputMeterSource());
-
+    
 }
 
 void InputControlArea::sliderValueChanged(Slider* slider){
     if (slider == &inputLevelSlider) {
-    }
-    if (slider == &globalVolumeSlider){
     }
 }

@@ -34,10 +34,11 @@ OrbishAudioProcessorEditor::OrbishAudioProcessorEditor (OrbishAudioProcessor& p,
     // Setup level meters
     buttonControlArea->outputControlArea.setEditor(this);
     outputLevelAttachment.reset(new SliderAttachment(valueTreeState, "outputLevel", buttonControlArea->outputControlArea.outputLevelSlider));
+    globalMixAttachment.reset(new SliderAttachment(valueTreeState, "globalMix", buttonControlArea->outputControlArea.globalVolumeSlider));
 
     buttonControlArea->inputControlArea.setEditor(this);
     inputLevelAttachment.reset(new SliderAttachment(valueTreeState, "inputLevel", buttonControlArea->inputControlArea.inputLevelSlider));
-    globalMixAttachment.reset(new SliderAttachment(valueTreeState, "globalMix", buttonControlArea->inputControlArea.globalVolumeSlider));
+
 
     // Mode control attachments
     auto modeControlArea = &buttonControlArea->modeAndNavigationControlArea.modeControlArea;
