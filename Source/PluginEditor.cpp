@@ -1027,10 +1027,10 @@ void OrbishAudioProcessorEditor::doRemoveLoop(){
         project.dirty = true;
 }
 
-void OrbishAudioProcessorEditor::doUpdatePlayState()
-{
+void OrbishAudioProcessorEditor::doUpdatePlayState(){
     auto updatedTrack = tracks[updatedTrackNumber];
 	if (nullptr == updatedTrack)return;
+
     updatedTrack->setRecording(updatedTrack->getAudioTrack()->Recording);
     updatedTrack->setPlaying(updatedTrack->getAudioTrack()->Playing);
     updatedTrack->setMuted(updatedTrack->getAudioTrack()->Muted);

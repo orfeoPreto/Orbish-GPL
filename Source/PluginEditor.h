@@ -136,6 +136,7 @@ public:
     void doUpdatePlayHead();
     void changeLoop();
     void doChangeLoop();
+    bool isTrackLayoutHorizontal();
     
 private:
     uint flags;
