@@ -86,6 +86,13 @@ void OrbishLookAndFeel::drawButtonBackground(juce::Graphics& g, juce::Button& bu
 
     auto buttonShape = isSquareButton(&button) ? ButtonShape::SQUARE : ButtonShape::RECTANGULAR;
 
+    if (isHovering){
+        button.setColour(TextButton::textColourOffId, Colours::whitesmoke);
+    }
+    else {
+        button.setColour(TextButton::textColourOffId, findColour(TextButton::textColourOffId));
+    }
+
     if (isPushButton(&button)){
         drawPushButton(g, button, backgroundColour, isHovering, isButtonDown, buttonShape);
     }
