@@ -12,7 +12,7 @@ namespace BinaryData
     const int            clearicon_pngSize = 495;
 
     extern const char*   muteicon_png;
-    const int            muteicon_pngSize = 530;
+    const int            muteicon_pngSize = 4686;
 
     extern const char*   playicon_png;
     const int            playicon_pngSize = 449;
@@ -21,13 +21,13 @@ namespace BinaryData
     const int            recordicon_pngSize = 572;
 
     extern const char*   redoicon_png;
-    const int            redoicon_pngSize = 4047;
+    const int            redoicon_pngSize = 4265;
 
     extern const char*   stopicon_png;
     const int            stopicon_pngSize = 275;
 
     extern const char*   undoicon_png;
-    const int            undoicon_pngSize = 562;
+    const int            undoicon_pngSize = 4265;
 
     extern const char*   layoutchangeleftactive_png;
     const int            layoutchangeleftactive_pngSize = 4266;
