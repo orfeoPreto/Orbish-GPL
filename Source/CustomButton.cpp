@@ -62,7 +62,19 @@ void CustomButton::paintButton(Graphics& g, bool shouldDrawButtonAsHighlighted, 
         auto bounds = getLocalBounds();
         bounds.reduce(getWidth() * 3 / 10, getHeight() * 3 / 10);
 
-        g.drawImage(icon, bounds.toFloat(), RectanglePlacement::centred, false);
+        if (shouldDrawButtonAsDown || (!isPushButton() && getToggleState())){
+            g.setColour(findColour(TextButton::ColourIds::buttonOnColourId));
+            g.drawImage(icon, bounds.toFloat(), RectanglePlacement::centred, true);
+        }
+        else if(shouldDrawButtonAsHighlighted) {
+            g.setColour(Colours::whitesmoke);
+            g.drawImage(icon, bounds.toFloat(), RectanglePlacement::centred, true);
+        }
+        else {
+            g.drawImage(icon, bounds.toFloat(), RectanglePlacement::centred, false);
+        }
+
+        
     }
     else {
         lf.drawButtonText(g, *this, shouldDrawButtonAsHighlighted, shouldDrawButtonAsDown);
