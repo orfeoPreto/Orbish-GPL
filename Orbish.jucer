@@ -9,6 +9,7 @@
         <GROUP id="{D752B9EC-EB18-9EC9-ABD3-38AC98EE5785}" name="Icons">
           <FILE id="u0Ngzt" name="clear-icon.png" compile="0" resource="1" file="resources/Bases/button-icons/clear-icon.png"/>
           <FILE id="H2FFO6" name="mute-icon.png" compile="0" resource="1" file="resources/Bases/button-icons/mute-icon.png"/>
+          <FILE id="Pj5Sw4" name="pause-icon.png" compile="0" resource="1" file="resources/Bases/button-icons/pause-icon.png"/>
           <FILE id="YiGrZ7" name="play-icon.png" compile="0" resource="1" file="resources/Bases/button-icons/play-icon.png"/>
           <FILE id="CFMjNK" name="record-icon.png" compile="0" resource="1" file="resources/Bases/button-icons/record-icon.png"/>
           <FILE id="RVHHlG" name="redo-icon.png" compile="0" resource="1" file="resources/Bases/button-icons/redo-icon.png"/>

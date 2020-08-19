@@ -34,6 +34,7 @@ GlobalControlArea::GlobalControlArea(){
     addAndMakeVisible(clearAllButton);
 
     pauseAllButton.setTooltip("Pause all tracks");
+    pauseAllButton.setIcon(ImageFileFormat::loadFrom(BinaryData::pauseicon_png, BinaryData::pauseicon_pngSize));
     addAndMakeVisible(pauseAllButton);
 
     createTracksLayoutButton();

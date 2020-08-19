@@ -14,6 +14,9 @@ namespace BinaryData
     extern const char*   muteicon_png;
     const int            muteicon_pngSize = 4686;
 
+    extern const char*   pauseicon_png;
+    const int            pauseicon_pngSize = 2090;
+
     extern const char*   playicon_png;
     const int            playicon_pngSize = 449;
 
@@ -78,7 +81,7 @@ namespace BinaryData
     const int            squarebuttonbase_pngSize = 2503;
 
     // Number of elements in the namedResourceList and originalFileNames arrays.
-    const int namedResourceListSize = 23;
+    const int namedResourceListSize = 24;
 
     // Points to the start of a list of resource names.
     extern const char* namedResourceList[];
