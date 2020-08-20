@@ -106,6 +106,62 @@ void OrbishLookAndFeel::drawButtonBackground(juce::Graphics& g, juce::Button& bu
     }
 }
 
+void OrbishLookAndFeel::drawProgressBar(Graphics& g, ProgressBar& progressBar, int width, int height, double progress, const String& textToShow){
+    auto background = progressBar.findColour(ProgressBar::backgroundColourId);
+    auto foreground = progressBar.findColour(ProgressBar::foregroundColourId);
+
+    auto barBounds = progressBar.getLocalBounds().toFloat();
+
+    g.setColour(background);
+    g.fillRoundedRectangle(barBounds, (float)progressBar.getHeight() * 0.1f);
+
+    if (progress >= 0.0f && progress <= 1.0f)
+    {
+        Path p;
+        p.addRoundedRectangle(barBounds, (float)progressBar.getHeight() * 0.1f);
+        g.reduceClipRegion(p);
+
+        barBounds.setWidth(barBounds.getWidth() * (float)progress);
+        g.setColour(foreground);
+        g.fillRoundedRectangle(barBounds, (float)progressBar.getHeight() * 0.1f);
+    }
+    else
+    {
+        // spinning bar..
+        g.setColour(background);
+
+        auto stripeWidth = height * 2;
+        auto position = static_cast<int> (Time::getMillisecondCounter() / 15) % stripeWidth;
+
+        Path p;
+
+        for (auto x = static_cast<float> (-position); x < (float)(width + stripeWidth); x += (float)stripeWidth)
+            p.addQuadrilateral(x, 0.0f,
+                x + (float)stripeWidth * 0.5f, 0.0f,
+                x, static_cast<float> (height),
+                x - (float)stripeWidth * 0.5f, static_cast<float> (height));
+
+        Image im(Image::ARGB, width, height, true);
+
+        {
+            Graphics g2(im);
+            g2.setColour(foreground);
+            g2.fillRoundedRectangle(barBounds, (float)progressBar.getHeight() * 0.1f);
+        }
+
+        g.setTiledImageFill(im, 0, 0, 0.85f);
+        g.fillPath(p);
+    }
+
+    if (textToShow.isNotEmpty())
+    {
+        g.setColour(Colour::contrasting(background, foreground));
+        g.setFont((float)height * 0.6f);
+
+        g.drawText(textToShow, 0, 0, width, height, Justification::centred, false);
+    }
+}
+
 void OrbishLookAndFeel::drawPushButton(juce::Graphics& g, juce::Button& button, const juce::Colour& backgroundColour, bool isHovering, bool isButtonDown, ButtonShape shape){
     Image image;
     if (isButtonDown) {

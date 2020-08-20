@@ -33,12 +33,19 @@ public:
     ~OrbishLookAndFeel();
 
     void drawButtonBackground(juce::Graphics& g, juce::Button& button, const juce::Colour& backgroundColour, bool something, bool isButtonDown) override;
+    void drawProgressBar(Graphics&, ProgressBar&, int width, int height, double progress, const String& textToShow) override;
     #include "ff_meters/ff_meters_LookAndFeelMethods.h"
 private:
+
+
+
     void drawPushButton(juce::Graphics& g, juce::Button& button, const juce::Colour& backgroundColour, bool isHovering, bool isButtonDown, ButtonShape shape);
     void drawToggleButton(juce::Graphics& g, juce::Button& button, const juce::Colour& backgroundColour, bool isHovering, bool isButtonDown, ButtonShape shape);
+    
+    
     bool isPushButton(juce::Button* button);
     bool isSquareButton(juce::Button* button);
+    
     Image getImageForButton(ButtonShape shape, ButtonState state);
 
 };

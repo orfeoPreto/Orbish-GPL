@@ -33,7 +33,7 @@ TrackComponent::TrackComponent(int index, std::vector<double*> progress, bool& l
     addAndMakeVisible(witness);
 
     trackNameLabel.setText(this->getName(), NotificationType::sendNotification);
-    trackNameLabel.setFont(Font(10.0f));
+    trackNameLabel.setFont(Font(14.0f));
     trackNameLabel.setColour(Label::textWhenEditingColourId, Colours::white);
     trackNameLabel.setEditable(false,true,false);
     trackNameLabel.addListener(this);
@@ -153,35 +153,35 @@ void TrackComponent::setAudioTrack(Track* t){
 
 void TrackComponent::resized(){
     repaint();
-    auto newBounds = getBoundsInParent();
-    setBounds(newBounds);
     trackNumberLabel.setBounds(margin , margin, buttonSize + 5, buttonSize);
 
     highlighter.setBounds(margin*2 + buttonSize , int(1.5f*margin), int(buttonSize * .8f) , int(buttonSize *.8f));
 	groupLabel.setBounds(int(margin + 1.7f) * (margin + buttonSize), margin, buttonSize * 2, buttonSize);
     trackNameLabel.setBounds(int(2.5f * (margin + buttonSize)), margin, 100, buttonSize);
     int startHorizontalLoop = trackNameLabel.getX() + trackNameLabel.getWidth() - buttonSize;
-    auto r = getLocalBounds();
+
+    auto bounds = getLocalBounds().reduced(2*margin);
+
     if(!horizontalLayout){
-        for(auto l: Loops){
-            auto i = l->getIndex();
-            l->setBounds(r.getX() + margin, r.getY() +margin+loopHeight+ (i * (loopHeight)), r.getWidth() - 2*margin, loopHeight-margin) ;
+        for(auto loop: Loops){
+            int index = loop->getIndex();
+            loop->setBounds(bounds.getX(), bounds.getY()+ loopHeight+(index * (loopHeight)), bounds.getWidth(), loopHeight-margin) ;
         }
         if(tempProgressBar != nullptr){
             tempProgressBar->setVisible(false);
         }
     } else {
         for (auto l : Loops) {
-            startHorizontalLoop+=margin+buttonSize;
             if(activeLoop == l->getIndex()){
                 delete tempProgressBar;
                 tempProgressBar = new ProgressBar(l->getProgress());
                 tempProgressBar->setPercentageDisplay(false);
                 l->ProgressBar::copyAllExplicitColoursTo(*tempProgressBar);
                 addAndMakeVisible(tempProgressBar);
-                tempProgressBar->setBounds(r.getX() + margin, r.getY()+margin+loopHeight, r.getWidth() - 2*margin, loopHeight-2*margin) ;
+                tempProgressBar->setBounds(bounds.getX(), bounds.getY()+loopHeight, bounds.getWidth(), loopHeight) ;
             }
-            l->setBounds(startHorizontalLoop, margin, buttonSize, buttonSize);
+            l->setBounds(startHorizontalLoop, margin, 55, buttonSize);
+            startHorizontalLoop += margin + 55;
         }
     }
 }
@@ -189,11 +189,11 @@ void TrackComponent::resized(){
 void TrackComponent::paint(Graphics& g){
     auto r = getLocalBounds();
 
-    g.setColour(findColour(this->backgroundColourId));
+    g.setColour(findColour(backgroundColourId));
     g.fillRect(r);
     if(active){
-        g.setColour(findColour(this->outlineColourId));
-        g.drawRect(r.getX(), r.getY(), r.getWidth(), r.getHeight(), 1);
+        g.setColour(findColour(outlineColourId));
+        g.drawRoundedRectangle(r.toFloat(), 2.5f, 1.5f);
     }
     
     auto ed = trackNameLabel.getCurrentTextEditor();

@@ -744,9 +744,9 @@ void OrbishAudioProcessorEditor::updateTrackBounds(){
             }
         }
         for (auto row: rowHeights){
-            tracksHeight += row.second*18+20;
+            tracksHeight += row.second*18+25;
         }
-        tracksHeight += 10;
+        tracksHeight += 20;
     }
     trackArea.setBounds(tracksViewport.getX(), tracksViewport.getY(), tracksViewport.getWidth(), tracksHeight);
 
@@ -754,7 +754,7 @@ void OrbishAudioProcessorEditor::updateTrackBounds(){
         track->horizontalLayout = tracksLayoutHorizontal;
         auto index = track->getIndex();
         if (!tracksLayoutHorizontal) {
-            track->setBounds(5 + (index % nbrTracksInARow * (tracksViewport.getMaximumVisibleWidth() / nbrTracksInARow)), (getTrackRowHeight(index / nbrTracksInARow)) + 5, tracksViewport.getMaximumVisibleWidth() / nbrTracksInARow - 10, 20 + 18 * track->Loops.size());
+            track->setBounds(5 + (index % nbrTracksInARow * (tracksViewport.getMaximumVisibleWidth() / nbrTracksInARow)), (getTrackRowHeight(index / nbrTracksInARow)) + 10, tracksViewport.getMaximumVisibleWidth() / nbrTracksInARow - 10, 25 + 18 * track->Loops.size());
         }
         else {
             track->setBounds(5, index * (55) + 5, tracksViewport.getMaximumVisibleWidth() - 10, 50);
