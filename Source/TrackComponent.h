@@ -77,7 +77,10 @@ public:
 	int loopHeight;
     Track* getAudioTrack();
     void setAudioTrack(Track*);
+
 private:
+    void updateLoopColours();
+
     Blinker highlighter {};
     DrawablePath witness {};
     int buttonSize;

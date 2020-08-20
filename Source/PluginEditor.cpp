@@ -1016,9 +1016,9 @@ void OrbishAudioProcessorEditor::doChangeLoop(){
         infoAndControlArea.infoArea.setLoopNumber(String(tracks[activeTrack]->getActiveLoop() + 1));
         auto navigationControlArea = &infoAndControlArea.controlArea.buttonControlArea.modeAndNavigationControlArea.navigationControlArea;
         navigationControlArea->setActiveLoop(String(tracks[activeTrack]->getActiveLoop() + 1));
-        
         tracksDirty = true;
     }
+    
 }
 
 void OrbishAudioProcessorEditor::doRemoveLoop(){

@@ -29,6 +29,10 @@ TrackComponent::TrackComponent(int index, std::vector<double*> progress, bool& l
         Loops.add(loop);
     }
 
+    tempProgressBar = new ProgressBar(Loops.getFirst()->getProgress());
+    tempProgressBar->setPercentageDisplay(false);
+    Loops.getFirst()->ProgressBar::copyAllExplicitColoursTo(*tempProgressBar);
+    addChildComponent(tempProgressBar);
 
     addAndMakeVisible(witness);
 
@@ -39,7 +43,7 @@ TrackComponent::TrackComponent(int index, std::vector<double*> progress, bool& l
     trackNameLabel.addListener(this);
     addAndMakeVisible(trackNameLabel);
 
-    trackNumberLabel.setFont(Font(10.0f));
+    trackNumberLabel.setFont(Font(14.0f));
     trackNumberLabel.setText(String(index+1), NotificationType::dontSendNotification);
     trackNumberLabel.addListener(this);
     trackNumberLabel.setTooltip("index of the track");
@@ -61,6 +65,14 @@ TrackComponent::~TrackComponent(){
 
 void TrackComponent::setActiveLoop(int loopIdx){
     activeLoop =  loopIdx;
+
+    delete tempProgressBar;
+    tempProgressBar = new ProgressBar(Loops[loopIdx]->getProgress());
+    tempProgressBar->setPercentageDisplay(false);
+    addChildComponent(tempProgressBar);
+
+    updateLoopColours();
+    resized();
 }
 int TrackComponent::getActiveLoop(){
     return activeLoop;
@@ -78,6 +90,7 @@ void TrackComponent::addLoop(double& p){
 
 void TrackComponent::setActive(bool isActive){
     this->active = isActive;
+    updateLoopColours();
 }
 
 bool TrackComponent::isActive(){
@@ -151,6 +164,34 @@ void TrackComponent::setAudioTrack(Track* t){
     audioTrack = t;
 }
 
+void TrackComponent::updateLoopColours(){
+    for (auto l : Loops) {
+        if (active) {
+            if (activeLoop == l->getIndex()) {
+                l->setColour(juce::ProgressBar::foregroundColourId, juce::Colour(0xfff2e499));
+                l->setColour(juce::ProgressBar::backgroundColourId, juce::Colour(0xff707070));
+                l->ProgressBar::copyAllExplicitColoursTo(*tempProgressBar);
+            }
+            else {
+                l->setColour(juce::ProgressBar::foregroundColourId, juce::Colour(0xfffddc11));
+                l->setColour(juce::ProgressBar::backgroundColourId, juce::Colour(0xff42403a));
+            }
+        }
+        else {
+            if (activeLoop == l->getIndex()) {
+                l->setColour(juce::ProgressBar::foregroundColourId, juce::Colour(0xffb49e53));
+                l->setColour(juce::ProgressBar::backgroundColourId, juce::Colour(0xff42403a));
+                l->ProgressBar::copyAllExplicitColoursTo(*tempProgressBar);
+            }
+            else {
+                l->setColour(juce::ProgressBar::foregroundColourId, juce::Colour(0xffc1a402));
+                l->setColour(juce::ProgressBar::backgroundColourId, juce::Colour(0xff42403a));
+            }
+        }
+    }
+    repaint();
+}
+
 void TrackComponent::resized(){
     repaint();
     trackNumberLabel.setBounds(margin , margin, buttonSize + 5, buttonSize);
@@ -172,16 +213,12 @@ void TrackComponent::resized(){
         }
     } else {
         for (auto l : Loops) {
-            if(activeLoop == l->getIndex()){
-                delete tempProgressBar;
-                tempProgressBar = new ProgressBar(l->getProgress());
-                tempProgressBar->setPercentageDisplay(false);
-                l->ProgressBar::copyAllExplicitColoursTo(*tempProgressBar);
-                addAndMakeVisible(tempProgressBar);
-                tempProgressBar->setBounds(bounds.getX(), bounds.getY()+loopHeight, bounds.getWidth(), loopHeight) ;
-            }
+            tempProgressBar->setBounds(bounds.getX(), bounds.getY() + loopHeight, bounds.getWidth(), loopHeight);
             l->setBounds(startHorizontalLoop, margin, 55, buttonSize);
             startHorizontalLoop += margin + 55;
+        }
+        if (tempProgressBar != nullptr) {
+            tempProgressBar->setVisible(true);
         }
     }
 }
@@ -280,14 +317,8 @@ void TrackComponent::paint(Graphics& g){
 	groupLabel.setColour(Label::textColourId, GroupColour);
     witness.setStrokeThickness (2.0f);
     
-  for (auto l: Loops) {
-      if (activeLoop == l->getIndex()){
-          l->setColour(juce::ProgressBar::backgroundColourId, juce::Colours::white);
-      }
-      else{
-          l->setColour(juce::ProgressBar::backgroundColourId, juce::Colour(0xff707070));
-      }
-        addAndMakeVisible(l);
+    for (auto l: Loops) {
+      addAndMakeVisible(l);
     }
 
 }
