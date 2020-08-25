@@ -37,7 +37,7 @@ public:
     CustomButton reverseButton{ "Revrs", false };
     CustomButton undoButton{ "Undo", true };
     CustomButton redoButton{ "Redo", true };
-    CustomButton bounceButton{ "Bounce", false };
+    CustomButton bounceButton{ "Bounce", true };
     CustomButton autoTriggerButton{ "Trigger", false };
 
     exu::Label activeLabel{ "Active Track" };

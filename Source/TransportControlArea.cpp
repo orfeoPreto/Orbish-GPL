@@ -125,6 +125,8 @@ void TransportControlArea::buttonClicked(Button* button){
     }
     if (button == &autoTriggerButton) {
     }
+    if (button == &bounceButton){
+    }
 }
 
 void TransportControlArea::setEditor(OrbishAudioProcessorEditor* pluginEditor){
