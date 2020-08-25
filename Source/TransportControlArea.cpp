@@ -92,8 +92,8 @@ void TransportControlArea::resized(){
 
     grid.items = {
         juce::GridItem(recordButton), juce::GridItem(playButton), juce::GridItem(stopButton), juce::GridItem(clearButton),
-        juce::GridItem(muteButton), juce::GridItem(soloButton), juce::GridItem(monitorButton), juce::GridItem(reverseButton),
-        juce::GridItem(undoButton), juce::GridItem(redoButton), juce::GridItem(bounceButton), juce::GridItem(autoTriggerButton),
+        juce::GridItem(muteButton), juce::GridItem(soloButton), juce::GridItem(undoButton), juce::GridItem(redoButton),
+        juce::GridItem(monitorButton), juce::GridItem(reverseButton), juce::GridItem(bounceButton), juce::GridItem(autoTriggerButton),
     };
     
     grid.performLayout(bounds);
