@@ -128,6 +128,7 @@ OrbishAudioProcessorEditor::OrbishAudioProcessorEditor (OrbishAudioProcessor& p,
     for (auto track : processor.tracks) {
         doCreateTrack(track->Index);
     }
+    tracks.getFirst()->setActive(true);
 
     setSize (1300, 800);
 }
