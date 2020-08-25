@@ -164,6 +164,15 @@ void TrackComponent::setAudioTrack(Track* t){
     audioTrack = t;
 }
 
+void TrackComponent::setGroup(String group, Colour colour){
+    Group = group;
+    GroupColour = colour;
+}
+
+String TrackComponent::getGroup(){
+    return Group;
+}
+
 void TrackComponent::updateLoopColours(){
     for (auto l : Loops) {
         if (active) {
@@ -197,7 +206,7 @@ void TrackComponent::resized(){
     trackNumberLabel.setBounds(margin , margin, buttonSize + 5, buttonSize);
 
     highlighter.setBounds(margin*2 + buttonSize , int(1.5f*margin), int(buttonSize * .8f) , int(buttonSize *.8f));
-	groupLabel.setBounds(int(margin + 1.7f) * (margin + buttonSize), margin, buttonSize * 2, buttonSize);
+	groupLabel.setBounds(int(margin + 3.0f) * (margin + buttonSize), margin, buttonSize * 2, buttonSize);
     trackNameLabel.setBounds(int(2.5f * (margin + buttonSize)), margin, 100, buttonSize);
     int startHorizontalLoop = trackNameLabel.getX() + trackNameLabel.getWidth() - buttonSize;
 

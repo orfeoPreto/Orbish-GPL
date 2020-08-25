@@ -72,14 +72,16 @@ public:
     bool horizontalLayout = false;
     bool armed = false;
     OwnedArray<LoopComponent> Loops;
-	String Group;
-	Colour GroupColour;
 	int loopHeight;
     Track* getAudioTrack();
     void setAudioTrack(Track*);
+    void setGroup(String group, Colour colour);
+    String getGroup();
 
 private:
     void updateLoopColours();
+    String Group;
+    Colour GroupColour;
 
     Blinker highlighter {};
     DrawablePath witness {};

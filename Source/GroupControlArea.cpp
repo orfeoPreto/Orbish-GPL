@@ -22,9 +22,11 @@ GroupControlArea::GroupControlArea(){
     addAndMakeVisible(groupCombo);
 
     addToGroupButton.setTooltip("Add the active track to the selected group");
+    addToGroupButton.addListener(this);
     addAndMakeVisible(addToGroupButton);
 
     removeFromGroupButton.setTooltip("Remove the active track from the selected group");
+    removeFromGroupButton.addListener(this);
     addAndMakeVisible(removeFromGroupButton);
 }
 

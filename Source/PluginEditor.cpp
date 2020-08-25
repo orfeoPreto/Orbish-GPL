@@ -76,9 +76,11 @@ OrbishAudioProcessorEditor::OrbishAudioProcessorEditor (OrbishAudioProcessor& p,
     // Grouping buttons attachments
 
     auto groupControlArea = &infoAndControlArea.controlArea.thumbnailAndGroupArea.groupControlArea;
+    groupControlArea->setEditor(this);
     addToGroupAttachment.reset(new ButtonAttachment(valueTreeState, "addToGroup", groupControlArea->addToGroupButton));
     removeFromGroupAttachment.reset(new ButtonAttachment(valueTreeState, "removeFromGroup", groupControlArea->removeFromGroupButton));
     groupAttachment.reset(new AudioProcessorValueTreeState::ComboBoxAttachment(valueTreeState, "selectGroup", groupControlArea->groupCombo));
+    
 
     groupColours.add(Colours::aqua);
     groupColours.add(Colours::coral);
@@ -626,9 +628,6 @@ void OrbishAudioProcessorEditor::makeTracks(){
     updateTrackBounds();
     for (auto t : tracks) {
         auto indexOfActiveTrack = t->getIndex();
-        if (activeTrack == indexOfActiveTrack){
-            infoAndControlArea.infoArea.setGroupNumber(t->Group);
-        }
         auto tr = t->getAudioTrack();
 		auto grp = processor.getTrackGroup(tr);
 		String groupName = "";
@@ -637,8 +636,10 @@ void OrbishAudioProcessorEditor::makeTracks(){
 			groupName = grp->Name;
 			grpCol = groupColours[grp->Index];
 		}
-		t->Group = groupName;
-		t->GroupColour = grpCol;
+        t->setGroup(groupName, grpCol);
+        if (activeTrack == indexOfActiveTrack) {
+            infoAndControlArea.infoArea.setGroupNumber(t->getGroup());
+        }
     }
 }
 
