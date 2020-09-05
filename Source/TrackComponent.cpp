@@ -22,7 +22,7 @@ TrackComponent::TrackComponent(int index, std::vector<double*> progress, bool& l
     this->index = index;
     setAudioTrack(track);
 	loopHeight = margin + buttonSize;
-    for(int i=0;i<progress.size();++i){
+    for(int i=0;i<progress.size() && (nullptr != progress[i]);++i){
         auto loop = new LoopComponent(*progress[i], i);
         String str = "Loop " + String(i+1) + " in track " + String(index + 1);
         loop->setTooltip(str);

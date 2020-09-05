@@ -18,6 +18,9 @@ public:
 	DataExchange() {
 		writeBufferQueue = new boost::lockfree::spsc_queue<BufferForVisualisation*, boost::lockfree::capacity<3> >;
 		readBufferQueue = new boost::lockfree::spsc_queue<BufferForVisualisation*, boost::lockfree::capacity<3> >;
+        logWriteMessageQueue = new boost::lockfree::spsc_queue<std::string*, boost::lockfree::capacity<1000> >;
+        logReadMessageQueue = new boost::lockfree::spsc_queue<std::string*, boost::lockfree::capacity<1000> >;
+
 	}
 	~DataExchange() {
 
@@ -26,6 +29,9 @@ public:
 	boost::lockfree::spsc_queue<BufferForVisualisation*, boost::lockfree::capacity<3> >* writeBufferQueue;
 	boost::lockfree::spsc_queue<BufferForVisualisation*, boost::lockfree::capacity<3> >* readBufferQueue;
 	bool writeBufferDirty = false;
+
+    boost::lockfree::spsc_queue<std::string*, boost::lockfree::capacity<1000> >* logReadMessageQueue;
+    boost::lockfree::spsc_queue<std::string*, boost::lockfree::capacity<1000> >* logWriteMessageQueue;
 
 
 };

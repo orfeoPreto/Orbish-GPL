@@ -11,8 +11,8 @@
 #pragma once
 
 #include <JuceHeader.h>
-#include <Source\Track.h>
-#include <Source\TrackComponent.h>
+#include "Track.h"
+#include "TrackComponent.h"
 
 //==============================================================================
 /*

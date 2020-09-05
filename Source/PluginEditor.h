@@ -91,7 +91,7 @@ public:
     void doUpdatePlayState();
     void doRemoveTrack();
     void mouseDrag(const MouseEvent& event) override;
-    void updateLoopVisualiser(const AudioBuffer<float>& buffer, int numSamples);
+    void updateLoopVisualiser(const AudioBuffer<float>& buffer, int numSamples) override;
     void askToUpdatePlayHead(int position, bool reverse) override;
     void updatePlayHead();
     void doHandleMidiMessages(const MidiBuffer& midiMessages);
@@ -137,16 +137,17 @@ public:
     void changeLoop();
     void doChangeLoop();
     bool isTrackLayoutHorizontal();
+    void logMessage(String);
     
 private:
-    uint flags;
+    std::atomic<uint> flags;
     MidiBuffer processedMidi;
     OpenGLContext openGLContext;
     int playHeadPosition=0;
     HeaderArea headerArea{};
     InfoAndControlArea infoAndControlArea{};
     TrackArea tracksArea{};
-
+    bool destructiveSave = true;
     int nbrTracksInARow = 4;
     SharedResourcePointer<TooltipWindow> tooltipWindow;
 	std::shared_ptr<SettingsPage> settingsPage;

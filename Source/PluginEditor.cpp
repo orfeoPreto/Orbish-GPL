@@ -135,7 +135,7 @@ OrbishAudioProcessorEditor::OrbishAudioProcessorEditor (OrbishAudioProcessor& p,
 
 
 void OrbishAudioProcessorEditor::showSettingsPage() {
-	settingsPage = std::make_shared<SettingsPage>(processor.loggingActive, processor.context->maxUndoHistory, nbrTracksInARow, processor.context->delayCompensation );
+	settingsPage = std::make_shared<SettingsPage>(processor.context->loggingActive, processor.context->maxUndoHistory, nbrTracksInARow, processor.context->delayCompensation );
 	settingsPage->addListener(this);
 	addAndMakeVisible(*settingsPage);
 	resized();
@@ -231,6 +231,7 @@ void OrbishAudioProcessorEditor::saveProject() {
 		tv.setProperty("name", track->getName(), nullptr);
 		for (auto loop: track->Loops) {
 			ValueTree lv(String("loop"));
+            if(nullptr == track || nullptr == loop )return;
 			for (auto k = 0;k <= track->getAudioTrack()->loops[loop->getIndex()]->CurrentTop;++k) {
 				auto result = saveBuffer(track->getIndex(), loop->getIndex(), k, project.directory
 					, track->getName() + "_" + String(loop->getIndex()) + "_" + String(k));
@@ -325,9 +326,7 @@ void OrbishAudioProcessorEditor::askUserToOpenFile() {
     infoAndControlArea.controlArea.thumbnailAndGroupArea.groupControlArea.groupCombo.setSelectedId(1);
 	processor.activeTrack->processResetChange();
 	File dir = File(File::getSpecialLocation(File::userHomeDirectory));
-	if (dir.getChildFile("Orbish").exists()) {
 		dir = dir.getChildFile("Orbish");
-	}
 	FileChooser fc("Open Project", dir, "*.xml");
 	if (fc.browseForFileToOpen())
 		openFile(fc.getResult());
@@ -359,7 +358,10 @@ bool OrbishAudioProcessorEditor::openFile(const File& file) {
 OrbishAudioProcessorEditor::~OrbishAudioProcessorEditor(){
 	processor.guiAlive = false;
     Thread::sleep(200);
-    setLookAndFeel(nullptr);
+    setLookAndFeel(nullptr);\
+    
+   // File dir(File::getSpecialLocation(File::tempDirectory));
+   // dir.deleteRecursively();
 }
 
 void OrbishAudioProcessorEditor::changeListenerCallback (ChangeBroadcaster* ){
@@ -394,6 +396,7 @@ void OrbishAudioProcessorEditor::timerCallback(){
 	else {
         modeControlArea->recModeCombo.setEnabled(true);
 	}
+    
 }
 
 String OrbishAudioProcessorEditor::saveBuffer(int trackIdx
@@ -406,6 +409,7 @@ String OrbishAudioProcessorEditor::saveBuffer(int trackIdx
 		return String();
 	}
 	auto l = t->loops[loopIdx];
+    if (nullptr == l)return String();
 	if (l->Layers.size() <= layerIdx) { return String(); }
 	auto layer = l->Layers[layerIdx];
 	if (layer->Buffer->getNumSamples() == 0) {
@@ -414,10 +418,12 @@ String OrbishAudioProcessorEditor::saveBuffer(int trackIdx
 	if (!dir.exists()) { 
 		juce::Result result = dir.createDirectory(); 
 		if (result.failed()) {
-			DBG(result.getErrorMessage());
+			processor.logMessage(result.getErrorMessage());
 		}
 	}
-	File file = dir.getChildFile(name + ".wav");
+
+    File file = dir.getNonexistentChildFile(name ,".wav");
+    
 	WavAudioFormat form;
 	std::unique_ptr<AudioFormatWriter> writer;
 	writer.reset(form.createWriterFor(new FileOutputStream(file),
@@ -427,7 +433,7 @@ String OrbishAudioProcessorEditor::saveBuffer(int trackIdx
 		{},
 		0));
 
-	writer->writeFromAudioSampleBuffer(*layer->Buffer, 0, layer->Buffer->getNumSamples());
+	writer->writeFromAudioSampleBuffer(*layer->Buffer, 0, *t->LoopDuration);
 
 	return file.getFullPathName();
 }
@@ -435,7 +441,9 @@ String OrbishAudioProcessorEditor::saveBuffer(int trackIdx
 String OrbishAudioProcessorEditor::saveBufferFromLoop(int trackIdx, int loopIdx) {
 	auto track = tracks[trackIdx];
 	auto layerIdx = processor.tracks[trackIdx]->CurrentTop;
-	File dir(File::getSpecialLocation(File::tempDirectory));
+    File dir = File(File::getSpecialLocation(File::userHomeDirectory));
+    dir = dir.getChildFile("Orbish");
+    dir = dir.getChildFile("UsedByHost");
 	return saveBuffer(trackIdx, loopIdx, *processor.tracks[trackIdx]->CurrentTop
 		, dir, track->getName() + "_" + String(loopIdx) + "_" + String(*layerIdx));
 }
@@ -456,26 +464,32 @@ void OrbishAudioProcessorEditor::toggleStop(){
 void OrbishAudioProcessorEditor::toggleClear(){
     infoAndControlArea.controlArea.buttonControlArea.transportControlArea.playButton.setToggleState(false, NotificationType::dontSendNotification);
     thumbnail.reset(processor.context->audioInputsCount, processor.context->sampleRate, thumbnail.getNumSamplesFinished());
+    thumbnail.clear();
     playHeadPosition = 0;
     reverseState = ToggleState::Off;
-    updatePlayHead();}
+    updatePlayHead();
+}
 
 void OrbishAudioProcessorEditor::toggleReverse(){
     reverseState = (reverseState == On)?Off:On;
 }
 
-
+void OrbishAudioProcessorEditor::logMessage(String message){
+   processor.logMessage(message);
+}
 
 
 //==============================================================================
 void OrbishAudioProcessorEditor::paint (Graphics& g){
     g.fillAll(getLookAndFeel().findColour(ResizableWindow::backgroundColourId));
+  // logMessage(String(thumbnail.getNumChannels()) + String(thumbnail.getTotalLength()));
 
     if (thumbnail.getNumChannels() == 0 || thumbnail.getTotalLength() <= 0) {
         infoAndControlArea.controlArea.thumbnailAndGroupArea.thumbnailArea.setFileLoaded(false);
     }
     else {
         infoAndControlArea.controlArea.thumbnailAndGroupArea.thumbnailArea.setFileLoaded(true);
+
     }
 
     paintInfoSection(g);
@@ -612,6 +626,7 @@ AudioThumbnail* OrbishAudioProcessorEditor::getThumbnailInstance(){
 }
 
 bool OrbishAudioProcessorEditor::getReverseState(){
+  //  if (0 == reverseState)return true;
     if (reverseState == Off ){
         return true;
     }
@@ -657,7 +672,7 @@ void OrbishAudioProcessorEditor::clicked(Button* button) {
 		closeSettingsPage();
 	}
 	if (button == &settingsPage->activateLoggingButton) {
-			processor.loggingActive = button->getToggleState();
+			processor.context->loggingActive = button->getToggleState();
 	}
 }
 

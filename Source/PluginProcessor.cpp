@@ -88,7 +88,6 @@ OrbishAudioProcessor::OrbishAudioProcessor() :
             , createParamFromBool(new AudioParameterBool("record", "Record", false), false)
             , createParamFromBool(new AudioParameterBool("play", "Play", false), false)
             , createParamFromBool(new AudioParameterBool("stop", "Stop", false), false)
-            , createParamFromBool(new AudioParameterBool("clear", "Clear", false), false)
             , createParamFromBool(new AudioParameterBool("mute", "Mute", false), false)
             , createParamFromBool(new AudioParameterBool("solo", "Solo", false), false)
             , std::make_unique<AudioParameterBool>("monitor", "Monitor", false)
@@ -126,11 +125,6 @@ OrbishAudioProcessor::OrbishAudioProcessor() :
         })
 {
     
-    File file = File(File::getSpecialLocation(File::userHomeDirectory)).getChildFile("Orbish").getChildFile("Orbish.log");
-    auto result = file.create();
-    if (result.wasOk()) {
-        logger = std::make_shared<FileLogger>(file, "Hi");
-    }
     context = new OrbishContext();
     context->buffer = new AudioBuffer<float>();
     context->feedback = Decibels::decibelsToGain(float(-0.1));
@@ -140,6 +134,11 @@ OrbishAudioProcessor::OrbishAudioProcessor() :
     initGroups();
     context->allocatorThread = std::thread(
         [this] {
+            File file = File(File::getSpecialLocation(File::userHomeDirectory)).getChildFile("Orbish").getChildFile("Orbish.log");
+            auto result = file.create();
+            if (result.wasOk()) {
+                logger = std::make_shared<FileLogger>(file, "Hi");
+            }
             while (keepRunning) {
                 if (context->audioInputsCount > 0) {
                     if (context->layerQueue->write_available() > 0) {
@@ -189,16 +188,37 @@ OrbishAudioProcessor::OrbishAudioProcessor() :
                         track->loopToBeExtended = false;
                     }
                 }
+                if(context->loggingActive){
+                    while (context->xchange->logWriteMessageQueue->write_available() > 0) {
+                        auto s = new std::string();
+                        s->reserve(200);
+                        context->xchange->logWriteMessageQueue->push(s);
+                    }
+                    while(context->xchange->logReadMessageQueue->read_available()){
+                        std::string* message = 0;
+                        context->xchange->logReadMessageQueue->pop(message);
+                        if(message != 0){
+                            logger->logMessage(*message);
+                        }
+                    }
+                }
             }
         }
     );
  //   logMessage("end constructor");
 }
 
-			void OrbishAudioProcessor::logMessage(juce::String message) {
-				if (loggingActive) {
-					logger->logMessage(message);
-				}
+			void OrbishAudioProcessor::logMessage(juce::String msg) {
+                if (context->loggingActive){
+                    std::string* message;
+                    if(context->xchange->logWriteMessageQueue->read_available()){
+                        context->xchange->logWriteMessageQueue->pop(message);
+                        message->replace(0, msg.length(), msg.toStdString());
+                        if (context->loggingActive && context->xchange->logReadMessageQueue->write_available()){
+                            context->xchange->logReadMessageQueue->push(message);
+                        }
+                    }
+                }
 			}
 
 			OrbishAudioProcessor::~OrbishAudioProcessor()
@@ -1558,7 +1578,7 @@ OrbishAudioProcessor::OrbishAudioProcessor() :
                                 }
 
                                 bool OrbishAudioProcessor::loadFromValueTree(ValueTree* tree) {
-                                  //  logMessage("loading tracks");
+                                    logMessage("loading tracks");
                                     if (tree == nullptr)return false;
                                     if (!tree->hasType("project"))return false;
                                     auto tracksElement = tree->getChildWithName("tracks");

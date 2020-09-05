@@ -87,13 +87,14 @@ struct OrbishContext {
 	int hey;
 	boost::lockfree::spsc_queue<Layer*, boost::lockfree::capacity<3> > * layerQueue;
 	DataExchange* xchange;
-  int clickStart=-1, clickStop=0;
-	void lockForStateUpdate(bool lock) {
-		if (lock) {
-			mtx.lock();
-		}
-		else {
-			mtx.unlock();
-		}
-	}
+    bool loggingActive = false;
+    int clickStart=-1, clickStop=0;
+    void lockForStateUpdate(bool lock) {
+        if (lock) {
+            mtx.lock();
+        }
+        else {
+            mtx.unlock();
+        }
+    }
 };
