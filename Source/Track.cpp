@@ -26,6 +26,7 @@ Track::Track(uint index, bool a, AudioProcessorValueTreeState& p, OrbishContext*
                     { "Parameter", {{ "id", "stop" },     { "value", false }}},
                     { "Parameter", {{ "id", "reverse" },     { "value", false }}},
                     { "Parameter", {{ "id", "trigger" },     { "value", false }}},
+                    { "Parameter", {{ "id", "reset" },     { "value", false }}},
                     { "Parameter", {{ "id", "monitor" },     { "value", false }}},
                     { "Parameter", {{ "id", "mute" },     { "value", false }}},
                     { "Parameter", {{ "id", "solo" },     { "value", false }}},
@@ -50,6 +51,7 @@ Track::Track(uint index, bool a, AudioProcessorValueTreeState& p, OrbishContext*
     state->setProperty("record", false, nullptr);
     state->setProperty("play", false, nullptr);
     state->setProperty("stop", false, nullptr);
+    state->setProperty("reset", false, nullptr);
     state->setProperty("reverse", false, nullptr);
     state->setProperty("monitor", true, nullptr);
     state->setProperty("mute", false, nullptr);
@@ -349,6 +351,7 @@ void Track::StartResetAfter(){
     Recording = false;
     Muted = false;
     *Progress = 0;
+    (context->observer->*(context->observer->updatePlayPosition)) (0, Reverse);
 }
 
 void Track::StartRecordingBefore()
@@ -544,13 +547,13 @@ void Track::StartSoloBefore(){
     FirstSoloBuffer = Playing && !Muted;
     RunAfters.push_back(&Track::StartSoloAfter);
     setSoloArmed(true);
-    logger->logMessage("start solo track " + String(Index));
+   // logger->logMessage("start solo track " + String(Index));
 }
 
 void Track::StartSoloAfter(){
     FirstSoloBuffer = false;
     Soloed = true;
-    logger->logMessage("stop solo track " + String(Index));
+   // logger->logMessage("stop solo track " + String(Index));
     playStateChanged();
 }
 
@@ -578,7 +581,7 @@ void Track::StopSoloBefore(){
 
 void Track::StopSoloAfter(){
     LastSoloBuffer = false;
-    logger->logMessage("stop solo track " + String(Index));
+  //  logger->logMessage("stop solo track " + String(Index));
     playStateChanged();
 }
 

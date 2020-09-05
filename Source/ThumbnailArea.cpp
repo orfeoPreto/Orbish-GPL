@@ -121,8 +121,9 @@ void ThumbnailArea::updatePlayHead(int position){
         }
     }
     playHeadPosition = jmax(playHeadPosition, .0f);
+    repaint();
 }
 
 void ThumbnailArea::timerCallback(){
-    repaint();
+  //  repaint();
 }

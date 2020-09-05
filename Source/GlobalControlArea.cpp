@@ -17,6 +17,7 @@ GlobalControlArea::GlobalControlArea(){
     globalLabel.setText("Global", NotificationType::dontSendNotification);
     addAndMakeVisible(globalLabel);
 
+    muteAllButton.addListener(this);
     muteAllButton.setTooltip("Mute all tracks");
     muteAllButton.setIcon(ImageFileFormat::loadFrom(BinaryData::muteicon_png, BinaryData::muteicon_pngSize));
     addAndMakeVisible(muteAllButton);
@@ -29,6 +30,7 @@ GlobalControlArea::GlobalControlArea(){
     stopAllButton.setIcon(ImageFileFormat::loadFrom(BinaryData::stopicon_png, BinaryData::stopicon_pngSize));
     addAndMakeVisible(stopAllButton);
 
+    clearAllButton.addListener(this);
     clearAllButton.setTooltip("Clear all tracks");
     clearAllButton.setIcon(ImageFileFormat::loadFrom(BinaryData::clearicon_png, BinaryData::clearicon_pngSize));
     addAndMakeVisible(clearAllButton);

@@ -46,7 +46,7 @@ void InfoArea::paint (juce::Graphics& g){
     beatWitness.setStrokeFill(Colours::orange);
     beatWitness.setAlpha(beatAlpha);
     beatWitness.setStrokeThickness(2.0f);
-    addAndMakeVisible(barWitness);
+    addAndMakeVisible(beatWitness);
 
     // draw barWitness
     Path path2;
@@ -56,7 +56,7 @@ void InfoArea::paint (juce::Graphics& g){
     barWitness.setStrokeFill(Colours::greenyellow);
     barWitness.setAlpha(barAlpha);
     barWitness.setStrokeThickness(2.0f);
-    addAndMakeVisible(beatWitness);
+    addAndMakeVisible(barWitness);
 }
 
 void InfoArea::resized(){
