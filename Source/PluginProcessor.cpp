@@ -805,6 +805,8 @@ OrbishAudioProcessor::OrbishAudioProcessor() :
 
                                 void OrbishAudioProcessor::processBlock(AudioBuffer<float>& buffer, MidiBuffer& midiMessages)
                                 {
+                                    int64 beginMark = Time::getHighResolutionTicks();
+
                                  //   logMessage("begin processBlock");
                                     initBlock(buffer, midiMessages);
 
@@ -1164,7 +1166,16 @@ OrbishAudioProcessor::OrbishAudioProcessor() :
                                     }
                                     outputMeterSource.measureBlock(buffer);
                                   //  logMessage("begin processBlock");
-
+                                    int64 diff, endMark = Time::getHighResolutionTicks();
+                                    context->logMessage("nano secs spent in callback:" + String(diff = endMark - beginMark));
+                                    context->logMessage("buffer size:" + String(context->maxBlockSize));
+                                    int64 expectedDiff = (double(context->maxBlockSize) / context->sampleRate) * 1000000000;
+                                    context->logMessage("delay:" + String(expectedDiff - diff));
+                                    ;
+                                    if(expectedDiff - diff < 0){
+                                        context->logMessage("ALARM!! Buffer Underrun!!!");
+                                    }
+                                    
                                 }
 
                                 void OrbishAudioProcessor::handleRecordBlock(int start, int stop) {

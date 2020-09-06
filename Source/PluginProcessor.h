@@ -148,7 +148,6 @@ public:
 	OwnedArray<Track, CriticalSection> tracks;
 	bool guiAlive = false;
 	std::vector<TrackGroup*> groups;
-	void logMessage(juce::String);
 	private:
     FFAU::LevelMeterSource inputMeterSource;
     FFAU::LevelMeterSource outputMeterSource;

@@ -11,6 +11,7 @@ OrbishAudioProcessorEditor::OrbishAudioProcessorEditor (OrbishAudioProcessor& p,
     thumbnail (32, formatManager, thumbnailCache), 
     valueTreeState(apvts)
 {
+    logMessage("HiRes ticks per sec:" + String(Time::getHighResolutionTicksPerSecond()));
     openGLContext.attachTo(*getTopLevelComponent());
 
     // Define the Look and Feel of the application
