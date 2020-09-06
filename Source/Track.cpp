@@ -78,6 +78,9 @@ Track::Track(uint index, bool a, AudioProcessorValueTreeState& p, OrbishContext*
     RegisterLoop(loops.size()-1);
 }
  
+void Track::setState(ValueTree* inputState){
+
+}
  
 Track::~Track() {
   
@@ -547,13 +550,13 @@ void Track::StartSoloBefore(){
     FirstSoloBuffer = Playing && !Muted;
     RunAfters.push_back(&Track::StartSoloAfter);
     setSoloArmed(true);
-   // logger->logMessage("start solo track " + String(Index));
+    //context->logMessage("start solo track " + String(Index));
 }
 
 void Track::StartSoloAfter(){
     FirstSoloBuffer = false;
     Soloed = true;
-   // logger->logMessage("stop solo track " + String(Index));
+   // context->logMessage("stop solo track " + String(Index));
     playStateChanged();
 }
 
@@ -581,7 +584,7 @@ void Track::StopSoloBefore(){
 
 void Track::StopSoloAfter(){
     LastSoloBuffer = false;
-  //  logger->logMessage("stop solo track " + String(Index));
+    //context->logMessage("stop solo track " + String(Index));
     playStateChanged();
 }
 

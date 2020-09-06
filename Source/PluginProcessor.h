@@ -55,7 +55,6 @@ public:
    #endif
     bool isEditorActive();
     void processBlock (AudioBuffer<float>&, MidiBuffer&) override;
-	std::shared_ptr<FileLogger> logger;
     //==============================================================================
     AudioProcessorEditor* createEditor() override;
     bool hasEditor() const override;

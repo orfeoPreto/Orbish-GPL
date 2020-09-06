@@ -196,6 +196,7 @@ public:
     RecordMode getRecordMode();
 	ValueTree* state;
     std::shared_ptr<FileLogger> logger;
+    void setState(ValueTree*);
 private:
 	AudioProcessorValueTreeState& params;
     bool active = false;

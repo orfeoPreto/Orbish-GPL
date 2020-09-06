@@ -137,7 +137,7 @@ OrbishAudioProcessor::OrbishAudioProcessor() :
             File file = File(File::getSpecialLocation(File::userHomeDirectory)).getChildFile("Orbish").getChildFile("Orbish.log");
             auto result = file.create();
             if (result.wasOk()) {
-                logger = std::make_shared<FileLogger>(file, "Hi");
+                context->logger = std::make_shared<FileLogger>(file, "Hi");
             }
             while (keepRunning) {
                 if (context->audioInputsCount > 0) {
@@ -188,38 +188,12 @@ OrbishAudioProcessor::OrbishAudioProcessor() :
                         track->loopToBeExtended = false;
                     }
                 }
-                if(context->loggingActive){
-                    while (context->xchange->logWriteMessageQueue->write_available() > 0) {
-                        auto s = new std::string();
-                        s->reserve(200);
-                        context->xchange->logWriteMessageQueue->push(s);
-                    }
-                    while(context->xchange->logReadMessageQueue->read_available()){
-                        std::string* message = 0;
-                        context->xchange->logReadMessageQueue->pop(message);
-                        if(message != 0){
-                            logger->logMessage(*message);
-                        }
-                    }
-                }
+                context->flushLogs();
             }
         }
     );
  //   logMessage("end constructor");
 }
-
-			void OrbishAudioProcessor::logMessage(juce::String msg) {
-                if (context->loggingActive){
-                    std::string* message;
-                    if(context->xchange->logWriteMessageQueue->read_available()){
-                        context->xchange->logWriteMessageQueue->pop(message);
-                        message->replace(0, msg.length(), msg.toStdString());
-                        if (context->loggingActive && context->xchange->logReadMessageQueue->write_available()){
-                            context->xchange->logReadMessageQueue->push(message);
-                        }
-                    }
-                }
-			}
 
 			OrbishAudioProcessor::~OrbishAudioProcessor()
 			{
@@ -370,7 +344,6 @@ OrbishAudioProcessor::OrbishAudioProcessor() :
 
                                 void OrbishAudioProcessor::addTrack(bool active) {
                                     auto track = new Track(tracks.size(), active, parameters, context, guiAlive);
-                                    track->logger = logger;
                                     tracks.add(track);
                                     context->trackCount = tracks.size();
                                     context->progress.add(tracks[tracks.size() - 1]->Progress);
@@ -1578,7 +1551,7 @@ OrbishAudioProcessor::OrbishAudioProcessor() :
                                 }
 
                                 bool OrbishAudioProcessor::loadFromValueTree(ValueTree* tree) {
-                                    logMessage("loading tracks");
+                                    context->logMessage("loading tracks");
                                     if (tree == nullptr)return false;
                                     if (!tree->hasType("project"))return false;
                                     auto tracksElement = tree->getChildWithName("tracks");
@@ -1591,10 +1564,10 @@ OrbishAudioProcessor::OrbishAudioProcessor() :
                                                 processNewTrack();
                                             }
                                             Track* t(tracks[trackIdx]);
-                                            if (!loadTrackFromValueTree(&tChild, t)) { DBG("File load failed"); }
+                                            if (!loadTrackFromValueTree(&tChild, t)) { context->logMessage("File load failed"); }
                                         }
                                     }
-                                //    logMessage("loading groups");
+                                //    context->logMessage("loading groups");
                                     auto groupTree = tree->getChildWithName("groups");
                                     for (auto groupNode: groupTree) {
                                         processGroupSelect(groupNode.getProperty("index"));
@@ -1656,7 +1629,7 @@ OrbishAudioProcessor::OrbishAudioProcessor() :
                                                     loop->LoopDuration = buffer->getNumSamples();
                                                 }
                                                 catch (...) {
-                                                    logMessage("write of audio file failed: " + String(filePath));
+                                                    context->logMessage("write of audio file failed: " + String(filePath));
                                                 }
                                             }
                                             layer->Dirty = true;

@@ -97,4 +97,35 @@ struct OrbishContext {
             mtx.unlock();
         }
     }
+    std::shared_ptr<FileLogger> logger;
+    
+    void logMessage(juce::String msg) {
+        if (loggingActive){
+            std::string* message;
+            if(xchange->logWriteMessageQueue->read_available()){
+                xchange->logWriteMessageQueue->pop(message);
+                message->replace(0, msg.length(), msg.toStdString());
+                if (loggingActive && xchange->logReadMessageQueue->write_available()){
+                    xchange->logReadMessageQueue->push(message);
+                }
+            }
+        }
+    }
+    
+    void flushLogs(){
+        if(loggingActive){
+            while (xchange->logWriteMessageQueue->write_available() > 0) {
+                auto s = new std::string();
+                s->reserve(200);
+                xchange->logWriteMessageQueue->push(s);
+            }
+            while(xchange->logReadMessageQueue->read_available()){
+                std::string* message = 0;
+                xchange->logReadMessageQueue->pop(message);
+                if(message != 0){
+                    logger->logMessage(*message);
+                }
+            }
+        }
+    }
 };

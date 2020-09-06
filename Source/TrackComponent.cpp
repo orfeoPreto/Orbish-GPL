@@ -65,7 +65,7 @@ TrackComponent::~TrackComponent(){
 
 void TrackComponent::setActiveLoop(int loopIdx){
     activeLoop =  loopIdx;
-
+    if(Loops.size() < loopIdx+1)return;
     delete tempProgressBar;
     tempProgressBar = new ProgressBar(Loops[loopIdx]->getProgress());
     tempProgressBar->setPercentageDisplay(false);
@@ -84,6 +84,9 @@ void TrackComponent::removeLoop(){
 }
 void TrackComponent::addLoop(double& p){
     LoopComponent* newLoop = new LoopComponent(p, Loops.size());
+    String str = "Loop " + String(newLoop->getIndex() + 1) + " in track " +
+    String(index + 1);
+    newLoop->setTooltip(str);
     Loops.add(newLoop);
     resized();
 }

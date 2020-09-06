@@ -28,8 +28,8 @@ public:
 	void AddLayer(bool incrementTop, OrbishContext* context) {
 		LayersReady = false;
 		if (!context->layerQueue->empty()) {
-			//long start1 = 0, end1 = 0, start2 = 0, end2 = 0;
-			//start1 = Time::getHighResolutionTicks();
+			long start1 = 0, end1 = 0, start2 = 0, end2 = 0;
+			start1 = Time::getHighResolutionTicks();
 			Layer* l = nullptr;
 			do {
 				if (l != nullptr) {
@@ -40,12 +40,12 @@ public:
 			} while (l != nullptr && l->Buffer->getNumChannels() == 0);
 
 			Layers.push_back(l);
-			//	end1 = Time::getHighResolutionTicks();
-			//	start2 = Time::getHighResolutionTicks();
+				end1 = Time::getHighResolutionTicks();
+				start2 = Time::getHighResolutionTicks();
 			context->layerQueue->pop();
-			//	end2 = Time::getHighResolutionTicks();
-			//	DBG("time for Layers->add: " + String(end1 - start1));
-			//	DBG("time for pop_front: " + String(end2 - start2));
+				end2 = Time::getHighResolutionTicks();
+				context->logMessage("time for Layers->add: " + String(end1 - start1));
+				context->logMessage("time for pop_front: " + String(end2 - start2));
 			if (incrementTop) CurrentTop = int(Layers.size()) - 1;
 		}
 		LayersReady = true;

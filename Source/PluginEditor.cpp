@@ -200,23 +200,23 @@ void OrbishAudioProcessorEditor::setProjectName(String name) {
 }
 
 void OrbishAudioProcessorEditor::saveProject() {
-	if (!project.dirty && !project.newProject)return;
+//	if (!project.dirty && !project.newProject)return;
 	if (project.newProject || !project.directory.exists()) {
 		File dir = File(File::getSpecialLocation(File::userHomeDirectory));
 		if (dir.getChildFile("Orbish").exists()) {
-			dir = dir.getChildFile("Orbish");
+        	dir = dir.getChildFile("Orbish");
 		}
 		FileChooser fc("Save As", dir,"",true);
 		if (fc.showDialog(
             FileBrowserComponent::FileChooserFlags::canSelectDirectories
             | FileBrowserComponent::FileChooserFlags::saveMode
 			, nullptr))
-			project.directory = fc.getResult();
+			project.directory = fc.getResult().getParentDirectory();
         setProjectName(project.directory.getFileName());	
 		if (!project.directory.exists()) {
 			juce::Result result = project.directory.createDirectory();
 			if (result.failed()) {
-				processor.logMessage(result.getErrorMessage());
+				logMessage(result.getErrorMessage());
 			}
 		}
 	}
@@ -226,15 +226,32 @@ void OrbishAudioProcessorEditor::saveProject() {
 
 	std::unique_ptr<ValueTree> tsv(std::make_unique<ValueTree>(String("tracks")));
 	for (auto track: tracks) {
-		ValueTree tv(String("track")); 
+		ValueTree tv(String("track"));
+        if(nullptr == track ){
+            logMessage("nullpointer in save project (no track)");
+            return;
+        }
 		tv.setProperty("index", track->getIndex(), nullptr);
 		tv.setProperty("name", track->getName(), nullptr);
 		for (auto loop: track->Loops) {
 			ValueTree lv(String("loop"));
-            if(nullptr == track || nullptr == loop )return;
+            if(nullptr == loop ){
+                logMessage("nullpointer in save project (no loop)");
+                return;
+            }
+            if(nullptr == track->getAudioTrack()){
+                logMessage("nullpointer in save project (no audio track)");
+                logMessage(String("Track index:") + String(track->getIndex()));
+                return;
+            }
+            if(loop->getIndex() >= track->getAudioTrack()->loops.size()){
+                logMessage("exceeded bounds of audio loop array");
+                logMessage(String("Loop index:") + String(loop->getIndex()));
+                return;
+            }
 			for (auto k = 0;k <= track->getAudioTrack()->loops[loop->getIndex()]->CurrentTop;++k) {
 				auto result = saveBuffer(track->getIndex(), loop->getIndex(), k, project.directory
-					, track->getName() + "_" + String(loop->getIndex()) + "_" + String(k));
+					, track->getName() + "_" + String(loop->getIndex()) + "_" + String(k), true);
 				ValueTree lyv(String("layer"));
 				lyv.setProperty("index", k, nullptr);
 				lyv.setProperty("file", result , nullptr);
@@ -332,6 +349,7 @@ void OrbishAudioProcessorEditor::askUserToOpenFile() {
 		openFile(fc.getResult());
 	project.newProject = false;
 	project.dirty = false;
+    project.directory = fc.getResult().getParentDirectory();
 }
 
 bool OrbishAudioProcessorEditor::openFile(const File& file) {
@@ -344,7 +362,7 @@ bool OrbishAudioProcessorEditor::openFile(const File& file) {
 			processor.loadFromValueTree(loopTree.get());
 		}
 		catch (...) {
-			processor.logMessage("Problem loading file");
+			logMessage("Problem loading file");
 		}
 		for (int i = 0;i < processor.context->trackCount; ++i) {
 			doCreateTrack(i);
@@ -403,7 +421,8 @@ String OrbishAudioProcessorEditor::saveBuffer(int trackIdx
 								, int loopIdx
 								, int layerIdx
 								, File dir
-								, String name){
+								, String name
+                                , bool overwrite){
 	auto t = processor.tracks[trackIdx];
 	if (*t->LoopDuration == 0) {
 		return String();
@@ -418,12 +437,14 @@ String OrbishAudioProcessorEditor::saveBuffer(int trackIdx
 	if (!dir.exists()) { 
 		juce::Result result = dir.createDirectory(); 
 		if (result.failed()) {
-			processor.logMessage(result.getErrorMessage());
+			logMessage(result.getErrorMessage());
 		}
 	}
-
-    File file = dir.getNonexistentChildFile(name ,".wav");
-    
+    File file = dir.getChildFile(name + ".wav");
+    if (overwrite && file.exists()) {
+        file.deleteFile();
+    }
+    file = dir.getNonexistentChildFile(name ,".wav");
 	WavAudioFormat form;
 	std::unique_ptr<AudioFormatWriter> writer;
 	writer.reset(form.createWriterFor(new FileOutputStream(file),
@@ -445,7 +466,7 @@ String OrbishAudioProcessorEditor::saveBufferFromLoop(int trackIdx, int loopIdx)
     dir = dir.getChildFile("Orbish");
     dir = dir.getChildFile("UsedByHost");
 	return saveBuffer(trackIdx, loopIdx, *processor.tracks[trackIdx]->CurrentTop
-		, dir, track->getName() + "_" + String(loopIdx) + "_" + String(*layerIdx));
+		, dir, track->getName() + "_" + String(loopIdx) + "_" + String(*layerIdx), false);
 }
 
 void OrbishAudioProcessorEditor::toggleRecord(){
@@ -475,7 +496,7 @@ void OrbishAudioProcessorEditor::toggleReverse(){
 }
 
 void OrbishAudioProcessorEditor::logMessage(String message){
-   processor.logMessage(message);
+   processor.context->logMessage(message);
 }
 
 
@@ -983,6 +1004,9 @@ void OrbishAudioProcessorEditor::doCreateTrack(int trackNumber) {
         trackArea.addAndMakeVisible(t);
     }
     else {
+        while(tracks[trackNumber]->Loops.size() > 0){
+            tracks[trackNumber]->removeLoop();
+        }
         for(auto l : *loops){
             tracks[trackNumber]->addLoop(l->Progress);
         }
@@ -1010,7 +1034,8 @@ void OrbishAudioProcessorEditor::doChangeTrack(){
 
 void OrbishAudioProcessorEditor::doCreateLoop(){
     auto currentTrack = tracks[activeTrack];
-    currentTrack->addLoop(currentTrack->getAudioTrack()->loops.getLast()->Progress);
+    if (processor.activeTrack->loops.size() <= currentTrack->Loops.size()) return;
+currentTrack->addLoop(currentTrack->getAudioTrack()->loops.getLast()->Progress);
 
     makeTracks();
     project.dirty = true;

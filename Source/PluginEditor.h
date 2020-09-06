@@ -101,7 +101,7 @@ public:
     void doCreateLoop();
     void askToChangeTrack(int trackNumber) override;
     void askToChangeLoop(int trackNumber, int loopNumber) override;
-	String saveBuffer(int trackIdx, int loopIdx, int layerIdx, File dir, String name);
+	String saveBuffer(int trackIdx, int loopIdx, int layerIdx, File dir, String name, bool overwrite);
 	void clicked(Button*) override;
 	void sliderChanged(Slider*) override;
     void buttonClicked (Button* button) override;
