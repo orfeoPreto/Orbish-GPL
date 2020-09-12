@@ -390,8 +390,8 @@ void OrbishAudioProcessorEditor::changeListenerCallback (ChangeBroadcaster* ){
 void OrbishAudioProcessorEditor::timerCallback(){
     // update thumbnail from ringbuffer
 	BufferForVisualisation* b;
-	if (processor.context->xchange->readBufferQueue->read_available()) {
-		processor.context->xchange->readBufferQueue->pop(b);
+	if (processor.context->xchange->readVisualisationBufferQueue->read_available()) {
+		processor.context->xchange->readVisualisationBufferQueue->pop(b);
 		updateLoopVisualiser(*b->buffer, b->numSamples);
 		String s = String(pointer_sized_int(b));
 		delete b;
@@ -1048,6 +1048,13 @@ void OrbishAudioProcessorEditor::doRemoveTrack(){
         if(!tracks[trackToRemove]->isActive()){
             tracks.remove(trackToRemove);
         }
+    }
+    if(trackToRemove == -1){
+        while (tracks.size() > 0) {
+            tracks.remove(tracks.size()-1);
+        }
+        doCreateTrack(0);
+        activeTrack = 0;
     }
     trackToRemove = 0;
 }

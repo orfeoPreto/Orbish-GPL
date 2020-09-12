@@ -5,6 +5,7 @@
 #include "Loop.h"
 #endif
 
+#define DEBUG_MODE 1
 //#include <thread>
 #include <mutex>
 #include "Observer.h"
@@ -18,7 +19,7 @@ typedef unsigned int uint;
 struct Layer {
 	AudioBuffer<float>* Buffer{};
 	int Checkpoint = -1;
-	bool Dirty = false;
+	bool dirty = false;
 };
 
 struct OrbishContext {
@@ -113,18 +114,21 @@ struct OrbishContext {
     }
     
     void flushLogs(){
-        if(loggingActive){
-            while (xchange->logWriteMessageQueue->write_available() > 0) {
-                auto s = new std::string();
-                s->reserve(200);
-                xchange->logWriteMessageQueue->push(s);
-            }
-            while(xchange->logReadMessageQueue->read_available()){
-                std::string* message = 0;
-                xchange->logReadMessageQueue->pop(message);
-                if(message != 0){
+        while (xchange->logWriteMessageQueue->write_available() > 0) {
+            auto s = new std::string();
+            s->reserve(200);
+            xchange->logWriteMessageQueue->push(s);
+        }
+        while(xchange->logReadMessageQueue->read_available()){
+            std::string* message = 0;
+            xchange->logReadMessageQueue->pop(message);
+            if(message != 0){
+                if(loggingActive){
                     logger->logMessage(*message);
                 }
+#if DEBUG_MODE
+                    DBG(*message);
+#endif
             }
         }
     }

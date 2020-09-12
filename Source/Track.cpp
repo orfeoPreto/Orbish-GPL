@@ -374,7 +374,7 @@ void Track::StartRecordingBefore()
 	if ((Layers->size() < uint(1)
          || (getRecordMode() < 3
             && *CurrentTop == Layers->size() - uint(1)
-            && (*Layers)[*CurrentTop]->Dirty))) {
+            && (*Layers)[*CurrentTop]->dirty))) {
 		AddLayer(true);
 	}
 	else if (getRecordMode() < 3 && *CurrentTop < Layers->size() - uint(1)) {
@@ -623,18 +623,18 @@ void Track::ChangeLoopAfter(){
 }
 
 void Track::UpdateLoopVisualizer(){
-    if (context->xchange->writeBufferQueue->read_available() 
-		&& context->xchange->readBufferQueue->write_available() 
+    if (context->xchange->writeVisualisationBufferQueue->read_available() 
+		&& context->xchange->readVisualisationBufferQueue->write_available() 
 		&& *CurrentTop >= 0) {
         BufferForVisualisation* b;
-        context->xchange->writeBufferQueue->pop(b);
+        context->xchange->writeVisualisationBufferQueue->pop(b);
         for (uint i = 0; i < context->audioInputsCount; ++i) {
-			int index = std::max((*Layers)[*CurrentTop]->Dirty ? *CurrentTop : *CurrentTop - 1, 0);
+			int index = std::max((*Layers)[*CurrentTop]->dirty ? *CurrentTop : *CurrentTop - 1, 0);
 
             b->buffer->copyFrom(i, 0, *(*Layers)[index]->Buffer, i, 0, *LoopDuration);
         }
         b->numSamples = *LoopDuration;
-        context->xchange->readBufferQueue->push(b);
+        context->xchange->readVisualisationBufferQueue->push(b);
     }
 }
 
@@ -733,7 +733,7 @@ void Track::processPreviousChange() {
 void Track::processNextChange() {
     int limit = int(Layers->size()) - 1;
     if (limit > 0) {
-        if(!(*Layers)[limit]->Dirty){
+        if(!(*Layers)[limit]->dirty){
             --limit;
         }
     }else{

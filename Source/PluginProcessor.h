@@ -143,7 +143,7 @@ public:
     TrackGroup* CurrentGroup;
 	TrackGroup* SelectedGroup;
     void initParams();
-    Track* activeTrack;
+    Track* activeTrack = nullptr;
 	AudioProcessorEditor* editor;
 	OwnedArray<Track, CriticalSection> tracks;
 	bool guiAlive = false;
@@ -158,6 +158,7 @@ public:
     void resumePlayback();
     void pausePlayback();
     void startReset();
+    void init();
     void doMute();
     MidiProcessor* midiProcessor;
     MessageManager* messenger;

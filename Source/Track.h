@@ -144,7 +144,10 @@ public:
 	inline bool IsPlaying()
 	{
 		// while Recording and overwriting content without blending, do not play
-		return (Playing || (LastPlaybackBuffer)) && !(Recording && ((getRecordMode() == kRecOverWrite || getRecordMode() == kRecAppend) && CurrentRecordingIndex > *LoopDuration));
+		return (Playing || (LastPlaybackBuffer))
+            && !(Recording &&
+                 ((getRecordMode() == kRecOverWrite || getRecordMode() == kRecAppend)
+                               && CurrentRecordingIndex > *LoopDuration));
 	}
 
 	void StartReverse();

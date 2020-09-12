@@ -13,7 +13,8 @@
 
 
 
-struct Blinker : public Component, public Timer, public SettableTooltipClient
+struct Blinker :
+public Component, public Timer, public SettableTooltipClient
 {
     
     enum ColourIds
