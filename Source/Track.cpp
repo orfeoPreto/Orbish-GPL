@@ -14,38 +14,38 @@
 
 
 Track::Track(uint index, bool a, AudioProcessorValueTreeState& p, OrbishContext* &c, bool& gui) : guiAlive(gui)
-                                                                                                        , params(p)
-                                                                                                        , context(c){
-	Index = index;
-	RunAfters.reserve(10);
+, params(p)
+, context(c){
+    Index = index;
+    RunAfters.reserve(10);
     state = new ValueTree(
                           { "TrackParams", {{ "index", int(index) }},
-                {
-                    { "Parameter", {{ "id", "record" }, { "value", false }}},
-                    { "Parameter", {{ "id", "play" },     { "value", false }}},
-                    { "Parameter", {{ "id", "stop" },     { "value", false }}},
-                    { "Parameter", {{ "id", "reverse" },     { "value", false }}},
-                    { "Parameter", {{ "id", "trigger" },     { "value", false }}},
-                    { "Parameter", {{ "id", "reset" },     { "value", false }}},
-                    { "Parameter", {{ "id", "monitor" },     { "value", false }}},
-                    { "Parameter", {{ "id", "mute" },     { "value", false }}},
-                    { "Parameter", {{ "id", "solo" },     { "value", false }}},
-                    { "Parameter", {{ "id", "undo" },     { "value", false }}},
-                    { "Parameter", {{ "id", "redo" },     { "value", false }}},
-                    { "Parameter", {{ "id", "inputLevel" },     { "value", 0.7 }}},
-                    { "Parameter", {{ "id", "outputLevel" },     { "value", 0.5 }}},
-                    { "Parameter", {{ "id", "mode" },     { "value", 0 }}},
-                    { "Parameter", {{ "id", "snap" },     { "value", 1 }}},
-					{ "Parameter", {{ "id", "bounce" },     { "value", 1 }}},
-                    { "Parameter", {{ "id", "nextLoop" }, { "value" , false}}},
-                    { "Parameter", {{ "id", "previousLoop" }, { "value" , false}}},
-                    { "Parameter", {{ "id", "newLoop" }, { "value" , false}}},
-                    { "Parameter", {{ "id", "removeLoop" }, { "value" , false}}},
-                    { "Parameter", {{ "id", "loopSelect" }, { "value" , 0 }}}
-
-                }
-            });
-
+        {
+            { "Parameter", {{ "id", "record" }, { "value", false }}},
+            { "Parameter", {{ "id", "play" },     { "value", false }}},
+            { "Parameter", {{ "id", "stop" },     { "value", false }}},
+            { "Parameter", {{ "id", "reverse" },     { "value", false }}},
+            { "Parameter", {{ "id", "trigger" },     { "value", false }}},
+            { "Parameter", {{ "id", "reset" },     { "value", false }}},
+            { "Parameter", {{ "id", "monitor" },     { "value", false }}},
+            { "Parameter", {{ "id", "mute" },     { "value", false }}},
+            { "Parameter", {{ "id", "solo" },     { "value", false }}},
+            { "Parameter", {{ "id", "undo" },     { "value", false }}},
+            { "Parameter", {{ "id", "redo" },     { "value", false }}},
+            { "Parameter", {{ "id", "inputLevel" },     { "value", 0.7 }}},
+            { "Parameter", {{ "id", "outputLevel" },     { "value", 0.5 }}},
+            { "Parameter", {{ "id", "mode" },     { "value", 0 }}},
+            { "Parameter", {{ "id", "snap" },     { "value", 1 }}},
+            { "Parameter", {{ "id", "bounce" },     { "value", 1 }}},
+            { "Parameter", {{ "id", "nextLoop" }, { "value" , false}}},
+            { "Parameter", {{ "id", "previousLoop" }, { "value" , false}}},
+            { "Parameter", {{ "id", "newLoop" }, { "value" , false}}},
+            { "Parameter", {{ "id", "removeLoop" }, { "value" , false}}},
+            { "Parameter", {{ "id", "loopSelect" }, { "value" , 0 }}}
+            
+        }
+    });
+    
     state->setProperty("inputLevel", 0.7f, nullptr);
     state->setProperty("outputLevel", 0.5f, nullptr);
     state->setProperty("record", false, nullptr);
@@ -59,14 +59,14 @@ Track::Track(uint index, bool a, AudioProcessorValueTreeState& p, OrbishContext*
     state->setProperty("trigger", false, nullptr);
     state->setProperty("mode", 0, nullptr);
     state->setProperty("snap", 1, nullptr);
-	state->setProperty("bounce", 1, nullptr);
+    state->setProperty("bounce", 1, nullptr);
     state->setProperty("nextLoop", false, nullptr);
     state->setProperty("previousLoop", false, nullptr);
     state->setProperty("newLoop", false, nullptr);
     state->setProperty("removeLoop", false, nullptr);
     state->setProperty("loopSelect", 0, nullptr);
-
-	setActive(a);
+    
+    setActive(a);
     setPlayArmed(false);
     setReverseArmed(false);
     setRecordingArmed(false);
@@ -76,14 +76,15 @@ Track::Track(uint index, bool a, AudioProcessorValueTreeState& p, OrbishContext*
     setAutoTrigger(false);
     AddLoop();
     RegisterLoop(loops.size()-1);
+    realignment = new Realignment(context->samplesPerBlock, context->sampleRate);
 }
- 
-void Track::setState(ValueTree* inputState){
 
+void Track::setState(ValueTree* inputState){
+    
 }
- 
+
 Track::~Track() {
-  
+    
     RemoveAllLayers();
     setActive(false);
 }
@@ -119,8 +120,8 @@ void Track::setActive(bool newValue){
             p->setValueNotifyingHost(p->convertTo0to1(state->getProperty("mode")));
             p = params.getParameter("snap");
             p->setValueNotifyingHost(p->convertTo0to1(state->getProperty("snap")));
-			p = params.getParameter("bounce");
-			p->setValueNotifyingHost(p->convertTo0to1(state->getProperty("bounce")));
+            p = params.getParameter("bounce");
+            p->setValueNotifyingHost(p->convertTo0to1(state->getProperty("bounce")));
             p = params.getParameter("nextLoop");
             p->setValueNotifyingHost(p->convertTo0to1(state->getProperty("nextLoop")));
             p = params.getParameter("previousLoop");
@@ -147,14 +148,14 @@ void Track::setActive(bool newValue){
             params.addParameterListener("outputLevel", this);
             params.addParameterListener("mode", this);
             params.addParameterListener("snap", this);
-			params.addParameterListener("bounce", this);
+            params.addParameterListener("bounce", this);
             params.addParameterListener("nextLoop", this);
             params.addParameterListener("previousLoop", this);
             params.addParameterListener("newLoop", this);
             params.addParameterListener("removeLoop", this);
             params.addParameterListener("loopSelect", this);
-
-		}
+            
+        }
     }else{
         if(isActive()){
             params.removeParameterListener("record", this);
@@ -172,14 +173,14 @@ void Track::setActive(bool newValue){
             params.removeParameterListener("outputLevel", this);
             params.removeParameterListener("mode", this);
             params.removeParameterListener("snap", this);
-			params.removeParameterListener("bounce", this);
+            params.removeParameterListener("bounce", this);
             params.removeParameterListener("nextLoop", this);
             params.removeParameterListener("previousLoop", this);
             params.removeParameterListener("newLoop", this);
             params.removeParameterListener("removeLoop", this);
             params.removeParameterListener("loopSelect", this);
-
-		}
+            
+        }
     }
     active = newValue;
 }
@@ -188,7 +189,7 @@ void Track::parameterChanged(const String &parameterID, float newValue) {
     if(parameterID == "inputLevel"){
         PreviousInputLevel = state->getProperty(parameterID);
         state->setProperty(parameterID, Decibels::decibelsToGain(newValue), nullptr);
-      //  DBG("input: "+String(p->convertTo0to1(newValue)));
+        //  DBG("input: "+String(p->convertTo0to1(newValue)));
         return;
     }
     if(parameterID == "outputLevel"){
@@ -219,9 +220,9 @@ void Track::parameterChanged(const String &parameterID, float newValue) {
     }else if(parameterID == "reset"){
         processResetChange();
     }else if (parameterID == "mode") {
-		processRecModeChange();
-	}else if (parameterID == "bounce") {
-		processBounceChange();
+        processRecModeChange();
+    }else if (parameterID == "bounce") {
+        processBounceChange();
     }else if(parameterID == "nextLoop"){
         processLoopChange(ActiveLoop->Index + 1);
     }else if(parameterID == "previousLoop"){
@@ -233,7 +234,7 @@ void Track::parameterChanged(const String &parameterID, float newValue) {
     }else if (parameterID == "loopSelect") {
         processLoopChange(int(newValue));
     }
-
+    
 }
 
 void Track::RegisterLoop(int loopIdx){
@@ -265,77 +266,89 @@ void Track::RemoveLoop(){
 }
 
 void Track::AddLayer(bool incrementTop) {
-	LayersReady = false;
-	ActiveLoop->AddLayer(incrementTop, context);
-	LayersReady = true;
+    LayersReady = false;
+    ActiveLoop->AddLayer(incrementTop, context);
+    LayersReady = true;
 }
 
 
 
 void Track::RemoveTopLayer() {
-
-	auto* layer = Layers->back();
-	delete layer->Buffer;
-	Layers->pop_back();
-
-	if (*CurrentTop > int(Layers->size()) - 1)
-		*CurrentTop = int(Layers->size()) -1;
+    
+    auto* layer = Layers->back();
+    delete layer->Buffer;
+    Layers->pop_back();
+    
+    if (*CurrentTop > int(Layers->size()) - 1)
+        *CurrentTop = int(Layers->size()) -1;
 }
 
 void Track::RemoveAllLayers() {
-	while (Layers->size() > 0) {
-		auto* layer = Layers->back();
-		delete layer->Buffer;
-		Layers->pop_back();
-	}
+    while (Layers->size() > 0) {
+        auto* layer = Layers->back();
+        delete layer->Buffer;
+        Layers->pop_back();
+    }
     Layers->clear();
     *CurrentTop = -1;
 }
 
 int Track::BounceHistory(int startCheckPoint, int endCheckPoint) {
-	int startIdx = -1;
-	AudioBuffer<float>* startBuffer = nullptr;
-	for (uint i = 0; i < Layers->size(); i++) {
-		if ((*Layers)[i]->Checkpoint == startCheckPoint) {
-			startIdx = i;
-			startBuffer = (*Layers)[i]->Buffer;
-		}
-		if (-1 < startIdx && startIdx < int(i)) {
-			for (uint j = 0; j < context->audioInputsCount; j++) {
-					if (startBuffer) {
-						startBuffer->copyFrom(j, 0, *((*Layers)[i]->Buffer), j, 0, context->allocatedLength);
-					}
-			}
-		}
-		if ((*Layers)[i]->Checkpoint == endCheckPoint)
-			break;
-	}
-	return startIdx;
+    int startIdx = -1;
+    AudioBuffer<float>* startBuffer = nullptr;
+    for (uint i = 0; i < Layers->size(); i++) {
+        if ((*Layers)[i]->Checkpoint == startCheckPoint) {
+            startIdx = i;
+            startBuffer = (*Layers)[i]->Buffer;
+        }
+        if (-1 < startIdx && startIdx < int(i)) {
+            for (uint j = 0; j < context->audioInputsCount; j++) {
+                if (startBuffer) {
+                    startBuffer->copyFrom(j, 0, *((*Layers)[i]->Buffer), j, 0, context->allocatedLength);
+                }
+            }
+        }
+        if ((*Layers)[i]->Checkpoint == endCheckPoint)
+            break;
+    }
+    return startIdx;
 }
 
 void Track::BounceAllHistory() {
-	int limit = int(Layers->size()) - 1;
-	if(Layers->size() < 1){
-		return;
-	}
-	if (uint((*Layers)[Layers->size() - 1]->Buffer->getNumChannels()) < context->audioInputsCount) {
-		--limit;
-	}
-	if (limit < 1) {
-		return;
-	}
-	for (uint i = 1; i < Layers->size(); i++) {
-		for (uint j = 0; j <context->audioInputsCount; j++) {
-			(*Layers)[0]->Buffer->addFrom(j, 0, (*Layers)[i]->Buffer->getReadPointer(j,0), *LoopDuration, 1);
-		}
-	}
-
-	while (Layers->size() > 1) {
-		RemoveTopLayer();
-	}
+    int limit = int(Layers->size()) - 1;
+    if(Layers->size() < 1){
+        return;
+    }
+    if (uint((*Layers)[Layers->size() - 1]->Buffer->getNumChannels()) < context->audioInputsCount) {
+        --limit;
+    }
+    if (limit < 1) {
+        return;
+    }
+    for (uint i = 1; i < Layers->size(); i++) {
+        for (uint j = 0; j <context->audioInputsCount; j++) {
+            (*Layers)[0]->Buffer->addFrom(j, 0, (*Layers)[i]->Buffer->getReadPointer(j,0), *LoopDuration, 1);
+        }
+    }
+    
+    while (Layers->size() > 1) {
+        RemoveTopLayer();
+    }
     UpdateLoopVisualizer();
 }
 
+int Track::getAdjustedLoopPosition(int currentIndex, int adjustment){
+    if (adjustment >= 0) {
+        if (currentIndex + adjustment > *LoopDuration) {
+            return currentIndex + adjustment - *LoopDuration;
+        }
+    }else{
+        if (currentIndex + adjustment < 0) {
+            return *LoopDuration + currentIndex - adjustment;
+        }
+    }
+    return currentIndex + adjustment;
+}
 
 
 void Track::StartResetBefore(){
@@ -355,34 +368,35 @@ void Track::StartResetAfter(){
     Muted = false;
     *Progress = 0;
     (context->observer->*(context->observer->updatePlayPosition)) (0, Reverse);
+    realignment->setRealigned(true);
 }
 
 void Track::StartRecordingBefore()
 {
-	if (loopToBeExtended)return;
+    if (loopToBeExtended)return;
     if (getRecordMode() == kRecOverWrite)
-	{
-		// truncate loop duration to current position (+ crossfade time)
-		int newLoopDuration = *CurrentPlayingIndex + int(context->fadeTime + 1);
-		if (newLoopDuration < *LoopDuration)
-		{
-			*LoopDuration = newLoopDuration;
-		}
-	}
-	// Add a new buffer if active track doesn't have one yet
-
-	if ((Layers->size() < uint(1)
+    {
+        // truncate loop duration to current position (+ crossfade time)
+        int newLoopDuration = *CurrentPlayingIndex + int(context->fadeTime + 1);
+        if (newLoopDuration < *LoopDuration)
+        {
+            *LoopDuration = newLoopDuration;
+        }
+    }
+    // Add a new buffer if active track doesn't have one yet
+    
+    if ((Layers->size() < uint(1)
          || (getRecordMode() < 3
-            && *CurrentTop == Layers->size() - uint(1)
-            && (*Layers)[*CurrentTop]->dirty))) {
-		AddLayer(true);
-	}
-	else if (getRecordMode() < 3 && *CurrentTop < Layers->size() - uint(1)) {
-		++(*CurrentTop);
-	}
-	// actually start Recording
-	Recording = true;
-	CurrentRecordingIndex = *CurrentPlayingIndex;
+             && *CurrentTop == Layers->size() - uint(1)
+             && (*Layers)[*CurrentTop]->dirty))) {
+        AddLayer(true);
+    }
+    else if (getRecordMode() < 3 && *CurrentTop < Layers->size() - uint(1)) {
+        ++(*CurrentTop);
+    }
+    // actually start Recording
+    Recording = true;
+    CurrentRecordingIndex = *CurrentPlayingIndex;
     FirstRecordingBuffer = true;
     RunAfters.push_back(&Track::StartRecordingAfter);
 }
@@ -406,14 +420,14 @@ void Track::StopRecordingBefore()
 
 void Track::StopRecordingAfter()
 {
-
-	const int recordedCount = CurrentRecordingIndex;
-
-	// recorded beyond previous loop -> update duration, start playback at 0
-	if (recordedCount > *LoopDuration)
-	{
-		// in repeat mode hardcopy the content of the previous layers to the extended region
-		if (getRecordMode() == kRecExtend  && *LoopDuration > 0) {
+    
+    const int recordedCount = CurrentRecordingIndex;
+    
+    // recorded beyond previous loop -> update duration, start playback at 0
+    if (recordedCount > *LoopDuration)
+    {
+        // in repeat mode hardcopy the content of the previous layers to the extended region
+        if (getRecordMode() == kRecExtend  && *LoopDuration > 0) {
             const int tail = recordedCount % *LoopDuration;
             for (auto segments = recordedCount / *LoopDuration, h = 1; segments>0; --segments, ++h) {
                 for (int i = 0; i < *CurrentTop; i++) {
@@ -423,19 +437,19 @@ void Track::StopRecordingAfter()
                     (*Layers)[i]->Buffer->applyGain(context->feedback);
                 }
             }
-		}
-		*LoopDuration = recordedCount;
-		*CurrentPlayingIndex = 0;
-	}
-
-	if (getRecordMode() != kRecPunch) {
+        }
+        *LoopDuration = recordedCount;
+        *CurrentPlayingIndex = 0;
+    }
+    
+    if (getRecordMode() != kRecPunch) {
         setRecordingArmed(false);
-	}
+    }
     if(*CurrentTop < Layers->size() - uint(1)){
         ++(*CurrentTop);
         RemoveTopLayer();
     }
-	//}
+    //}
     if(isActive()){
         UpdateLoopVisualizer();
     }
@@ -470,6 +484,7 @@ void Track::StartPlaybackAfter()
         UpdateLoopVisualizer();
     }
     playStateChanged();
+    realignment->setRealigned(true);
 }
 
 void Track::StopPlaybackBefore()
@@ -487,15 +502,15 @@ void Track::PausePlaybackBefore()
     Playing = false;
     setPlayArmed(false);
     LastPlaybackBuffer = true;
-        RunAfters.push_back(&Track::PausePlaybackAfter);
+    RunAfters.push_back(&Track::PausePlaybackAfter);
 }
 
 void Track::StopPlaybackAfter()
 {
-	*CurrentPlayingIndex = 0;
+    *CurrentPlayingIndex = 0;
     LastPlaybackBuffer = false;
     setStopArmed(false);
-
+    
     if (guiAlive && isActive()) {
         (context->observer->*(context->observer->updatePlayPosition)) (0, Reverse);
         playStateChanged();
@@ -505,45 +520,47 @@ void Track::StopPlaybackAfter()
 
 void Track::PausePlaybackAfter()
 {
-	Playing = false;
+    Playing = false;
     LastPlaybackBuffer = false;
     WasPlaying = true;
     playStateChanged();
+    realignment->setRealigned(true);
 }
 
 void Track::StartReverse()
 {
-	if (Reverse == false && *LoopDuration > 0)
-	{
-		*CurrentPlayingIndex = (*LoopDuration - 1 - *CurrentPlayingIndex);
-	}
-	Reverse = true;
+    if (Reverse == false && *LoopDuration > 0)
+    {
+        *CurrentPlayingIndex = (*LoopDuration - 1 - *CurrentPlayingIndex);
+    }
+    Reverse = true;
     setReverseArmed(true);
-
+    realignment->setRealigned(true);
 }
 
 void Track::StopReverse()
 {
-	if (Reverse == true && *LoopDuration > 0)
-	{
-		*CurrentPlayingIndex = (*LoopDuration - 1 - *CurrentPlayingIndex);
-	}
-	Reverse = false;
+    if (Reverse == true && *LoopDuration > 0)
+    {
+        *CurrentPlayingIndex = (*LoopDuration - 1 - *CurrentPlayingIndex);
+    }
+    Reverse = false;
     setReverseArmed(false);
-    
+    realignment->setRealigned(true);
 }
 
 void Track::StartMuteBefore(){
     FirstMuteBuffer = true;
     RunAfters.push_back(&Track::StartMuteAfter);
     setMuteArmed(true);
-
+    
 }
 
 void Track::StartMuteAfter(){
     FirstMuteBuffer = false;
     Muted = true;
     playStateChanged();
+    realignment->setRealigned(true);
 }
 
 void Track::StartSoloBefore(){
@@ -556,7 +573,7 @@ void Track::StartSoloBefore(){
 void Track::StartSoloAfter(){
     FirstSoloBuffer = false;
     Soloed = true;
-   // context->logMessage("stop solo track " + String(Index));
+    // context->logMessage("stop solo track " + String(Index));
     playStateChanged();
 }
 
@@ -565,7 +582,7 @@ void Track::StopMuteBefore(){
     Muted = false;
     RunAfters.push_back(&Track::StopMuteAfter);
     setMuteArmed(false);
-
+    
 }
 
 
@@ -620,17 +637,18 @@ void Track::ChangeLoopAfter(){
         (context->observer->*(context->observer->loopChange)) (this->Index, nextLoop);
     }
     UpdateLoopVisualizer();
+    realignment->setRealigned(true);
 }
 
 void Track::UpdateLoopVisualizer(){
-    if (context->xchange->writeVisualisationBufferQueue->read_available() 
-		&& context->xchange->readVisualisationBufferQueue->write_available() 
-		&& *CurrentTop >= 0) {
+    if (context->xchange->writeVisualisationBufferQueue->read_available()
+        && context->xchange->readVisualisationBufferQueue->write_available()
+        && *CurrentTop >= 0) {
         BufferForVisualisation* b;
         context->xchange->writeVisualisationBufferQueue->pop(b);
         for (uint i = 0; i < context->audioInputsCount; ++i) {
-			int index = std::max((*Layers)[*CurrentTop]->dirty ? *CurrentTop : *CurrentTop - 1, 0);
-
+            int index = std::max((*Layers)[*CurrentTop]->dirty ? *CurrentTop : *CurrentTop - 1, 0);
+            
             b->buffer->copyFrom(i, 0, *(*Layers)[index]->Buffer, i, 0, *LoopDuration);
         }
         b->numSamples = *LoopDuration;
@@ -656,6 +674,7 @@ void Track::RemoveLoopAfter(){
     if(guiAlive){
         (context->observer->*(context->observer->loopRemoval)) ();
     }
+    realignment->setRealigned(true);
 }
 //-------------------process functions---------------------
 
@@ -711,11 +730,11 @@ void Track::processStopChange() {
 
 void Track::processResetChange() {
     // erase content and restart Recording to 0
-   StartResetBefore();
+    StartResetBefore();
 }
 
 void Track::processRecModeChange() {
-	loopToBeExtended = true;
+    loopToBeExtended = true;
 }
 
 void Track::processPreviousChange() {
@@ -725,7 +744,7 @@ void Track::processPreviousChange() {
                 RemoveTopLayer();
             }
         }
-            --(*CurrentTop);
+        --(*CurrentTop);
     }
     UpdateLoopVisualizer();
 }
@@ -771,10 +790,10 @@ void Track::processSoloChange() {
 }
 
 void Track::processBounceChange() {
-	if (Recording || Playing ) {
-		return;
-	}
-	doBounce = true;
+    if (Recording || Playing ) {
+        return;
+    }
+    doBounce = true;
 }
 
 void Track::processLoopChange(int newLoopIdx){
@@ -787,7 +806,7 @@ void Track::processNewLoop(){
     if(guiAlive){
         (context->observer->*(context->observer->newLoop)) ();
     }
-	UpdateLoopVisualizer();
+    UpdateLoopVisualizer();
 }
 void Track::processRemoveLoop(){
     RemoveLoopBefore();

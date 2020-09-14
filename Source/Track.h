@@ -10,6 +10,7 @@
 #define __TRACK_GUARD
 #include "Orbish.h"
 #include "Loop.h"
+#include "Realignment.h"
 #endif
 
 
@@ -55,8 +56,6 @@ public:
     bool LastSoloBuffer = false;
 	bool WasPlaying = false;
     bool WasRecording = false;
-	int RealignOffset = 0;
-	bool Realigned = false;
 	int BeginFadeOffset = 0;
 	int EndFadeOffset = 0;
 	bool loopToBeExtended = false;
@@ -68,12 +67,14 @@ public:
 	int* CurrentTop = nullptr;
     bool& guiAlive;
 	double* Progress;
-
+    Realignment* realignment;
 	void AddLayer(bool incrementTop);
 
 	void RemoveTopLayer();
     
     void UpdateLoopVisualizer();
+
+    int getAdjustedLoopPosition(int, int);
 
     void AddLoop();
     

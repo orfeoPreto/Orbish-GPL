@@ -12,7 +12,7 @@
 
 #include <stdio.h>
 #include "JuceHeader.h"
-#include "LoopComponent.hpp"
+#include "LoopComponent.h"
 #include "Blinker.hpp"
 #include "../exu/Label.hpp"
 #include "Track.h"

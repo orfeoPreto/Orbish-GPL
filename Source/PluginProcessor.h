@@ -164,8 +164,6 @@ public:
     MessageManager* messenger;
     AudioProcessorValueTreeState parameters;
     bool hostHasPlayed = false;
-    int realignOffset = 0;
-    bool realigned = false;
     GlobalAction globalAction = kGlobalNone;
 	bool keepRunning = true;
     bool aTrackIsSoloed = false;
