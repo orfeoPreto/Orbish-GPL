@@ -118,16 +118,11 @@ std::make_unique<AudioParameterFloat>("globalMix", "GlobalMix"
     , std::make_unique<AudioParameterChoice>("selectGroup", "SelectGroup", StringArray("A","B","C","D","E","F","G","H","I","J"), 0)
     , createParamFromBool(new AudioParameterBool("addToGroup", "AddToGroup", false), false)
     , createParamFromBool(new AudioParameterBool("removeFromGroup", "RemoveFromGroup", false), false)
-    
-    
-    
-    
 })
 {
-    
     context = new OrbishContext();
     context->buffer = new AudioBuffer<float>();
-    context->feedback = Decibels::decibelsToGain(float(-0.1));
+    context->feedback = Decibels::decibelsToGain(float(-0.3));
     context->mix = Decibels::decibelsToGain(parameters.getParameter("globalMix")->getValue());
     context->layerQueue = new boost::lockfree::spsc_queue<Layer*, boost::lockfree::capacity<3> >;
     context->xchange = new DataExchange();
@@ -1242,7 +1237,9 @@ void OrbishAudioProcessor::handleRecordBlock(int start, int stop) {
                 if ((activeTrack->getRecordMode() < 3)) {
                     if (c == context->audioInputsCount - 1) {
                         //  start2 = Time::getHighResolutionTicks();
-                        (*activeTrack->Layers)[*activeTrack->CurrentTop]->dirty = true;
+                        for (auto i = 0;i<=*activeTrack->CurrentTop;++i) {
+                            (*activeTrack->Layers)[i]->Buffer->applyGain(context->feedback);
+                        }                        (*activeTrack->Layers)[*activeTrack->CurrentTop]->dirty = true;
                         if (int(*activeTrack->CurrentTop < (*activeTrack->Layers).size()) - 1) {
                             ++(*activeTrack->CurrentTop);
                         }
@@ -1341,6 +1338,9 @@ void OrbishAudioProcessor::handleRecordBlock(int start, int stop) {
                     end2 = Time::getHighResolutionTicks();
                     
                     if (true) {  //activeTrack->getRecordMode() == kRecLoopOver){
+                        for (auto i = 0;i<=*activeTrack->CurrentTop;++i) {
+                            (*activeTrack->Layers)[i]->Buffer->applyGain(context->feedback);
+                        }
                         if (*activeTrack->CurrentTop < (*activeTrack->Layers).size() - int(1)) {
                             ++(*activeTrack->CurrentTop);
                             (*activeTrack->Layers)[*activeTrack->CurrentTop]->dirty = true;
