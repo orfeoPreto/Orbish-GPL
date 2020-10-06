@@ -18,7 +18,6 @@ GroupControlArea::GroupControlArea(){
     addAndMakeVisible(groupLabel);
 
     groupCombo.setTooltip("Select a group, then add or remove tracks. \nAll tracks in the same group will act simultaneously for certain commands");
-    groupCombo.setSelectedId(1);
     addAndMakeVisible(groupCombo);
 
     addToGroupButton.setTooltip("Add the active track to the selected group");

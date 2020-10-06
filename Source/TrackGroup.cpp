@@ -6,7 +6,7 @@
 //  Copyright © 2019 EXU. All rights reserved.
 //
 
-#include "TrackGroup.hpp"
+#include "TrackGroup.h"
 #include <stdio.h>
 
     TrackGroup::TrackGroup(){}
@@ -17,13 +17,12 @@
     TrackGroup::~TrackGroup(){}
     
     void TrackGroup::AddTrack(Track* t){
-        for(auto i=0;i<this->size();i++){
-            if(t == (*this)[i]){
+        for (auto item : *this){
+            if(t == item){
                 return;
             }
         }
         this->std::vector<Track*>::push_back(t);
-
     }
     
     void TrackGroup::RemoveTrack(Track* t){
@@ -38,9 +37,9 @@
     }
 
     void TrackGroup::ForEach(std::function<void(Track*)> lambda){
-        for (auto item = begin(); item != end(); ++item)
+        for (auto item : *this)
         {
-            lambda.operator()(*item);
+            lambda.operator()(item);
         }
     }
 

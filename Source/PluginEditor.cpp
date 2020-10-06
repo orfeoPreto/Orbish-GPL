@@ -96,6 +96,7 @@ OrbishAudioProcessorEditor::OrbishAudioProcessorEditor (OrbishAudioProcessor& p,
     for (auto group : processor.groups){
         groupControlArea->groupCombo.addItem(group->Name, group->Index + 1);
     }
+    groupControlArea->groupCombo.setSelectedId(1);
 
     auto navigationControlArea = &buttonControlArea->modeAndNavigationControlArea.navigationControlArea;
 
@@ -393,6 +394,7 @@ void OrbishAudioProcessorEditor::timerCallback(){
 	if (processor.context->xchange->readVisualisationBufferQueue->read_available()) {
 		processor.context->xchange->readVisualisationBufferQueue->pop(b);
 		updateLoopVisualiser(*b->buffer, b->numSamples);
+        b->buffer = nullptr;
 		String s = String(pointer_sized_int(b));
 		delete b;
 	}
@@ -580,12 +582,15 @@ void OrbishAudioProcessorEditor::paintInfoSection(Graphics&){
     }
 	auto grp = processor.getTrackGroup(processor.activeTrack);
 	String groupName = "";
+    Colour grpCol(Colours::black);
 	if (nullptr != grp) {
 		groupName = grp->Name;
+        grpCol = groupColours[grp->Index];
 	}
     groupName = "Group: " + String(groupName);
     if (infoAndControlArea.infoArea.getGroupNumber() != groupName){
         infoAndControlArea.infoArea.setGroupNumber(groupName);
+        infoAndControlArea.infoArea.setGroupColour(grpCol);
     }
     if (processor.activeTrack->Playing) {
         if ((beats == 1 && subSubDiv == 1 && rest < (processor.context->bpm * 0.003f))){

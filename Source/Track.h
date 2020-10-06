@@ -68,7 +68,8 @@ public:
     bool& guiAlive;
 	double* Progress;
     Realignment* realignment;
-	void AddLayer(bool incrementTop);
+    
+	Layer* AddLayer(bool incrementTop);
 
 	void RemoveTopLayer();
     
@@ -174,7 +175,10 @@ public:
     void processNewLoop();
     void processRemoveLoop();
 
-    
+    Layer* getActivePlaybackLayer();
+    void setActivePlaybackLayer(Layer*);
+    Layer* getActiveRecordingLayer();
+    void setActiveRecordingLayer(Layer*);
     void setMuteArmed(bool newValue);
     void setSoloArmed(bool newValue);
     void setStopArmed(bool newValue);

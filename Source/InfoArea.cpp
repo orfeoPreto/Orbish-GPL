@@ -141,6 +141,10 @@ String InfoArea::getGroupNumber(){
     return groupNumberLabel.getText();
 }
 
+void InfoArea::setGroupColour(Colour c){
+    groupNumberLabel.setColour(Label::textColourId,c);
+}
+
 void InfoArea::updateBarWitness(double alpha){
     barAlpha = alpha;
 }

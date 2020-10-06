@@ -21,10 +21,11 @@ public:
 	bool FirstPlaybackBuffer = false;
 	bool LastPlaybackBuffer = false;
 
-	int CurrentTop = -1;
+    int CurrentTop = -1;
 
 	double Progress = 0;
 
+    
 	void AddLayer(bool incrementTop, OrbishContext* context) {
 		LayersReady = false;
 		if (!context->layerQueue->empty()) {
@@ -37,8 +38,8 @@ public:
 					delete  l;
 				}
 				l = context->layerQueue->front();
-			} while (l != nullptr && l->Buffer->getNumChannels() == 0);
-
+            } while (l != nullptr && l->Buffer->getNumChannels() == 0);
+            l->index = int(Layers.size());
 			Layers.push_back(l);
 				end1 = Time::getHighResolutionTicks();
 				start2 = Time::getHighResolutionTicks();
@@ -50,5 +51,8 @@ public:
 		}
 		LayersReady = true;
 	}
+    Layer* activePlaybackLayer;
+    Layer* activeRecordingLayer;
 };
+
 

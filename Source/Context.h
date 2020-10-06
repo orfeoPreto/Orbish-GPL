@@ -20,6 +20,7 @@ struct Layer {
 	AudioBuffer<float>* Buffer{};
 	int Checkpoint = -1;
 	bool dirty = false;
+    int index = 0;
 };
 
 struct OrbishContext {
@@ -90,6 +91,7 @@ struct OrbishContext {
 	DataExchange* xchange;
     bool loggingActive = false;
     int clickStart=-1, clickStop=0;
+    int64 timestamp = 0;
     void lockForStateUpdate(bool lock) {
         if (lock) {
             mtx.lock();

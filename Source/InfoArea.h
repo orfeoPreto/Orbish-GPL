@@ -50,6 +50,7 @@ public:
 
     void updateBarWitness(double alpha);
     void updateBeatWitness(double alpha);
+    void setGroupColour(Colour);
 
 private:
     exu::Label projectLabel{};

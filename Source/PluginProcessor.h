@@ -16,13 +16,25 @@
 #include "../JuceLibraryCode/JuceHeader.h"
 #include "Track.h"
 #include "MidiProcessor.h"
-#include "TrackGroup.hpp"
+#include "TrackGroup.h"
 
 
 
 //==============================================================================
 /**
 */
+struct Events{
+    int startRecordingSample = -1; // sample number in buffer when activeTrack->Recording should be started
+    int stopRecordingSample = -1; // sample number in buffer when activeTrack->Recording should be stopped
+    int startPlayingSample = -1; // sample number in buffer when playback should be started
+    int stopPlayingSample = -1; // sample number in buffer when playback should be stopped
+    int startReverseSample = -1; // sample number in buffer when activeTrack->Reverse should be started
+    int stopReverseSample = -1; // sample number in buffer when activeTrack->Reverse should be stopped
+    int toggleMuteSample = -1; //sample number in buffer when Mute state should be toggled
+    int toggleSoloSample = -1; //sample number in buffer when Solo state should be toggled
+    int startLoopChangeSample = -1;
+    bool toggleSolo = false;
+};
 
 class OrbishAudioProcessor  : public AudioProcessor
                             , public AudioProcessorValueTreeState::Listener
@@ -84,7 +96,7 @@ public:
     void initBlock(AudioBuffer<float>& buffer, MidiBuffer& midiMessages);
     void realign();
     void renderClick();
-    void captureTrigger(int startRecordingSample);
+    void captureTrigger(int& startRecordingSample);
     float samplesPerMinute = 0;
     float secondsPerSample = 0;
     inline double quartersToSamples(double position)
@@ -133,6 +145,13 @@ public:
     void askTrackChange(int trackNumber);
 	void askLoopChange(int loopNumber);
     void cleanup();
+    void handleReverseEvent(int, int);
+    void handleRecordingEvent(int, int);
+    void handlePlaybackEvent(int, int);
+    void handleMuteEvent(int);
+    bool handleSoloEvent(int);
+    void handleLoopChangeEvent(int);
+    void handleEvents(Events&);
     TrackGroup* getTrackGroup(Track* t);
 	bool loadFromValueTree(ValueTree* tree);
 	bool loadTrackFromValueTree(ValueTree* trackTree, Track* track);

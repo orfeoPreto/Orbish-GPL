@@ -245,9 +245,9 @@ void Track::RegisterLoop(int loopIdx){
         LoopDuration = &(ActiveLoop->LoopDuration);
         CurrentPlayingIndex = &(ActiveLoop->CurrentPlayingIndex);
         Layers = &(ActiveLoop->Layers);
-        if(Layers->size() < 1){
-            AddLayer(true);
-        }
+//        if(Layers->size() < 1){
+//            AddLayer(true);
+//        }
         *CurrentPlayingIndex = 0;
     }
 }
@@ -265,10 +265,11 @@ void Track::RemoveLoop(){
     }
 }
 
-void Track::AddLayer(bool incrementTop) {
+Layer* Track::AddLayer(bool incrementTop) {
     LayersReady = false;
     ActiveLoop->AddLayer(incrementTop, context);
     LayersReady = true;
+    return Layers->back();
 }
 
 
@@ -276,9 +277,11 @@ void Track::AddLayer(bool incrementTop) {
 void Track::RemoveTopLayer() {
     
     auto* layer = Layers->back();
-    delete layer->Buffer;
     Layers->pop_back();
-    
+//    if(layer->index == ActiveLoop->activeLayer->index){
+//        ActiveLoop->activeLayer = Layers->back();
+//    }
+    delete layer->Buffer;
     if (*CurrentTop > int(Layers->size()) - 1)
         *CurrentTop = int(Layers->size()) -1;
 }
@@ -291,6 +294,7 @@ void Track::RemoveAllLayers() {
     }
     Layers->clear();
     *CurrentTop = -1;
+    ActiveLoop->activePlaybackLayer  = ActiveLoop->activeRecordingLayer = nullptr;
 }
 
 int Track::BounceHistory(int startCheckPoint, int endCheckPoint) {
@@ -311,6 +315,7 @@ int Track::BounceHistory(int startCheckPoint, int endCheckPoint) {
         if ((*Layers)[i]->Checkpoint == endCheckPoint)
             break;
     }
+    ActiveLoop->activePlaybackLayer  = ActiveLoop->activeRecordingLayer = (*Layers)[*CurrentTop];
     return startIdx;
 }
 
@@ -334,6 +339,7 @@ void Track::BounceAllHistory() {
     while (Layers->size() > 1) {
         RemoveTopLayer();
     }
+    ActiveLoop->activePlaybackLayer  = ActiveLoop->activeRecordingLayer = (*Layers)[0];
     UpdateLoopVisualizer();
 }
 
@@ -344,7 +350,7 @@ int Track::getAdjustedLoopPosition(int currentIndex, int adjustment){
         }
     }else{
         if (currentIndex + adjustment < 0) {
-            return *LoopDuration + currentIndex - adjustment;
+            return *LoopDuration + currentIndex + adjustment;
         }
     }
     return currentIndex + adjustment;
@@ -389,10 +395,13 @@ void Track::StartRecordingBefore()
          || (getRecordMode() < 3
              && *CurrentTop == Layers->size() - uint(1)
              && (*Layers)[*CurrentTop]->dirty))) {
-        AddLayer(true);
+//        AddLayer(true);
+//        ActiveLoop->activePlaybackLayer = (*Layers)[*CurrentTop];
+//        ActiveLoop->activeRecordingLayer = (*Layers)[*CurrentTop];
     }
     else if (getRecordMode() < 3 && *CurrentTop < Layers->size() - uint(1)) {
-        ++(*CurrentTop);
+       ActiveLoop->activePlaybackLayer = (*Layers)[*CurrentTop];
+       ActiveLoop->activeRecordingLayer = (*Layers)[*CurrentTop];
     }
     // actually start Recording
     Recording = true;
@@ -434,7 +443,15 @@ void Track::StopRecordingAfter()
                     for(uint j = 0; j < context->audioInputsCount;j++){
                         (*Layers)[i]->Buffer->copyFrom(j, h * *LoopDuration, (*Layers)[i]->Buffer->getReadPointer(j), (segments>0)?*LoopDuration:tail, 1);
                     }
-                    (*Layers)[i]->Buffer->applyGain(context->feedback);
+                    if(context->xchange->writeGainModifierQueue->read_available()
+                       && context->xchange->readGainModifierQueue->write_available()){
+                        auto gm = context->xchange->writeGainModifierQueue->front();
+                        context->xchange->writeGainModifierQueue->pop();
+                        gm->startLevel = context->feedback;
+                        gm->operation = GainModifier::OperationType::All;
+                        gm->buffer = (*Layers)[i]->Buffer;
+                        context->xchange->readGainModifierQueue->push(gm);
+                    }
                 }
             }
         }
@@ -446,10 +463,13 @@ void Track::StopRecordingAfter()
         setRecordingArmed(false);
     }
     if(*CurrentTop < Layers->size() - uint(1)){
+//        ActiveLoop->activePlaybackLayer = (*Layers)[*CurrentTop];
+//        ActiveLoop->activeRecordingLayer = (*Layers)[*CurrentTop];
         ++(*CurrentTop);
         RemoveTopLayer();
+        
     }
-    //}
+   // }
     if(isActive()){
         UpdateLoopVisualizer();
     }
@@ -641,18 +661,22 @@ void Track::ChangeLoopAfter(){
 }
 
 void Track::UpdateLoopVisualizer(){
-    if (context->xchange->writeVisualisationBufferQueue->read_available()
-        && context->xchange->readVisualisationBufferQueue->write_available()
-        && *CurrentTop >= 0) {
-        BufferForVisualisation* b;
-        context->xchange->writeVisualisationBufferQueue->pop(b);
-        for (uint i = 0; i < context->audioInputsCount; ++i) {
+    if (guiAlive) {
+        if (context->xchange->writeVisualisationBufferQueue->read_available()
+            && context->xchange->readVisualisationBufferQueue->write_available()
+            && *CurrentTop >= 0) {
+            BufferForVisualisation* b;
+            context->xchange->writeVisualisationBufferQueue->pop(b);
             int index = std::max((*Layers)[*CurrentTop]->dirty ? *CurrentTop : *CurrentTop - 1, 0);
-            
-            b->buffer->copyFrom(i, 0, *(*Layers)[index]->Buffer, i, 0, *LoopDuration);
+    //        for (uint i = 0; i < context->audioInputsCount; ++i) {
+    //            int index = std::max((*Layers)[*CurrentTop]->dirty ? *CurrentTop : *CurrentTop - 1, 0);
+    //
+    //            b->buffer->copyFrom(i, 0, *(*Layers)[index]->Buffer, i, 0, *LoopDuration);
+    //        }
+            b->buffer = (*Layers)[index]->Buffer;
+            b->numSamples = *LoopDuration;
+            context->xchange->readVisualisationBufferQueue->push(b);
         }
-        b->numSamples = *LoopDuration;
-        context->xchange->readVisualisationBufferQueue->push(b);
     }
 }
 
@@ -746,6 +770,8 @@ void Track::processPreviousChange() {
         }
         --(*CurrentTop);
     }
+    setActivePlaybackLayer((*Layers)[*CurrentTop]);
+    
     UpdateLoopVisualizer();
 }
 
@@ -761,6 +787,7 @@ void Track::processNextChange() {
     if (*CurrentTop < limit) {
         ++(*CurrentTop);
     }
+    setActivePlaybackLayer((*Layers)[*CurrentTop]);
     UpdateLoopVisualizer();
 }
 
@@ -907,6 +934,22 @@ void Track::setAutoTrigger(bool newValue){
     }
     state->setProperty("trigger", newValue, nullptr);
 }
+
+Layer* Track::getActivePlaybackLayer(){
+    return ActiveLoop->activePlaybackLayer;
+    
+}
+void Track::setActivePlaybackLayer(Layer* l){
+    ActiveLoop->activePlaybackLayer = l;
+}
+Layer* Track::getActiveRecordingLayer(){
+    return ActiveLoop->activeRecordingLayer;
+    
+}
+void Track::setActiveRecordingLayer(Layer* l){
+    ActiveLoop->activeRecordingLayer = l;
+}
+
 
 
 bool Track::isMuteArmed() {  return state->getProperty("mute"); }

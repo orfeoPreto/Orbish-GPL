@@ -6,8 +6,8 @@
 //  Copyright © 2019 EXU. All rights reserved.
 //
 
-#ifndef TrackGroup_hpp
-#define TrackGroup_hpp
+#ifndef TrackGroup_h
+#define TrackGroup_h
 
 #include <stdio.h>
 #include "Track.h"

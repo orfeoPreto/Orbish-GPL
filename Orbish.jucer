@@ -2,7 +2,9 @@
 
 <JUCERPROJECT id="iqI92f" name="Orbish" projectType="audioplug" headerPath="../../..&#10;../..&#10;../../JuceLibraryCode&#10;..&#10;"
               pluginManufacturer="Exu" pluginManufacturerCode="Exu" pluginCode="Orb"
-              pluginFormats="buildVST3" displaySplashScreen="1" jucerFormatVersion="1">
+              pluginFormats="buildAU,buildVST3" displaySplashScreen="1" jucerFormatVersion="1"
+              aaxIdentifier="Exu" pluginChannelConfigs="{1,1},{2,2}" pluginAAXCategory="8192"
+              bundleIdentifier="exu.Orbish" companyName="exu" version="0.2.0">
   <MAINGROUP id="MOZJJ5" name="Orbish">
     <GROUP id="{40BAF4D8-7324-156C-E5E8-0098A128DC2C}" name="resources">
       <GROUP id="{DD2D5306-C731-51D8-E32F-F8D89EB36CF7}" name="buttons">
@@ -139,16 +141,18 @@
       <FILE id="bZC7bf" name="Blinker.hpp" compile="0" resource="0" file="Source/Blinker.hpp"/>
       <FILE id="j9gbcj" name="CommandIDs.h" compile="0" resource="0" file="Source/CommandIDs.h"/>
       <FILE id="p19WrD" name="Context.h" compile="0" resource="0" file="Source/Context.h"/>
+      <FILE id="w3X0UE" name="LoopComponent.h" compile="0" resource="0" file="Source/LoopComponent.h"/>
       <FILE id="ZRK40i" name="CustomButton.cpp" compile="1" resource="0"
             file="Source/CustomButton.cpp"/>
       <FILE id="X1Tg4s" name="CustomButton.h" compile="0" resource="0" file="Source/CustomButton.h"/>
+      <FILE id="uQ6DWV" name="GainModifier.h" compile="0" resource="0" file="Source/GainModifier.h"/>
+      <FILE id="jSQiuu" name="GainModifier.cpp" compile="1" resource="0"
+            file="Source/GainModifier.cpp"/>
       <FILE id="Z1ZKnC" name="DataExchange.h" compile="0" resource="0" file="Source/DataExchange.h"/>
       <FILE id="SooMdS" name="Group.h" compile="0" resource="0" file="Source/Group.h"/>
       <FILE id="JMO7d5" name="Loop.h" compile="0" resource="0" file="Source/Loop.h"/>
       <FILE id="haWALj" name="LoopComponent.cpp" compile="1" resource="0"
             file="Source/LoopComponent.cpp"/>
-      <FILE id="Wk1IMZ" name="LoopComponent.hpp" compile="0" resource="0"
-            file="Source/LoopComponent.hpp"/>
       <FILE id="oiQg4Y" name="MainMenu.cpp" compile="1" resource="0" file="Source/MainMenu.cpp"/>
       <FILE id="ecuYgC" name="MainMenu.h" compile="0" resource="0" file="Source/MainMenu.h"/>
       <FILE id="TYjYdy" name="MenuManager.h" compile="0" resource="0" file="Source/MenuManager.h"/>
@@ -167,6 +171,8 @@
             file="Source/PluginProcessor.cpp"/>
       <FILE id="FHesF4" name="PluginProcessor.h" compile="0" resource="0"
             file="Source/PluginProcessor.h"/>
+      <FILE id="nuvcxx" name="Realignment.cpp" compile="1" resource="0" file="Source/Realignment.cpp"/>
+      <FILE id="yW2Xpf" name="Realignment.h" compile="0" resource="0" file="Source/Realignment.h"/>
       <FILE id="wp5pn0" name="SettingsPage.cpp" compile="1" resource="0"
             file="Source/SettingsPage.cpp"/>
       <FILE id="NBLXqf" name="SettingsPage.h" compile="0" resource="0" file="Source/SettingsPage.h"/>
@@ -177,7 +183,7 @@
       <FILE id="DtjjOV" name="TrackComponent.h" compile="0" resource="0"
             file="Source/TrackComponent.h"/>
       <FILE id="AhY6on" name="TrackGroup.cpp" compile="1" resource="0" file="Source/TrackGroup.cpp"/>
-      <FILE id="pi1k2b" name="TrackGroup.hpp" compile="0" resource="0" file="Source/TrackGroup.hpp"/>
+      <FILE id="OlqLIs" name="TrackGroup.h" compile="0" resource="0" file="Source/TrackGroup.h"/>
     </GROUP>
   </MAINGROUP>
   <EXPORTFORMATS>
