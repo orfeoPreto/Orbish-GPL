@@ -38,9 +38,10 @@ void InfoArea::paint (juce::Graphics& g){
 
     projectLabel.setColour(Label::textColourId, findColour(TextButton::ColourIds::textColourOnId));
 
+    auto labelHeight = 30;
     // draw beatWitness
     Path path;
-    path.addEllipse(20, 30*7+21, 10, 10);
+    path.addEllipse(20, labelHeight*8+21, 10, 10);
     beatWitness.setPath(path);
     beatWitness.setFill(Colours::orangered);
     beatWitness.setStrokeFill(Colours::orange);
@@ -50,7 +51,7 @@ void InfoArea::paint (juce::Graphics& g){
 
     // draw barWitness
     Path path2;
-    path2.addEllipse(40, 30*7+21, 10, 10);
+    path2.addEllipse(40, labelHeight*8+21, 10, 10);
     barWitness.setPath(path2);
     barWitness.setFill(Colours::green);
     barWitness.setStrokeFill(Colours::greenyellow);
@@ -70,8 +71,10 @@ void InfoArea::resized(){
     trackNumberLabel.setBounds(bounds.removeFromTop(labelHeight));
     loopNumberLabel.setBounds(bounds.removeFromTop(labelHeight));
     layerNumberLabel.setBounds(bounds.removeFromTop(labelHeight));
-
     groupNumberLabel.setBounds(bounds.removeFromTop(labelHeight));
+
+    bounds.removeFromTop(labelHeight);
+
     timeSigLabel.setBounds(bounds.removeFromTop(labelHeight));
     bpmLabel.setBounds(bounds.removeFromTop(labelHeight));
     
