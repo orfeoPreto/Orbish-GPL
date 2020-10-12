@@ -582,7 +582,7 @@ void OrbishAudioProcessorEditor::paintInfoSection(Graphics&){
     }
 	auto grp = processor.getTrackGroup(processor.activeTrack);
 	String groupName = "";
-    Colour grpCol(Colours::black);
+    Colour grpCol(findColour(Label::ColourIds::textColourId));
 	if (nullptr != grp) {
 		groupName = grp->Name;
         grpCol = groupColours[grp->Index];
