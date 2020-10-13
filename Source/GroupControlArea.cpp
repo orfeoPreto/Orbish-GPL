@@ -45,7 +45,7 @@ void GroupControlArea::resized(){
     auto bounds = getLocalBounds().reduced(15);
 
     groupLabel.setBounds(bounds.removeFromTop(15));
-    groupCombo.setBounds(bounds.removeFromTop(bounds.getHeight() / 2).reduced(10));
+    groupCombo.setBounds(bounds.removeFromTop(60).reduced(10));
     addToGroupButton.setBounds(bounds.removeFromLeft(bounds.getWidth() / 2));
     removeFromGroupButton.setBounds(bounds);
 }
