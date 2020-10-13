@@ -10,6 +10,7 @@
       <GROUP id="{DD2D5306-C731-51D8-E32F-F8D89EB36CF7}" name="buttons">
         <GROUP id="{D752B9EC-EB18-9EC9-ABD3-38AC98EE5785}" name="Icons">
           <FILE id="u0Ngzt" name="clear-icon.png" compile="0" resource="1" file="resources/Bases/button-icons/clear-icon.png"/>
+          <FILE id="GX6tvQ" name="group-icon.png" compile="0" resource="1" file="resources/Bases/button-icons/group-icon.png"/>
           <FILE id="H2FFO6" name="mute-icon.png" compile="0" resource="1" file="resources/Bases/button-icons/mute-icon.png"/>
           <FILE id="Pj5Sw4" name="pause-icon.png" compile="0" resource="1" file="resources/Bases/button-icons/pause-icon.png"/>
           <FILE id="YiGrZ7" name="play-icon.png" compile="0" resource="1" file="resources/Bases/button-icons/play-icon.png"/>
@@ -17,6 +18,8 @@
           <FILE id="RVHHlG" name="redo-icon.png" compile="0" resource="1" file="resources/Bases/button-icons/redo-icon.png"/>
           <FILE id="smDljM" name="stop-icon.png" compile="0" resource="1" file="resources/Bases/button-icons/stop-icon.png"/>
           <FILE id="rMHg93" name="undo-icon.png" compile="0" resource="1" file="resources/Bases/button-icons/undo-icon.png"/>
+          <FILE id="mxHknc" name="ungroup-icon.png" compile="0" resource="1"
+                file="resources/Bases/button-icons/ungroup-icon.png"/>
         </GROUP>
         <GROUP id="{BD718B04-2107-227F-693C-404D10211C8B}" name="LayoutChange">
           <FILE id="hKuBdX" name="layout-change-left-active.png" compile="0"

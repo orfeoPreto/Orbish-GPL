@@ -22,10 +22,12 @@ GroupControlArea::GroupControlArea(){
 
     addToGroupButton.setTooltip("Add the active track to the selected group");
     addToGroupButton.addListener(this);
+    addToGroupButton.setIcon(ImageFileFormat::loadFrom(BinaryData::groupicon_png, BinaryData::groupicon_pngSize));
     addAndMakeVisible(addToGroupButton);
 
     removeFromGroupButton.setTooltip("Remove the active track from the selected group");
     removeFromGroupButton.addListener(this);
+    removeFromGroupButton.setIcon(ImageFileFormat::loadFrom(BinaryData::ungroupicon_png, BinaryData::ungroupicon_pngSize));
     addAndMakeVisible(removeFromGroupButton);
 }
 
