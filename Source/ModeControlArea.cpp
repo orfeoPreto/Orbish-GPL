@@ -58,19 +58,21 @@ ModeControlArea::~ModeControlArea(){
 }
 
 void ModeControlArea::paint (juce::Graphics& g){
+    auto bounds = getLocalBounds().reduced(5);
+    g.drawRoundedRectangle(bounds.toFloat(), 4.0f, 0.5f);
 
 }
 
 void ModeControlArea::resized(){
 
-    auto bounds = getLocalBounds().reduced(5);
+    auto bounds = getLocalBounds().reduced(15);
 
     juce::Grid grid;
     using Track = juce::Grid::TrackInfo;
     using Fr = juce::Grid::Fr;
     grid.setGap(Grid::Px(10));
 
-    grid.templateRows = { Track(Fr(1)), Track(Fr(1)) };
+    grid.templateRows = { Track(Fr(1)), Track(Fr(3)) };
     grid.templateColumns = { Track(Fr(1)), Track(Fr(1)) };
 
     grid.items = {
