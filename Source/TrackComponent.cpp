@@ -181,12 +181,12 @@ void TrackComponent::updateLoopColours(){
         if (active) {
             if (activeLoop == l->getIndex()) {
                 l->setColour(juce::ProgressBar::foregroundColourId, juce::Colour(0xfffddc11));
-                l->setColour(juce::ProgressBar::backgroundColourId, juce::Colour(0xff42403a));
+                l->setColour(juce::ProgressBar::backgroundColourId, juce::Colour(0xff707070));
                 l->ProgressBar::copyAllExplicitColoursTo(*tempProgressBar);
             }
             else {
                 l->setColour(juce::ProgressBar::foregroundColourId, juce::Colour(0xfff2e499));
-                l->setColour(juce::ProgressBar::backgroundColourId, juce::Colour(0xff707070));
+                l->setColour(juce::ProgressBar::backgroundColourId, juce::Colour(0xff42403a));
             }
         }
         else {

@@ -141,7 +141,8 @@ parameters(*this, nullptr, "OrbishState", {
                     l->Buffer = new AudioBuffer<float>();
                     l->Buffer->clear();
                     l->Buffer->setSize(context->audioInputsCount, context->allocatedLength);
-                    if (l->Buffer->getNumChannels() == 0) {
+                    if (l->Buffer->getNumChannels() == 0
+                        || l->Buffer->getNumSamples() < context->sampleRate) {
                         continue;
                     }
                     context->layerQueue->push(l);
@@ -1448,12 +1449,14 @@ void OrbishAudioProcessor::handleRecordBlock(int start, int stop) {
     // main scenario -> write the whole buffer without fade
     // in overdub/punch mode at the end of the loop apply fade out
     // and prepare writing to the next layer previously created
-    int tail = 0;
+    int tail = 0, samplesBeforeTail = 0;
     if ((activeTrack->getRecordMode() == kRecLoopOver || activeTrack->getRecordMode() == kRecPunch)
         && *activeTrack->LoopDuration > 0
         && activeTrack->CurrentRecordingIndex + context->maxBlockSize >= *activeTrack->LoopDuration) {
         samplesToRead = std::min(std::max(*activeTrack->LoopDuration - activeTrack->CurrentRecordingIndex - start, 0), samplesToRead);
-        tail = context->buffer->getNumSamples() - (start + samplesToRead);
+        samplesBeforeTail = start + samplesToRead;
+        if (activeTrack->FirstRecordingBuffer) samplesToRead = 0;
+        tail = context->buffer->getNumSamples() - samplesBeforeTail;
         resetCurrentIndex = true;
         fadeOut = adjustedFadeTime;
         if(*activeTrack->LoopDuration == activeTrack->CurrentRecordingIndex){
@@ -1593,7 +1596,7 @@ void OrbishAudioProcessor::handleRecordBlock(int start, int stop) {
         for (uint c = 0; c < context->audioInputsCount; ++c){
             activeTrack->getActiveRecordingLayer()->Buffer->copyFromWithRamp(c
                                                                              , 0
-                                                                             , context->buffer->getReadPointer(c, start + samplesToRead)
+                                                                             , context->buffer->getReadPointer(c, samplesBeforeTail)
                                                                              , fadeIn
                                                                              , 0.0f
                                                                              , 1.0f);
@@ -1602,7 +1605,7 @@ void OrbishAudioProcessor::handleRecordBlock(int start, int stop) {
             if (tail > fadeIn) {
                 activeTrack->getActiveRecordingLayer()->Buffer->copyFrom(c
                                                                          , fadeIn
-                                                                         , context->buffer->getReadPointer(c, start + samplesToRead + fadeIn)
+                                                                         , context->buffer->getReadPointer(c, samplesBeforeTail + fadeIn)
                                                                          , tail - fadeIn);
             }
             end2 = Time::getHighResolutionTicks();
@@ -1804,14 +1807,23 @@ void OrbishAudioProcessor::handlePlaybackBlock(int start, int stop) {
                                               , (*track->Layers)[l]->Buffer->getReadPointer(c, std::min(tail, context->fadeTime))
                                               , std::max(0,tail- context->fadeTime));
                                 if (track->EndFadeOffset > 0) {
-                                    auto fade = std::min(tail, track->EndFadeOffset);
-                                    temp->addFromWithRamp(c
-                                                  , context->maxBlockSize - tail
-                                                  , (*track->Layers)[l]->Buffer->getReadPointer(c, *track->LoopDuration - 1)
+                                    auto fade = std::min(context->fadeTime, samplesToRead);
+                                    temp->copyFromWithRamp(c
+                                                  , targetIndex + samplesToRead - fade
+                                                  , (*track->Layers)[l]->Buffer->getReadPointer(c, sourceIndex + samplesToRead - fade)
                                                   , fade
                                                   , 1.0f
                                                   , 0.0f);
                                 }
+//                                if (track->EndFadeOffset > 0) {
+//                                    auto fade = std::min(tail, context->fadeTime);
+//                                    temp->addFromWithRamp(c
+//                                                  , context->maxBlockSize - tail
+//                                                  , (*track->Layers)[l]->Buffer->getReadPointer(c, *track->LoopDuration)
+//                                                  , fade
+//                                                  , 1.0f
+//                                                  , 0.0f);
+//                                }
                             }
                         }
                         for (uint32 c = 0; c < context->audioInputsCount;++c) {

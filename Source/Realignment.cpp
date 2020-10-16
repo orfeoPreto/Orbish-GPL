@@ -29,7 +29,7 @@ int Realignment::getAccumulatedOffset (){
 void Realignment::setTotalOffset(int offset){
     totalOffset = offset;
     auto sign = 1;
-    if(offset > 0){
+    if(offset != 0){
         offset = std::min(abs(offset),block);
         sign = offset/abs(offset);
         syncInProgress = true;

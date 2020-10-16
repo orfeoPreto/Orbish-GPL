@@ -37,7 +37,6 @@ public:
         logReadMessageQueue = new boost::lockfree::spsc_queue<std::string*, boost::lockfree::capacity<1000> >;
         readBufferQueue = new boost::lockfree::spsc_queue<AudioBuffer<float>*, boost::lockfree::capacity<200> >;
         deleteBufferQueue = new boost::lockfree::spsc_queue<AudioBuffer<float>*, boost::lockfree::capacity<200> >;
-
         writeGainModifierQueue = new boost::lockfree::spsc_queue<GainModifier*, boost::lockfree::capacity<200> >;
         readGainModifierQueue = new boost::lockfree::spsc_queue<GainModifier*, boost::lockfree::capacity<200> >;
         writeMeasureBufferQueue = new boost::lockfree::spsc_queue<MeasureBuffer*, boost::lockfree::capacity<10> >;
