@@ -943,6 +943,16 @@ void OrbishAudioProcessor::handleReverseEvent(int startReverseSample, int stopRe
 }
 
 void OrbishAudioProcessor::handleRecordingEvent(int startRecordingSample, int stopRecordingSample){
+    int pluginDiff=-1;
+    if(*activeTrack->LoopDuration > 0 && activeTrack->Playing){
+        pluginDiff = *activeTrack->LoopDuration - *activeTrack->CurrentPlayingIndex;
+    }
+    if(startRecordingSample >= 0 && pluginDiff >= 0){
+        startRecordingSample = std::max(pluginDiff,0);
+    }
+    if(stopRecordingSample >= 0 && pluginDiff >= 0){
+        stopRecordingSample = std::max(stopRecordingSample + pluginDiff,0);
+    }
     context->logMessage("startRecordingSample: " + String(startRecordingSample));
     bool doStartRecording = (startRecordingSample >= 0) && (context->maxBlockSize > startRecordingSample);
     bool doStopRecording = (stopRecordingSample >= 0) && (context->maxBlockSize > stopRecordingSample);
@@ -1150,8 +1160,7 @@ void OrbishAudioProcessor::handleEvents(Events& e){
     
     double expectedSamplePosition = beatsToSamples(expectedPos);
     // nextSample is the expected sample position starting from the start of the current buffer
-    int nextSample = int(floor(expectedSamplePosition + .5))
-    - int(beatsToSamples(currentPos));
+    int nextSample = int(floor(expectedSamplePosition + .5)) - int(beatsToSamples(currentPos));
     context->logMessage("currentPos: " + String(currentPos));
     context->logMessage("expectedSamplePosition: " + String(int64(expectedSamplePosition)));
     context->logMessage("expectedPos: " + String(expectedPos));
@@ -1463,7 +1472,7 @@ void OrbishAudioProcessor::handleRecordBlock(int start, int stop) {
             activeTrack->CurrentRecordingIndex = 0;
         }
     }
-    if (activeTrack->CurrentRecordingIndex + context->maxBlockSize -  context->fadeTime <= 0) {
+    if (activeTrack->CurrentRecordingIndex == 0) {
         fadeIn = adjustedFadeTime;
     }
     if (activeTrack->LastRecordingBuffer) {
@@ -1494,7 +1503,7 @@ void OrbishAudioProcessor::handleRecordBlock(int start, int stop) {
         if (fadeOut > 0) {
             activeTrack->getActiveRecordingLayer()->dirty = true;
             if (samplesToRead == 0) {
-                if (activeTrack->CurrentRecordingIndex > fadeOut) {
+                if (activeTrack->CurrentRecordingIndex > fadeOut && !activeTrack->FirstRecordingBuffer) {
                     fadeOut = context->fadeTime;
                     if(context->xchange->writeGainModifierQueue->read_available()
                        && context->xchange->readGainModifierQueue->write_available()){
