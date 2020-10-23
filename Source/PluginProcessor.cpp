@@ -953,7 +953,7 @@ void OrbishAudioProcessor::handleRecordingEvent(int startRecordingSample, int st
     if(stopRecordingSample >= 0 && pluginDiff >= 0){
         stopRecordingSample = std::max(stopRecordingSample + pluginDiff,0);
     }
-    context->logMessage("startRecordingSample: " + String(startRecordingSample));
+    //context->logMessage("startRecordingSample: " + String(startRecordingSample));
     bool doStartRecording = (startRecordingSample >= 0) && (context->maxBlockSize > startRecordingSample);
     bool doStopRecording = (stopRecordingSample >= 0) && (context->maxBlockSize > stopRecordingSample);
     if (doStartRecording) {
@@ -1161,17 +1161,17 @@ void OrbishAudioProcessor::handleEvents(Events& e){
     double expectedSamplePosition = beatsToSamples(expectedPos);
     // nextSample is the expected sample position starting from the start of the current buffer
     int nextSample = int(floor(expectedSamplePosition + .5)) - int(beatsToSamples(currentPos));
-    context->logMessage("currentPos: " + String(currentPos));
-    context->logMessage("expectedSamplePosition: " + String(int64(expectedSamplePosition)));
-    context->logMessage("expectedPos: " + String(expectedPos));
+    //context->logMessage("currentPos: " + String(currentPos));
+    //context->logMessage("expectedSamplePosition: " + String(int64(expectedSamplePosition)));
+    //context->logMessage("expectedPos: " + String(expectedPos));
     
-    context->logMessage("nextSample" + String(nextSample));
-    context->logMessage("timeInSamples:" + String(context->info->timeInSamples));
-    context->logMessage("timeInSecs: " + String(context->info->timeInSeconds));
-    context->logMessage("currentRecordingIndex:" + String(activeTrack->CurrentRecordingIndex));
-    context->logMessage("currentPlayingIndex:" + String(*activeTrack->CurrentPlayingIndex));
+    //context->logMessage("nextSample" + String(nextSample));
+    //context->logMessage("timeInSamples:" + String(context->info->timeInSamples));
+    //context->logMessage("timeInSecs: " + String(context->info->timeInSeconds));
+    //context->logMessage("currentRecordingIndex:" + String(activeTrack->CurrentRecordingIndex));
+    //context->logMessage("currentPlayingIndex:" + String(*activeTrack->CurrentPlayingIndex));
     
-    context->logMessage("active track loop duration:" + String(*activeTrack->LoopDuration));
+    //context->logMessage("active track loop duration:" + String(*activeTrack->LoopDuration));
     
     // manage activeTrack->Recording
     if (!activeTrack->Recording && activeTrack->isRecordingArmed())
@@ -1304,12 +1304,12 @@ void OrbishAudioProcessor::processBlock(AudioBuffer<float>& buffer, MidiBuffer& 
         handleEvents(e);
         
         int64 endBeginning = Time::getHighResolutionTicks();
-        context->logMessage("Beginning section:" + String(endBeginning - startBeginning));
+        //context->logMessage("Beginning section:" + String(endBeginning - startBeginning));
         if (activeTrack->Recording || (activeTrack->LastRecordingBuffer)) {
             int64 startRec = Time::getHighResolutionTicks();
             handleRecordBlock(e.startRecordingSample, e.stopRecordingSample);
             int64 endRec = Time::getHighResolutionTicks();
-            context->logMessage("nano secs spent recording:" + String(endRec - startRec));
+            //context->logMessage("nano secs spent recording:" + String(endRec - startRec));
         }
         if (!activeTrack->isMonitoring()) {
             // prevent input from ending up in the output buffer
@@ -1319,7 +1319,7 @@ void OrbishAudioProcessor::processBlock(AudioBuffer<float>& buffer, MidiBuffer& 
             int64 startPlay = Time::getHighResolutionTicks();
             handlePlaybackBlock((e.startReverseSample >= 0) ? e.startReverseSample : e.startPlayingSample, (e.stopReverseSample >= 0) ? e.stopReverseSample : e.stopPlayingSample);
             int64 endPlay = Time::getHighResolutionTicks();
-            context->logMessage("nano secs spent playing back:" + String(endPlay - startPlay));
+            //context->logMessage("nano secs spent playing back:" + String(endPlay - startPlay));
         }
         
         if(e.toggleSolo){
@@ -1357,7 +1357,7 @@ void OrbishAudioProcessor::processBlock(AudioBuffer<float>& buffer, MidiBuffer& 
     
     // run the methods defined to be executed after the block
     for(auto t :tracks){
-        context->logMessage(String(t->RunAfters.size()));
+        //context->logMessage(String(t->RunAfters.size()));
         while (t->RunAfters.size() > 0) {
             (t->*(t->RunAfters).back()) ();
             t->RunAfters.pop_back();
@@ -1379,18 +1379,18 @@ void OrbishAudioProcessor::processBlock(AudioBuffer<float>& buffer, MidiBuffer& 
     }else{
         outputMeterSource.measureBlock(buffer);
     }
-    context->logMessage("Final section:" + String(endFinal - startFinal));
-    context->logMessage("Measure section:" + String(endMeasure - startMeasure));
+    //context->logMessage("Final section:" + String(endFinal - startFinal));
+    //context->logMessage("Measure section:" + String(endMeasure - startMeasure));
     
     //  logMessage("begin processBlock");
     int64 diff, endMark = Time::getHighResolutionTicks();
-    context->logMessage("nano secs spent in callback:" + String(diff = endMark - beginMark));
-    context->logMessage("buffer size:" + String(context->maxBlockSize));
+    //context->logMessage("nano secs spent in callback:" + String(diff = endMark - beginMark));
+    //context->logMessage("buffer size:" + String(context->maxBlockSize));
     int64 expectedDiff = (double(context->maxBlockSize) / context->sampleRate) * 1000000000;
-    context->logMessage("delay:" + String(expectedDiff - diff));
+    //context->logMessage("delay:" + String(expectedDiff - diff));
     ;
     if(expectedDiff - diff < 0){
-        context->logMessage("ALARM!! Buffer Underrun!!!");
+        //context->logMessage("ALARM!! Buffer Underrun!!!");
     }
     
 }
@@ -1442,12 +1442,12 @@ void OrbishAudioProcessor::handleRecordBlock(int start, int stop) {
                 auto l = activeTrack->AddLayer(true);
                 activeTrack->setActivePlaybackLayer(l);
                 activeTrack->setActiveRecordingLayer(l);
-                context->logMessage("1. adding layer at: " + String(activeTrack->CurrentRecordingIndex));
+                //context->logMessage("1. adding layer at: " + String(activeTrack->CurrentRecordingIndex));
                 end1 = Time::getHighResolutionTicks();
                 //} );
                 end2 = Time::getHighResolutionTicks();
-                context->logMessage("Duration outer block: " + String(end2 - start2));
-                context->logMessage("Duration inner block: " + String(end1 - start1));
+                //context->logMessage("Duration outer block: " + String(end2 - start2));
+                //context->logMessage("Duration inner block: " + String(end1 - start1));
             }
         }
         fadeIn = adjustedFadeTime;
@@ -1499,20 +1499,38 @@ void OrbishAudioProcessor::handleRecordBlock(int start, int stop) {
                                                                              , 1.0f);
             //                    DBG("fade in: " + String(samplesToRead));
         }
+        if (samplesToRead > (fadeIn + fadeOut)) {
+            activeTrack->getActiveRecordingLayer()->Buffer->copyFrom(c
+                                                                     , activeTrack->CurrentRecordingIndex + start + fadeIn
+                                                                     , context->buffer->getReadPointer(c, start + fadeIn)
+                                                                     , samplesToRead - fadeIn - fadeOut);
+        }
         // fade out
         if (fadeOut > 0) {
             activeTrack->getActiveRecordingLayer()->dirty = true;
-            if (samplesToRead == 0) {
+            if (resetCurrentIndex || activeTrack->LastRecordingBuffer) {
                 if (activeTrack->CurrentRecordingIndex > fadeOut && !activeTrack->FirstRecordingBuffer) {
-                    fadeOut = context->fadeTime;
                     if(context->xchange->writeGainModifierQueue->read_available()
                        && context->xchange->readGainModifierQueue->write_available()){
                         auto gm = context->xchange->writeGainModifierQueue->front();
                         context->xchange->writeGainModifierQueue->pop();
-                        gm->startIndex = activeTrack->CurrentRecordingIndex - fadeOut;
-                        gm->numberOfSamples = fadeOut;
+                        auto samplesTillEnd = (activeTrack->EndFadeOffset>0)?activeTrack->EndFadeOffset:samplesToRead;
+                        gm->startIndex = activeTrack->CurrentRecordingIndex + samplesTillEnd - context->fadeTime;
+                        gm->numberOfSamples = context->fadeTime;
                         gm->startLevel = 1.0f;
                         gm->endLevel = 0.0f;
+                        gm->operation = GainModifier::OperationType::RampChannelRegion;
+                        gm->buffer = activeTrack->getActiveRecordingLayer()->Buffer;
+                        context->xchange->readGainModifierQueue->push(gm);
+                    }
+                    if(context->xchange->writeGainModifierQueue->read_available()
+                       && context->xchange->readGainModifierQueue->write_available()){
+                        auto gm = context->xchange->writeGainModifierQueue->front();
+                        context->xchange->writeGainModifierQueue->pop();
+                        gm->startIndex = 0;
+                        gm->numberOfSamples = context->fadeTime;
+                        gm->startLevel = 0.0f;
+                        gm->endLevel = 1.0f;
                         gm->operation = GainModifier::OperationType::RampChannelRegion;
                         gm->buffer = activeTrack->getActiveRecordingLayer()->Buffer;
                         context->xchange->readGainModifierQueue->push(gm);
@@ -1528,12 +1546,6 @@ void OrbishAudioProcessor::handleRecordBlock(int start, int stop) {
                                                                                  , 0.0f);
                 //                    DBG("fade out" + String(samplesToRead));
             }
-        }
-        if (samplesToRead > (fadeIn + fadeOut)) {
-            activeTrack->getActiveRecordingLayer()->Buffer->copyFrom(c
-                                                                     , activeTrack->CurrentRecordingIndex + start + fadeIn
-                                                                     , context->buffer->getReadPointer(c, start + fadeIn)
-                                                                     , samplesToRead - fadeIn - fadeOut);
         }
     }
     // update the current recording index
@@ -1551,7 +1563,7 @@ void OrbishAudioProcessor::handleRecordBlock(int start, int stop) {
             context->xchange->readVisualisationBufferQueue->push(b);
         }
         end2 = Time::getHighResolutionTicks();
-        context->logMessage("making visBuffers: " + String(end2 - start2));
+        //context->logMessage("making visBuffers: " + String(end2 - start2));
         
         if (true) {  //activeTrack->getRecordMode() == kRecLoopOver){
             
@@ -1567,7 +1579,7 @@ void OrbishAudioProcessor::handleRecordBlock(int start, int stop) {
                     context->xchange->readGainModifierQueue->push(gm);
                 }
                 end1 = Time::getHighResolutionTicks();
-                context->logMessage("apply Gain " + String(i) + ":" + String(end1 - start1));
+                //context->logMessage("apply Gain " + String(i) + ":" + String(end1 - start1));
             }
             if (*activeTrack->CurrentTop < (*activeTrack->Layers).size() - int(1)) {
                 (*activeTrack->Layers)[*activeTrack->CurrentTop]->dirty = true;
@@ -1580,11 +1592,11 @@ void OrbishAudioProcessor::handleRecordBlock(int start, int stop) {
                 activeTrack->setActivePlaybackLayer(l);
                 activeTrack->setActiveRecordingLayer(l);
                 end1 = Time::getHighResolutionTicks();
-                context->logMessage("2. adding layer at: " + String(activeTrack->CurrentRecordingIndex));
+                //context->logMessage("2. adding layer at: " + String(activeTrack->CurrentRecordingIndex));
                 
                 //} );
                 
-                context->logMessage("Duration inner block: " + String(end1 - start1));
+                //context->logMessage("Duration inner block: " + String(end1 - start1));
             }
         }
         //                        auto tick = Time::getHighResolutionTicks();
@@ -1618,12 +1630,12 @@ void OrbishAudioProcessor::handleRecordBlock(int start, int stop) {
                                                                          , tail - fadeIn);
             }
             end2 = Time::getHighResolutionTicks();
-            context->logMessage("copy: " + String(end2 - start2));
+            //context->logMessage("copy: " + String(end2 - start2));
             //                        for(int i = 0; i<context->samplesPerBlock; ++i){
             //                            std::cout << activeTrack->Layers[*activeTrack->CurrentTop].Buffer->getSample(c, i) << std::endl;
             //                        }
             end0 = Time::getHighResolutionTicks();
-            context->logMessage("Duration block 3: " + String(end0 - start0));
+            //context->logMessage("Duration block 3: " + String(end0 - start0));
         }
         indexUpdate = tail;
     }
@@ -1651,7 +1663,7 @@ void OrbishAudioProcessor::handleRecordBlock(int start, int stop) {
         activeTrack->setRecordingArmed(false);
     }
     if (*activeTrack->LoopDuration > context->samplesPerBeat * 4){
-        context->logMessage("excess in loop " + String(*activeTrack->LoopDuration - context->samplesPerBeat * 4));
+        //context->logMessage("excess in loop " + String(*activeTrack->LoopDuration - context->samplesPerBeat * 4));
     }
 }
 
@@ -1665,7 +1677,7 @@ void OrbishAudioProcessor::handlePlaybackBlock(int start, int stop) {
         if (((track->isActive() && track->IsPlaying()) || track->Playing)
             && *track->LoopDuration > 0)
         {
-            context->logMessage("now playing");
+            //context->logMessage("now playing");
             auto reSync = track->realignment;
             if(reSync->isSyncInProgress() && reSync->getProcessedBuffersToSpreadFade() == 0){
                 *track->CurrentPlayingIndex = track->getAdjustedLoopPosition(*track->CurrentPlayingIndex,  reSync->getTotalOffset());
@@ -1741,7 +1753,7 @@ void OrbishAudioProcessor::handlePlaybackBlock(int start, int stop) {
                             b.clear();
                             temp = &b;
                         }
-                        context->logMessage("have buffer with channels: " + String(temp->getNumChannels()));
+                        //context->logMessage("have buffer with channels: " + String(temp->getNumChannels()));
                         end0 = Time::getHighResolutionTicks();
                         for (uint32 c = 0; c < context->audioInputsCount;++c) {
                             // crossfade for realignment
@@ -1805,25 +1817,38 @@ void OrbishAudioProcessor::handlePlaybackBlock(int start, int stop) {
                         // read beginning of the loop to tail of the output buffer
                         if (tail>0) {
                             for (uint32 c = 0; c < context->audioInputsCount;++c) {
-                                temp->addFromWithRamp(c
-                                                      , context->maxBlockSize - tail
-                                                      , (*track->Layers)[l]->Buffer->getReadPointer(c, 0)
-                                                      , std::min(tail, context->fadeTime)
-                                                      , 0.0f
-                                                      , 1.0f);
+//                                temp->addFromWithRamp(c
+//                                                      , context->maxBlockSize - tail
+//                                                      , (*track->Layers)[l]->Buffer->getReadPointer(c, 0)
+//                                                      , std::min(tail, context->fadeTime)
+//                                                      , 0.0f
+//                                                      , 1.0f);
                                 temp->addFrom(c
-                                              , context->maxBlockSize - tail + std::min(tail, context->fadeTime)
-                                              , (*track->Layers)[l]->Buffer->getReadPointer(c, std::min(tail, context->fadeTime))
-                                              , std::max(0,tail- context->fadeTime));
-                                if (track->EndFadeOffset > 0) {
-                                    auto fade = std::min(context->fadeTime, samplesToRead);
-                                    temp->copyFromWithRamp(c
-                                                  , targetIndex + samplesToRead - fade
-                                                  , (*track->Layers)[l]->Buffer->getReadPointer(c, sourceIndex + samplesToRead - fade)
-                                                  , fade
-                                                  , 1.0f
-                                                  , 0.0f);
+                                              //, context->maxBlockSize - tail + std::min(tail, context->fadeTime)
+                                              , context->maxBlockSize - tail
+                                              //, (*track->Layers)[l]->Buffer->getReadPointer(c, std::min(tail, context->fadeTime))
+                                              , (*track->Layers)[l]->Buffer->getReadPointer(c, tail)
+                                              , tail); //std::max(0,tail- context->fadeTime));
+                                context->logMessage("==================================================================");
+
+                                context->logMessage("tail: " + String(tail));
+                                for(auto i=0;i<context->maxBlockSize;++i){
+                                    context->logMessage("index:"+String(i));
+                                    context->logMessage(String(*temp->getReadPointer(c,i)));
                                 }
+                                context->logMessage(String(context->maxBlockSize));
+
+                                context->logMessage("==================================================================");
+
+//                                if (track->EndFadeOffset > 0) {
+//                                    auto fade = std::min(context->fadeTime, samplesToRead);
+//                                    temp->addFromWithRamp(c
+//                                                  , targetIndex + samplesToRead - fade
+//                                                  , (*track->Layers)[l]->Buffer->getReadPointer(c, sourceIndex + samplesToRead - fade)
+//                                                  , fade
+//                                                  , 1.0f
+//                                                  , 0.0f);
+//                                }
 //                                if (track->EndFadeOffset > 0) {
 //                                    auto fade = std::min(tail, context->fadeTime);
 //                                    temp->addFromWithRamp(c
@@ -1846,7 +1871,7 @@ void OrbishAudioProcessor::handlePlaybackBlock(int start, int stop) {
                         }
                         if (context->xchange->deleteBufferQueue->write_available() > 0) {
                             if(temp->getNumChannels() == 0){
-                                context->logMessage("no channels in buffer!!!");
+                                //context->logMessage("no channels in buffer!!!");
                             }
                             context->xchange->deleteBufferQueue->push(temp);
                         }
@@ -1862,7 +1887,7 @@ void OrbishAudioProcessor::handlePlaybackBlock(int start, int stop) {
                 *track->CurrentPlayingIndex += samplesToRead;
             }
             
-            context->logMessage(String("samplesToRead: " + String(samplesToRead)));
+            //context->logMessage(String("samplesToRead: " + String(samplesToRead)));
             if (guiAlive && track->isActive())
                 if (context->observer != nullptr) {
                     (context->observer->*(context->observer->updatePlayPosition)) (*track->CurrentPlayingIndex, track->Reverse);

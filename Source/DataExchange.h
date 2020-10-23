@@ -33,8 +33,8 @@ public:
 	DataExchange() {
 		writeVisualisationBufferQueue = new boost::lockfree::spsc_queue<BufferForVisualisation*, boost::lockfree::capacity<3> >;
 		readVisualisationBufferQueue = new boost::lockfree::spsc_queue<BufferForVisualisation*, boost::lockfree::capacity<3> >;
-        logWriteMessageQueue = new boost::lockfree::spsc_queue<std::string*, boost::lockfree::capacity<1000> >;
-        logReadMessageQueue = new boost::lockfree::spsc_queue<std::string*, boost::lockfree::capacity<1000> >;
+        logWriteMessageQueue = new boost::lockfree::spsc_queue<std::string*, boost::lockfree::capacity<10000> >;
+        logReadMessageQueue = new boost::lockfree::spsc_queue<std::string*, boost::lockfree::capacity<10000> >;
         readBufferQueue = new boost::lockfree::spsc_queue<AudioBuffer<float>*, boost::lockfree::capacity<200> >;
         deleteBufferQueue = new boost::lockfree::spsc_queue<AudioBuffer<float>*, boost::lockfree::capacity<200> >;
         writeGainModifierQueue = new boost::lockfree::spsc_queue<GainModifier*, boost::lockfree::capacity<200> >;
@@ -50,8 +50,8 @@ public:
 	boost::lockfree::spsc_queue<BufferForVisualisation*, boost::lockfree::capacity<3> >* readVisualisationBufferQueue;
 	bool writeBufferDirty = false;
 
-    boost::lockfree::spsc_queue<std::string*, boost::lockfree::capacity<1000> >* logReadMessageQueue;
-    boost::lockfree::spsc_queue<std::string*, boost::lockfree::capacity<1000> >* logWriteMessageQueue;
+    boost::lockfree::spsc_queue<std::string*, boost::lockfree::capacity<10000> >* logReadMessageQueue;
+    boost::lockfree::spsc_queue<std::string*, boost::lockfree::capacity<10000> >* logWriteMessageQueue;
 
     boost::lockfree::spsc_queue<AudioBuffer<float>*, boost::lockfree::capacity<200> >* readBufferQueue;
     boost::lockfree::spsc_queue<AudioBuffer<float>*, boost::lockfree::capacity<200> >* deleteBufferQueue;
