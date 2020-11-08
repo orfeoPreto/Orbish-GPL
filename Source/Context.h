@@ -92,6 +92,7 @@ struct OrbishContext {
     bool loggingActive = false;
     int clickStart=-1, clickStop=0;
     int64 timestamp = 0;
+    float maxDelta = 0.1;
     void lockForStateUpdate(bool lock) {
         if (lock) {
             mtx.lock();

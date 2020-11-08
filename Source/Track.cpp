@@ -115,6 +115,7 @@ void Track::setActive(bool newValue){
             p = params.getParameter("inputLevel");
             p->setValueNotifyingHost(state->getProperty("inputLevel"));
             p = params.getParameter("outputLevel");
+//            PreviousOutputLevel = -1;
             p->setValueNotifyingHost(state->getProperty("outputLevel"));
             p = params.getParameter("mode");
             p->setValueNotifyingHost(p->convertTo0to1(state->getProperty("mode")));
@@ -187,13 +188,11 @@ void Track::setActive(bool newValue){
 
 void Track::parameterChanged(const String &parameterID, float newValue) {
     if(parameterID == "inputLevel"){
-        PreviousInputLevel = state->getProperty(parameterID);
         state->setProperty(parameterID, Decibels::decibelsToGain(newValue), nullptr);
         //  DBG("input: "+String(p->convertTo0to1(newValue)));
         return;
     }
     if(parameterID == "outputLevel"){
-        PreviousOutputLevel = state->getProperty(parameterID);
         state->setProperty(parameterID, Decibels::decibelsToGain(newValue), nullptr);
         return;
     }
@@ -640,12 +639,15 @@ void Track::ChangeLoopBefore(int newLoopIdx){
             WasRecording = true;
         }
     }
+    LastPlaybackBuffer = true;
     loopChangeArmed = false;
 }
 
 
 void Track::ChangeLoopAfter(){
     RegisterLoop(nextLoop);
+    LastPlaybackBuffer = false;
+    FirstPlaybackBuffer = true;
     if(WasRecording){
         setRecordingArmed(true);
         StartRecordingBefore();
@@ -663,18 +665,22 @@ void Track::ChangeLoopAfter(){
 void Track::UpdateLoopVisualizer(){
     if (guiAlive) {
         if (context->xchange->writeVisualisationBufferQueue->read_available()
-            && context->xchange->readVisualisationBufferQueue->write_available()
-            && *CurrentTop >= 0) {
+            && context->xchange->readVisualisationBufferQueue->write_available()) {
             BufferForVisualisation* b;
             context->xchange->writeVisualisationBufferQueue->pop(b);
-            int index = std::max((*Layers)[*CurrentTop]->dirty ? *CurrentTop : *CurrentTop - 1, 0);
-    //        for (uint i = 0; i < context->audioInputsCount; ++i) {
-    //            int index = std::max((*Layers)[*CurrentTop]->dirty ? *CurrentTop : *CurrentTop - 1, 0);
-    //
-    //            b->buffer->copyFrom(i, 0, *(*Layers)[index]->Buffer, i, 0, *LoopDuration);
-    //        }
-            b->buffer = (*Layers)[index]->Buffer;
-            b->numSamples = *LoopDuration;
+            if (*CurrentTop >= 0) {
+                int index = std::max((*Layers)[*CurrentTop]->dirty ? *CurrentTop : *CurrentTop - 1, 0);
+        //        for (uint i = 0; i < context->audioInputsCount; ++i) {
+        //            int index = std::max((*Layers)[*CurrentTop]->dirty ? *CurrentTop : *CurrentTop - 1, 0);
+        //
+        //            b->buffer->copyFrom(i, 0, *(*Layers)[index]->Buffer, i, 0, *LoopDuration);
+        //        }
+                b->buffer = (*Layers)[index]->Buffer;
+                b->numSamples = *LoopDuration;
+            }else{
+                b->buffer = nullptr;
+                b->numSamples = 0;
+            }
             context->xchange->readVisualisationBufferQueue->push(b);
         }
     }

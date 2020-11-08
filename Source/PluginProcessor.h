@@ -96,6 +96,8 @@ public:
     void initBlock(AudioBuffer<float>& buffer, MidiBuffer& midiMessages);
     void realign();
     void renderClick();
+    void smoothVolume(double& origin, double destination, int samplesToRead, AudioBuffer<float>* source, AudioBuffer<float>* target, int channel);
+    
     void captureTrigger(int& startRecordingSample);
     float samplesPerMinute = 0;
     float secondsPerSample = 0;
@@ -186,6 +188,8 @@ public:
     GlobalAction globalAction = kGlobalNone;
 	bool keepRunning = true;
     bool aTrackIsSoloed = false;
+    double previousMixLevel = -1;
+    bool changingTrack = false;
     //===========^*==================================================================
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (OrbishAudioProcessor)
 };

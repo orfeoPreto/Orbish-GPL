@@ -393,6 +393,10 @@ void OrbishAudioProcessorEditor::timerCallback(){
 	BufferForVisualisation* b;
 	if (processor.context->xchange->readVisualisationBufferQueue->read_available()) {
 		processor.context->xchange->readVisualisationBufferQueue->pop(b);
+        if(nullptr == b->buffer){
+            b->buffer = new AudioBuffer<float>();
+            b->buffer->setSize(processor.context->audioOutputsCount, 0);
+        }
 		updateLoopVisualiser(*b->buffer, b->numSamples);
         b->buffer = nullptr;
 		String s = String(pointer_sized_int(b));

@@ -43,8 +43,8 @@ public:
 	bool Playing = false;
 	bool Muted = false;
     bool Soloed = false;
-	float PreviousInputLevel;
-	float PreviousOutputLevel;
+	double PreviousInputLevel;
+	double PreviousOutputLevel = -1;
 	bool LayersReady = true;
 	bool FirstRecordingBuffer = false;
 	bool LastRecordingBuffer = false;
@@ -209,4 +209,5 @@ private:
 	AudioProcessorValueTreeState& params;
     bool active = false;
     OrbishContext* &context;
+    bool firstPass = true;
 };
