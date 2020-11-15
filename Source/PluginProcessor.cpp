@@ -1445,7 +1445,7 @@ void OrbishAudioProcessor::handleRecordBlock(int start, int stop) {
     }
     
     // main scenario -> write the whole buffer without fade
-    // in overdub/punch mode at the end of the loop apply fade out
+    // in overdub/punch mode at the end of the loop apply fade in/out
     // and prepare writing to the next layer previously created
     int tail = 0, samplesBeforeTail = 0;
     if ((activeTrack->getRecordMode() == kRecLoopOver || activeTrack->getRecordMode() == kRecPunch)
@@ -1495,7 +1495,7 @@ void OrbishAudioProcessor::handleRecordBlock(int start, int stop) {
                         gm->startIndex = activeTrack->CurrentRecordingIndex + samplesTillEnd - context->fadeTime;
                         gm->numberOfSamples = context->fadeTime;
                         gm->startLevel = 1.0f;
-                        gm->endLevel = 0.0f;
+                        gm->endLevel = .0f;
                         gm->operation = GainModifier::OperationType::RampChannelRegion;
                         gm->buffer = activeTrack->getActiveRecordingLayer()->Buffer;
                         context->xchange->readGainModifierQueue->push(gm);
@@ -1506,7 +1506,7 @@ void OrbishAudioProcessor::handleRecordBlock(int start, int stop) {
                         context->xchange->writeGainModifierQueue->pop();
                         gm->startIndex = 0;
                         gm->numberOfSamples = context->fadeTime;
-                        gm->startLevel = 0.0f;
+                        gm->startLevel = .0f;
                         gm->endLevel = 1.0f;
                         gm->operation = GainModifier::OperationType::RampChannelRegion;
                         gm->buffer = activeTrack->getActiveRecordingLayer()->Buffer;
@@ -1561,9 +1561,7 @@ void OrbishAudioProcessor::handleRecordBlock(int start, int stop) {
                 activeTrack->setActiveRecordingLayer(l);
                 end1 = Time::getHighResolutionTicks();
                 //context->logMessage("2. adding layer at: " + String(activeTrack->CurrentRecordingIndex));
-                
                 //} );
-                
                 //context->logMessage("Duration inner block: " + String(end1 - start1));
             }
         }
@@ -1856,7 +1854,7 @@ void OrbishAudioProcessor::smoothVolume(double& origin, double destination, int 
     double sign=0;
     double diff = double(destination) - double(origin);
     if(diff!=0){
-        sign=diff<0?-1.0:1.0;
+        sign=diff/std::abs(diff);
         double delta = std::min(std::abs(diff),double(context->maxDelta));
         double intermediateDestination = double(origin) + delta*sign;
         target->addFromWithRamp(channel

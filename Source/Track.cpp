@@ -372,7 +372,9 @@ void Track::StartResetAfter(){
     Recording = false;
     Muted = false;
     *Progress = 0;
-    (context->observer->*(context->observer->updatePlayPosition)) (0, Reverse);
+    if (guiAlive && isActive()) {
+        (context->observer->*(context->observer->updatePlayPosition)) (0, Reverse);
+    }
     realignment->setRealigned(true);
 }
 
