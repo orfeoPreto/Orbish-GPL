@@ -2,7 +2,7 @@
 #ifndef __CTX_GUARD
 #define __CTX_GUARD
 #include "Orbish.h"
-#include "Loop.h"
+//#include "Loop.h"
 #endif
 
 #define DEBUG_MODE 1
@@ -21,6 +21,8 @@ struct Layer {
 	int Checkpoint = -1;
 	bool dirty = false;
     int index = 0;
+    bool FirstLayerBuffer = false;
+    bool LastLayerBuffer = false;
 };
 
 struct OrbishContext {
@@ -93,6 +95,37 @@ struct OrbishContext {
     int clickStart=-1, clickStop=0;
     int64 timestamp = 0;
     float maxDelta = 0.1;
+    bool skipAlign = false;
+
+    inline double quartersToSamples(double position)
+    {
+        return position * samplesPerMinute / bpm;
+    }
+    
+    inline double beatsToSamples(double position)
+    {
+        return position * samplesPerMinute / bpm * timeSigBottom * .25f;
+    }
+    
+    inline double samplesToQuarters(double samples)
+    {
+        return samples * bpm / (samplesPerMinute);
+    }
+    inline double samplesToBeats(double samples)
+    {
+        return samples * bpm / samplesPerMinute * (timeSigBottom * .25);
+    }
+    
+    inline double differenceFromClosestBeatInSamples(int position){
+        auto diff = position % samplesPerBeat;
+        if (diff > samplesPerBeat/2){
+            diff = diff - samplesPerBeat;
+        }
+        return double(diff);
+    }
+    
+    float samplesPerMinute = 0;
+    float secondsPerSample = 0;
     void lockForStateUpdate(bool lock) {
         if (lock) {
             mtx.lock();

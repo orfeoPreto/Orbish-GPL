@@ -562,7 +562,7 @@ void OrbishAudioProcessorEditor::paintInfoSection(Graphics&){
         infoAndControlArea.infoArea.setBeatsPerMinute(bpmStr);
     }
     
-    float totalSubDiv = float(processor.samplesToBeats(*processor.activeTrack->CurrentPlayingIndex));
+    float totalSubDiv = float(processor.context->samplesToBeats(*processor.activeTrack->CurrentPlayingIndex));
     float garbage;
     int bars = int(totalSubDiv / processor.context->info->timeSigNumerator + 1);
     int beats = int(fmod(totalSubDiv,processor.context->info->timeSigNumerator) + 1);

@@ -18,6 +18,11 @@ Track::Track(uint index, bool a, AudioProcessorValueTreeState& p, OrbishContext*
 , context(c){
     Index = index;
     RunAfters.reserve(10);
+    int foo =0;
+    CurrentPlayingIndex = &foo;
+    primarySynchronizer = std::make_unique<InternalSynchronizer>(context, CurrentPlayingIndex);
+    secondarySynchronizer = std::make_unique<InternalSynchronizer>(context, &CurrentRecordingIndex);
+
     state = new ValueTree(
                           { "TrackParams", {{ "index", int(index) }},
         {
@@ -87,6 +92,15 @@ Track::~Track() {
     
     RemoveAllLayers();
     setActive(false);
+}
+
+int Track::getNextSample(SnapMode snapMode){
+    if(Recording){
+        return secondarySynchronizer->getNextSample(snapMode);
+    }else if(Playing && *LoopDuration > 0){
+        return primarySynchronizer->getNextSample(snapMode);
+    }
+    return -1;
 }
 
 bool Track::isActive(){
@@ -248,6 +262,12 @@ void Track::RegisterLoop(int loopIdx){
 //            AddLayer(true);
 //        }
         *CurrentPlayingIndex = 0;
+        if (InternalSynchronizer* s = dynamic_cast<InternalSynchronizer*>(primarySynchronizer.get())){
+            s->setCurrentPosition(CurrentPlayingIndex);
+        }
+        if (InternalSynchronizer* s = dynamic_cast<InternalSynchronizer*>(secondarySynchronizer.get())){
+            s->setCurrentPosition(&CurrentRecordingIndex);
+        }
     }
 }
 
@@ -414,7 +434,6 @@ void Track::StartRecordingBefore()
 
 
 void Track::StartRecordingAfter(){
-    FirstRecordingBuffer = false;
     playStateChanged();
 }
 
@@ -458,6 +477,9 @@ void Track::StopRecordingAfter()
         }
         *LoopDuration = recordedCount;
         *CurrentPlayingIndex = 0;
+//        if (InternalSynchronizer* s = dynamic_cast<InternalSynchronizer*>(primarySynchronizer.get())){
+//            s->setCurrentPosition(CurrentPlayingIndex);
+//        }
     }
     
     if (getRecordMode() != kRecPunch) {
@@ -662,6 +684,7 @@ void Track::ChangeLoopAfter(){
     }
     UpdateLoopVisualizer();
     realignment->setRealigned(true);
+    context->skipAlign = true;
 }
 
 void Track::UpdateLoopVisualizer(){
@@ -707,6 +730,49 @@ void Track::RemoveLoopAfter(){
         (context->observer->*(context->observer->loopRemoval)) ();
     }
     realignment->setRealigned(true);
+}
+
+void Track::SetPreviousBefore(){
+    auto l = getActivePlaybackLayer();
+    if(nullptr != l && l->index > 0){
+        RunAfters.push_back(&Track::SetPreviousAfter);
+        getActivePlaybackLayer()->LastLayerBuffer = true;
+    }
+}
+
+void Track::SetPreviousAfter(){
+    getActivePlaybackLayer()->LastLayerBuffer = false;
+    if (*CurrentTop > 0) {
+        if(context->maxUndoHistory > -1 && context->maxUndoHistory < Layers->size()){
+            if (*CurrentTop < Layers->size() - uint(context->maxUndoHistory)) {
+                RemoveTopLayer();
+            }
+        }
+        --(*CurrentTop);
+    }
+    setActivePlaybackLayer((*Layers)[*CurrentTop]);
+    UpdateLoopVisualizer();
+}
+
+void Track::SetNextBefore(){
+    RunAfters.push_back(&Track::SetNextAfter);
+}
+
+void Track::SetNextAfter(){
+    int limit = int(Layers->size()) - 1;
+    if (limit > 0) {
+        if(!(*Layers)[limit]->dirty){
+            --limit;
+        }
+    }else{
+        return;
+    }
+    if (*CurrentTop < limit) {
+        ++(*CurrentTop);
+    }
+    setActivePlaybackLayer((*Layers)[*CurrentTop]);
+    UpdateLoopVisualizer();
+    getActivePlaybackLayer()->FirstLayerBuffer = true;
 }
 //-------------------process functions---------------------
 
@@ -770,33 +836,11 @@ void Track::processRecModeChange() {
 }
 
 void Track::processPreviousChange() {
-    if (*CurrentTop > 0) {
-        if(context->maxUndoHistory > -1 && context->maxUndoHistory < Layers->size()){
-            if (*CurrentTop < Layers->size() - uint(context->maxUndoHistory)) {
-                RemoveTopLayer();
-            }
-        }
-        --(*CurrentTop);
-    }
-    setActivePlaybackLayer((*Layers)[*CurrentTop]);
-    
-    UpdateLoopVisualizer();
+    SetPreviousBefore();
 }
 
 void Track::processNextChange() {
-    int limit = int(Layers->size()) - 1;
-    if (limit > 0) {
-        if(!(*Layers)[limit]->dirty){
-            --limit;
-        }
-    }else{
-        return;
-    }
-    if (*CurrentTop < limit) {
-        ++(*CurrentTop);
-    }
-    setActivePlaybackLayer((*Layers)[*CurrentTop]);
-    UpdateLoopVisualizer();
+    SetNextBefore();
 }
 
 void Track::processReverseChange() {

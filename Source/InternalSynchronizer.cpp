@@ -1,0 +1,52 @@
+/*
+  ==============================================================================
+
+    InternalSynchronizer.cpp
+    Created: 18 Nov 2020 11:21:03pm
+    Author:  Duke Quarcoo
+
+  ==============================================================================
+*/
+
+#include "InternalSynchronizer.h"
+
+InternalSynchronizer::InternalSynchronizer(OrbishContext* context, int* pos): Synchronizer(context),currentPos(pos){
+}
+InternalSynchronizer::~InternalSynchronizer(){
+    
+}
+
+int InternalSynchronizer::getNextSample(SnapMode snapMode){
+    int expectedPos = 0;
+      // expected position is next down beat (except if buffer is exactly on beat
+      if (snapMode == kSnapMeasure)
+      {
+          context->logMessage(String(*currentPos));
+         int diff = *currentPos % (Synchronizer::context->samplesPerBeat  * Synchronizer::context->timeSigTop);
+          expectedPos = *currentPos - diff;
+          while (expectedPos < *currentPos)
+              expectedPos += Synchronizer::context->timeSigTop * Synchronizer::context->samplesPerBeat;
+      }
+      // snap to next quarter note
+      else if (snapMode == kSnapQuarter)
+      {
+          int diff = *currentPos % (Synchronizer::context->samplesPerBeat);
+           expectedPos = *currentPos - diff;
+          if (expectedPos != *currentPos)
+              expectedPos+=Synchronizer::context->samplesPerBeat;
+      }
+      else if (snapMode == kSnapNone)
+      {
+          expectedPos = *currentPos;
+      }
+    if(expectedPos < context->maxBlockSize){
+        int bidon = 0;
+    }
+    return expectedPos - *currentPos;
+}
+
+void InternalSynchronizer::setCurrentPosition(int *currentPosition){
+    currentPos = currentPosition;
+}
+
+

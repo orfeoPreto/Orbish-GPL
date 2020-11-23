@@ -17,6 +17,7 @@
 #include "Track.h"
 #include "MidiProcessor.h"
 #include "TrackGroup.h"
+#include "HostSynchronizer.h"
 
 
 
@@ -99,37 +100,6 @@ public:
     void smoothVolume(double& origin, double destination, int samplesToRead, AudioBuffer<float>* source, AudioBuffer<float>* target, int channel);
     
     void captureTrigger(int& startRecordingSample);
-    float samplesPerMinute = 0;
-    float secondsPerSample = 0;
-    inline double quartersToSamples(double position)
-    {
-        return position * samplesPerMinute / context->bpm;
-    }
-    
-    inline double beatsToSamples(double position)
-    {
-        return position * samplesPerMinute / context->bpm * context->timeSigBottom * .25f;
-    }
-    
-    inline double samplesToQuarters(double samples)
-    {
-        return samples * context->bpm / (samplesPerMinute);
-    }
-    inline double samplesToBeats(double samples)
-    {
-        return samples * context->bpm / samplesPerMinute * (context->timeSigBottom * .25);
-    }
-    
-    inline double differenceFromClosestBeatInSamples(int position){
-        auto diff = position % context->samplesPerBeat;
-        if (diff > context->samplesPerBeat/2){
-            diff = diff - context->samplesPerBeat;
-        }
-        return double(diff);
-    }
-
-
-    
     void processMuteAllChange(bool mute);
     void processStopAllChange();
     void processStartAllChange();
@@ -190,6 +160,8 @@ public:
     bool aTrackIsSoloed = false;
     double previousMixLevel = -1;
     bool changingTrack = false;
+    Synchronizer* primarySynchronizer;
+    Synchronizer* secondarySynchronizer;
     //===========^*==================================================================
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (OrbishAudioProcessor)
 };

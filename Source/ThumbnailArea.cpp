@@ -51,7 +51,7 @@ void ThumbnailArea::paint (juce::Graphics& g){
         g.fillRect(playHead);
         auto c1 = Colour(0x00FFFFFF);
         auto c2 = Colour(0x8FFFFF00);
-        double tmpDenom = processor->samplesToBeats(float(*processor->activeTrack->LoopDuration));
+        double tmpDenom = processor->context->samplesToBeats(float(*processor->activeTrack->LoopDuration));
         int denominator = int(std::ceil(tmpDenom));
         denominator = int(denominator / (processor->context->timeSigBottom * .25));
         denominator = int(denominator / processor->context->timeSigTop) * int(60 / processor->context->info->bpm);

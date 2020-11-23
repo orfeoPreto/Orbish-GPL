@@ -11,6 +11,7 @@
 #include "Orbish.h"
 #include "Loop.h"
 #include "Realignment.h"
+#include "InternalSynchronizer.h"
 #endif
 
 
@@ -22,14 +23,15 @@ enum TrackGroupCommands {
 };
 
 
-class Track :public AudioProcessorValueTreeState::Listener {
+class Track :public AudioProcessorValueTreeState::Listener, public Synchronizer{
 public:
 
 
 	Track(uint, bool, AudioProcessorValueTreeState& params, OrbishContext*& c, bool& gui);
 
-	~Track();
-
+	~Track() override;
+    int getNextSample(SnapMode) override;
+    
 	OwnedArray<Loop> loops;
 	Loop* ActiveLoop;
 	std::vector<Layer*>* Layers;
@@ -137,6 +139,14 @@ public:
     
     void RemoveLoopBefore();
     
+    void SetPreviousBefore();
+
+    void SetPreviousAfter();
+
+    void SetNextBefore();
+
+    void SetNextAfter();
+    
     void RemoveLoopAfter();
     
     void setActive(bool newValue);
@@ -210,4 +220,6 @@ private:
     bool active = false;
     OrbishContext* &context;
     bool firstPass = true;
+    std::unique_ptr<Synchronizer> primarySynchronizer;
+    std::unique_ptr<Synchronizer> secondarySynchronizer;
 };

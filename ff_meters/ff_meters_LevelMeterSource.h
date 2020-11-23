@@ -179,7 +179,9 @@ public:
             const int         numSamples  = buffer.getNumSamples ();
 
             levels.resize (numChannels);
-
+            if (numChannels > buffer.getNumChannels ()) {
+                return;
+            }
             for (int channel=0; channel < numChannels; ++channel) {
                 levels [channel].setLevels (lastMeasurement,
                                             buffer.getMagnitude (channel, 0, numSamples),

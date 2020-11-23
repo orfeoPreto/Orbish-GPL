@@ -8,6 +8,7 @@
   <MAINGROUP id="MOZJJ5" name="Orbish">
     <GROUP id="{40BAF4D8-7324-156C-E5E8-0098A128DC2C}" name="resources">
       <GROUP id="{DD2D5306-C731-51D8-E32F-F8D89EB36CF7}" name="buttons">
+        <FILE id="faQFym" name="orbish-logo.png" compile="0" resource="1" file="../../../../Desktop/orbish-logo.png"/>
         <GROUP id="{D752B9EC-EB18-9EC9-ABD3-38AC98EE5785}" name="Icons">
           <FILE id="u0Ngzt" name="clear-icon.png" compile="0" resource="1" file="resources/Bases/button-icons/clear-icon.png"/>
           <FILE id="GX6tvQ" name="group-icon.png" compile="0" resource="1" file="resources/Bases/button-icons/group-icon.png"/>
@@ -56,17 +57,78 @@
               file="resources/Bases/square-button-base.png"/>
       </GROUP>
     </GROUP>
-    <GROUP id="{BBA6A5B7-B8B2-FF89-C2B6-EE59F1E7D235}" name="exu">
-      <FILE id="zadO8A" name="Label.hpp" compile="0" resource="0" file="exu/Label.hpp"/>
-      <FILE id="O2JfcA" name="UIStateGuard.hpp" compile="0" resource="0"
-            file="exu/UIStateGuard.hpp"/>
-    </GROUP>
     <GROUP id="{AC20891E-F963-141F-355B-51CDA031CBF7}" name="Source">
+      <FILE id="cKLJmU" name="Orbish.h" compile="0" resource="0" file="Source/Orbish.h"/>
+      <GROUP id="{238DCF0C-CFA2-8E48-08B0-913B08613283}" name="AudioEngine">
+        <GROUP id="{1E581F61-D6DB-D4ED-41CB-C415B46C330B}" name="Tracks">
+          <FILE id="OlqLIs" name="TrackGroup.h" compile="0" resource="0" file="Source/TrackGroup.h"/>
+          <FILE id="qWADbr" name="Track.cpp" compile="1" resource="0" file="Source/Track.cpp"/>
+          <FILE id="qSSAPH" name="Track.h" compile="0" resource="0" file="Source/Track.h"/>
+          <FILE id="JMO7d5" name="Loop.h" compile="0" resource="0" file="Source/Loop.h"/>
+          <FILE id="AhY6on" name="TrackGroup.cpp" compile="1" resource="0" file="Source/TrackGroup.cpp"/>
+        </GROUP>
+        <GROUP id="{22DCEE7F-13AE-5D9D-0375-D4532E937BFB}" name="Utility">
+          <FILE id="uQ6DWV" name="GainModifier.h" compile="0" resource="0" file="Source/GainModifier.h"/>
+          <FILE id="Z1ZKnC" name="DataExchange.h" compile="0" resource="0" file="Source/DataExchange.h"/>
+          <FILE id="jSQiuu" name="GainModifier.cpp" compile="1" resource="0"
+                file="Source/GainModifier.cpp"/>
+        </GROUP>
+        <GROUP id="{4D8965A9-2AB8-2A6F-58E7-3164FD5FDD47}" name="Sync">
+          <FILE id="IEInKO" name="InternalSynchronizer.cpp" compile="1" resource="0"
+                file="Source/InternalSynchronizer.cpp"/>
+          <FILE id="AGP8TM" name="InternalSynchronizer.h" compile="0" resource="0"
+                file="Source/InternalSynchronizer.h"/>
+          <FILE id="d1Ig2w" name="Synchronizer.h" compile="0" resource="0" file="Source/Synchronizer.h"/>
+          <FILE id="lgH1Ui" name="HostSynchronizer.h" compile="0" resource="0"
+                file="Source/HostSynchronizer.h"/>
+          <FILE id="T6LPV0" name="HostSynchronizer.cpp" compile="1" resource="0"
+                file="Source/HostSynchronizer.cpp"/>
+          <FILE id="nuvcxx" name="Realignment.cpp" compile="1" resource="0" file="Source/Realignment.cpp"/>
+          <FILE id="yW2Xpf" name="Realignment.h" compile="0" resource="0" file="Source/Realignment.h"/>
+        </GROUP>
+        <FILE id="SVuZwl" name="MidiProcessor.cpp" compile="1" resource="0"
+              file="Source/MidiProcessor.cpp"/>
+        <FILE id="IbJOCh" name="MidiProcessor.h" compile="0" resource="0" file="Source/MidiProcessor.h"/>
+        <FILE id="p19WrD" name="Context.h" compile="0" resource="0" file="Source/Context.h"/>
+        <FILE id="peorJb" name="PluginProcessor.cpp" compile="1" resource="0"
+              file="Source/PluginProcessor.cpp"/>
+        <FILE id="FHesF4" name="PluginProcessor.h" compile="0" resource="0"
+              file="Source/PluginProcessor.h"/>
+      </GROUP>
       <GROUP id="{B1708198-2297-7033-0C5C-79B08021FDA1}" name="ApplicationView">
+        <FILE id="zadO8A" name="Label.hpp" compile="0" resource="0" file="exu/Label.hpp"/>
+        <FILE id="O2JfcA" name="UIStateGuard.hpp" compile="0" resource="0"
+              file="exu/UIStateGuard.hpp"/>
+        <FILE id="zZiu88" name="Observer.h" compile="0" resource="0" file="Source/Observer.h"/>
+        <FILE id="bZC7bf" name="Blinker.hpp" compile="0" resource="0" file="Source/Blinker.hpp"/>
+        <FILE id="j9gbcj" name="CommandIDs.h" compile="0" resource="0" file="Source/CommandIDs.h"/>
+        <FILE id="w3X0UE" name="LoopComponent.h" compile="0" resource="0" file="Source/LoopComponent.h"/>
+        <FILE id="ZRK40i" name="CustomButton.cpp" compile="1" resource="0"
+              file="Source/CustomButton.cpp"/>
+        <FILE id="X1Tg4s" name="CustomButton.h" compile="0" resource="0" file="Source/CustomButton.h"/>
+        <FILE id="oiQg4Y" name="MainMenu.cpp" compile="1" resource="0" file="Source/MainMenu.cpp"/>
+        <FILE id="ecuYgC" name="MainMenu.h" compile="0" resource="0" file="Source/MainMenu.h"/>
+        <FILE id="TYjYdy" name="MenuManager.h" compile="0" resource="0" file="Source/MenuManager.h"/>
+        <FILE id="odi1jK" name="PluginEditor.cpp" compile="1" resource="0"
+              file="Source/PluginEditor.cpp"/>
+        <FILE id="wp5pn0" name="SettingsPage.cpp" compile="1" resource="0"
+              file="Source/SettingsPage.cpp"/>
+        <FILE id="NBLXqf" name="SettingsPage.h" compile="0" resource="0" file="Source/SettingsPage.h"/>
+        <FILE id="NCkE4f" name="PluginEditor.h" compile="0" resource="0" file="Source/PluginEditor.h"/>
         <GROUP id="{323773F9-7867-1D78-8A20-F1336F39ADB3}" name="Tracks">
+          <FILE id="haWALj" name="LoopComponent.cpp" compile="1" resource="0"
+                file="Source/LoopComponent.cpp"/>
+          <FILE id="PXs7wo" name="TrackComponent.cpp" compile="1" resource="0"
+                file="Source/TrackComponent.cpp"/>
+          <FILE id="DtjjOV" name="TrackComponent.h" compile="0" resource="0"
+                file="Source/TrackComponent.h"/>
           <FILE id="mzal8d" name="TrackArea.cpp" compile="1" resource="0" file="Source/TrackArea.cpp"/>
           <FILE id="dRqBtO" name="TrackArea.h" compile="0" resource="0" file="Source/TrackArea.h"/>
         </GROUP>
+        <FILE id="XBV7Yj" name="OrbishLookAndFeel.cpp" compile="1" resource="0"
+              file="Source/OrbishLookAndFeel.cpp"/>
+        <FILE id="cmln4s" name="OrbishLookAndFeel.h" compile="0" resource="0"
+              file="Source/OrbishLookAndFeel.h"/>
         <GROUP id="{9A772742-A9A5-A4DA-AE9B-C9C571FD411B}" name="InfoAndControl">
           <GROUP id="{7EDDF3EA-A7AC-20ED-239E-FB5B5D7DCD15}" name="Info">
             <FILE id="afuVJJ" name="InfoArea.cpp" compile="1" resource="0" file="Source/InfoArea.cpp"/>
@@ -141,52 +203,6 @@
           <FILE id="kUflV6" name="HeaderArea.h" compile="0" resource="0" file="Source/HeaderArea.h"/>
         </GROUP>
       </GROUP>
-      <FILE id="bZC7bf" name="Blinker.hpp" compile="0" resource="0" file="Source/Blinker.hpp"/>
-      <FILE id="j9gbcj" name="CommandIDs.h" compile="0" resource="0" file="Source/CommandIDs.h"/>
-      <FILE id="p19WrD" name="Context.h" compile="0" resource="0" file="Source/Context.h"/>
-      <FILE id="w3X0UE" name="LoopComponent.h" compile="0" resource="0" file="Source/LoopComponent.h"/>
-      <FILE id="ZRK40i" name="CustomButton.cpp" compile="1" resource="0"
-            file="Source/CustomButton.cpp"/>
-      <FILE id="X1Tg4s" name="CustomButton.h" compile="0" resource="0" file="Source/CustomButton.h"/>
-      <FILE id="uQ6DWV" name="GainModifier.h" compile="0" resource="0" file="Source/GainModifier.h"/>
-      <FILE id="jSQiuu" name="GainModifier.cpp" compile="1" resource="0"
-            file="Source/GainModifier.cpp"/>
-      <FILE id="Z1ZKnC" name="DataExchange.h" compile="0" resource="0" file="Source/DataExchange.h"/>
-      <FILE id="SooMdS" name="Group.h" compile="0" resource="0" file="Source/Group.h"/>
-      <FILE id="JMO7d5" name="Loop.h" compile="0" resource="0" file="Source/Loop.h"/>
-      <FILE id="haWALj" name="LoopComponent.cpp" compile="1" resource="0"
-            file="Source/LoopComponent.cpp"/>
-      <FILE id="oiQg4Y" name="MainMenu.cpp" compile="1" resource="0" file="Source/MainMenu.cpp"/>
-      <FILE id="ecuYgC" name="MainMenu.h" compile="0" resource="0" file="Source/MainMenu.h"/>
-      <FILE id="TYjYdy" name="MenuManager.h" compile="0" resource="0" file="Source/MenuManager.h"/>
-      <FILE id="SVuZwl" name="MidiProcessor.cpp" compile="1" resource="0"
-            file="Source/MidiProcessor.cpp"/>
-      <FILE id="IbJOCh" name="MidiProcessor.h" compile="0" resource="0" file="Source/MidiProcessor.h"/>
-      <FILE id="zZiu88" name="Observer.h" compile="0" resource="0" file="Source/Observer.h"/>
-      <FILE id="XBV7Yj" name="OrbishLookAndFeel.cpp" compile="1" resource="0"
-            file="Source/OrbishLookAndFeel.cpp"/>
-      <FILE id="cmln4s" name="OrbishLookAndFeel.h" compile="0" resource="0"
-            file="Source/OrbishLookAndFeel.h"/>
-      <FILE id="odi1jK" name="PluginEditor.cpp" compile="1" resource="0"
-            file="Source/PluginEditor.cpp"/>
-      <FILE id="NCkE4f" name="PluginEditor.h" compile="0" resource="0" file="Source/PluginEditor.h"/>
-      <FILE id="peorJb" name="PluginProcessor.cpp" compile="1" resource="0"
-            file="Source/PluginProcessor.cpp"/>
-      <FILE id="FHesF4" name="PluginProcessor.h" compile="0" resource="0"
-            file="Source/PluginProcessor.h"/>
-      <FILE id="nuvcxx" name="Realignment.cpp" compile="1" resource="0" file="Source/Realignment.cpp"/>
-      <FILE id="yW2Xpf" name="Realignment.h" compile="0" resource="0" file="Source/Realignment.h"/>
-      <FILE id="wp5pn0" name="SettingsPage.cpp" compile="1" resource="0"
-            file="Source/SettingsPage.cpp"/>
-      <FILE id="NBLXqf" name="SettingsPage.h" compile="0" resource="0" file="Source/SettingsPage.h"/>
-      <FILE id="qWADbr" name="Track.cpp" compile="1" resource="0" file="Source/Track.cpp"/>
-      <FILE id="qSSAPH" name="Track.h" compile="0" resource="0" file="Source/Track.h"/>
-      <FILE id="PXs7wo" name="TrackComponent.cpp" compile="1" resource="0"
-            file="Source/TrackComponent.cpp"/>
-      <FILE id="DtjjOV" name="TrackComponent.h" compile="0" resource="0"
-            file="Source/TrackComponent.h"/>
-      <FILE id="AhY6on" name="TrackGroup.cpp" compile="1" resource="0" file="Source/TrackGroup.cpp"/>
-      <FILE id="OlqLIs" name="TrackGroup.h" compile="0" resource="0" file="Source/TrackGroup.h"/>
     </GROUP>
   </MAINGROUP>
   <EXPORTFORMATS>
