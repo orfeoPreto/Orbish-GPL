@@ -7,8 +7,18 @@
               bundleIdentifier="exu.Orbish" companyName="exu" version="0.2.0">
   <MAINGROUP id="MOZJJ5" name="Orbish">
     <GROUP id="{40BAF4D8-7324-156C-E5E8-0098A128DC2C}" name="resources">
+      <FILE id="f46FOQ" name="orbish-name.png" compile="0" resource="1" file="../../../../Pictures/orbish-name.png"/>
+      <FILE id="Xtdapr" name="logo_orbish_x_small.png" compile="0" resource="1"
+            file="../../../../Pictures/logo_orbish_x_small.png"/>
+      <GROUP id="{E7575BD2-818E-B016-4510-E160E018B19F}" name="sliders">
+        <FILE id="IGiRHW" name="slider-handle.png" compile="0" resource="1"
+              file="../../../../Pictures/slider-handle.png"/>
+      </GROUP>
+      <FILE id="pTTo96" name="logo_orbish_small.png" compile="0" resource="1"
+            file="../../../../Downloads/logo_orbish_small.png"/>
+      <FILE id="VDBc1t" name="logo_orbish_big.png" compile="0" resource="1"
+            file="../../../../Downloads/logo_orbish_big.png"/>
       <GROUP id="{DD2D5306-C731-51D8-E32F-F8D89EB36CF7}" name="buttons">
-        <FILE id="faQFym" name="orbish-logo.png" compile="0" resource="1" file="../../../../Desktop/orbish-logo.png"/>
         <GROUP id="{D752B9EC-EB18-9EC9-ABD3-38AC98EE5785}" name="Icons">
           <FILE id="u0Ngzt" name="clear-icon.png" compile="0" resource="1" file="resources/Bases/button-icons/clear-icon.png"/>
           <FILE id="GX6tvQ" name="group-icon.png" compile="0" resource="1" file="resources/Bases/button-icons/group-icon.png"/>

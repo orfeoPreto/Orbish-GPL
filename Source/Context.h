@@ -18,7 +18,7 @@ typedef unsigned int uint;
 
 struct Layer {
 	AudioBuffer<float>* Buffer{};
-	int Checkpoint = -1;
+    int Checkpoint = -1;
 	bool dirty = false;
     int index = 0;
     bool FirstLayerBuffer = false;
@@ -28,6 +28,7 @@ struct Layer {
 struct OrbishContext {
 	OrbishContext() {
 		buffer = nullptr;
+        inputBuffer = nullptr;
 		audioInputsCount = 0;
 		previousMix = 0;
 		delayCompensation = 0;
@@ -72,6 +73,7 @@ struct OrbishContext {
 	int defaultLoopLength; // 60 seconds max activeTrack.Recording
 	float timeRatio;
 	AudioBuffer<float>* buffer = nullptr;
+    AudioBuffer<float>* inputBuffer = nullptr;
     AudioBuffer<float>* clickBuffer = nullptr;
 	int samplesPerBlock;
 	Observer* observer;

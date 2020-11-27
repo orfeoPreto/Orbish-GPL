@@ -51,7 +51,6 @@ public:
     void updateBarWitness(double alpha);
     void updateBeatWitness(double alpha);
     void setGroupColour(Colour);
-
 private:
     exu::Label projectLabel{};
     exu::Label timeSigLabel;
@@ -63,6 +62,8 @@ private:
     exu::Label groupNumberLabel;
     DrawablePath barWitness{};
     DrawablePath beatWitness{};
+    ImageComponent logo;
+    ImageComponent name;
 
     double beatAlpha = 0.2;
     double barAlpha = 0.2;

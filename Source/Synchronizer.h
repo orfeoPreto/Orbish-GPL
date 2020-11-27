@@ -20,7 +20,7 @@ public:
     }
     virtual ~Synchronizer(){}
     
-    virtual int getNextSample(SnapMode){}
+    virtual int getNextSample(SnapMode)=0;
     
     OrbishContext* context;
 

@@ -509,6 +509,7 @@ void Track::StartPlaybackBefore()
     Playing = true;
     FirstPlaybackBuffer = true;
     RunAfters.push_back(&Track::StartPlaybackAfter);
+    context->skipAlign = true;
 }
 
 void Track::StartPlaybackAfter()
@@ -610,6 +611,8 @@ void Track::StartSoloBefore(){
     FirstSoloBuffer = Playing && !Muted;
     RunAfters.push_back(&Track::StartSoloAfter);
     setSoloArmed(true);
+    context->skipAlign = true;
+
     //context->logMessage("start solo track " + String(Index));
 }
 
@@ -625,7 +628,7 @@ void Track::StopMuteBefore(){
     Muted = false;
     RunAfters.push_back(&Track::StopMuteAfter);
     setMuteArmed(false);
-    
+    context->skipAlign = true;
 }
 
 

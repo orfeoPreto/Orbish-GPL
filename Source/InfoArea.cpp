@@ -28,6 +28,8 @@ InfoArea::InfoArea(){
     addAndMakeVisible(loopNumberLabel);
     addAndMakeVisible(layerNumberLabel);
     addAndMakeVisible(groupNumberLabel);
+    logo.setImage(ImageFileFormat::loadFrom(BinaryData::logo_orbish_x_small_png, BinaryData::logo_orbish_x_small_pngSize));
+    name.setImage(ImageFileFormat::loadFrom(BinaryData::orbishname_png, BinaryData::orbishname_pngSize));
 }
 
 InfoArea::~InfoArea(){
@@ -41,7 +43,7 @@ void InfoArea::paint (juce::Graphics& g){
     auto labelHeight = 30;
     // draw beatWitness
     Path path;
-    path.addEllipse(20, labelHeight*8+21, 10, 10);
+    path.addEllipse(20, labelHeight*10+21, 10, 10);
     beatWitness.setPath(path);
     beatWitness.setFill(Colours::orangered);
     beatWitness.setStrokeFill(Colours::orange);
@@ -51,20 +53,22 @@ void InfoArea::paint (juce::Graphics& g){
 
     // draw barWitness
     Path path2;
-    path2.addEllipse(40, labelHeight*8+21, 10, 10);
+    path2.addEllipse(40, labelHeight*10+21, 10, 10);
     barWitness.setPath(path2);
     barWitness.setFill(Colours::green);
     barWitness.setStrokeFill(Colours::greenyellow);
     barWitness.setAlpha(barAlpha);
     barWitness.setStrokeThickness(2.0f);
     addAndMakeVisible(barWitness);
+    addAndMakeVisible(name);
+    addAndMakeVisible(logo);
 }
 
 void InfoArea::resized(){
     auto bounds = getLocalBounds();
     auto labelHeight = 30;
     bounds.removeFromLeft(10);
-    bounds.removeFromTop(10);
+    bounds.removeFromTop(70);
 
     projectLabel.setBounds(bounds.removeFromTop(labelHeight));
 
@@ -80,6 +84,10 @@ void InfoArea::resized(){
     
     bounds.removeFromLeft(50);
     progressLabel.setBounds(bounds.removeFromTop(labelHeight));
+    name.setBounds(40, -60, 200, 200);
+    logo.setBounds(10,20,40,40);
+    name.setAlpha(.4f);
+    logo.setAlpha(.9f);
 }
 
 void InfoArea::setProjectName(String name){

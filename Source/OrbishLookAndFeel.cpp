@@ -10,20 +10,52 @@
 
 #include "OrbishLookAndFeel.h"
 
+namespace LookAndFeelHelpers
+{
+    static Colour createBaseColour (Colour buttonColour,
+                                    bool hasKeyboardFocus,
+                                    bool shouldDrawButtonAsHighlighted,
+                                    bool shouldDrawButtonAsDown) noexcept
+    {
+        const float sat = hasKeyboardFocus ? 1.3f : 0.9f;
+        const Colour baseColour (buttonColour.withMultipliedSaturation (sat));
 
+        if (shouldDrawButtonAsDown)        return baseColour.contrasting (0.2f);
+        if (shouldDrawButtonAsHighlighted) return baseColour.contrasting (0.1f);
+
+        return baseColour;
+    }
+
+    static TextLayout layoutTooltipText (const String& text, Colour colour) noexcept
+    {
+        const float tooltipFontSize = 13.0f;
+        const int maxToolTipWidth = 400;
+
+        AttributedString s;
+        s.setJustification (Justification::centred);
+        s.append (text, Font (tooltipFontSize, Font::bold), colour);
+
+        TextLayout tl;
+        tl.createLayoutWithBalancedLineLengths (s, (float) maxToolTipWidth);
+        return tl;
+    }
+}
 
 OrbishLookAndFeel::OrbishLookAndFeel() {
     // colours
+    auto deepDarkGrey = juce::Colour(0xff161616);
     auto darkGrey = juce::Colour(0xff262626);
     auto lightGrey = juce::Colour(0xff707070);
     auto yellow = juce::Colour(0xfffed70f);
-
-
+    auto sliderLowerHalf = juce::Colour(0xff333333);
+    
     // background
     setColour(juce::ResizableWindow::backgroundColourId, darkGrey);
 
     // text
     setColour(juce::Label::textColourId, lightGrey);
+    setColour(juce::Slider::backgroundColourId, lightGrey);
+
     setDefaultSansSerifTypefaceName("Bahnschrift");
 
     // buttons
@@ -52,6 +84,7 @@ OrbishLookAndFeel::OrbishLookAndFeel() {
     setColour(juce::ComboBox::textColourId, lightGrey);
     setColour(juce::ComboBox::focusedOutlineColourId, yellow);
     setColour(juce::ComboBox::buttonColourId, darkGrey);
+    setColour(juce::ComboBox::outlineColourId, deepDarkGrey);
 
     // menu bar
     setColour(juce::PopupMenu::ColourIds::backgroundColourId, darkGrey);
@@ -60,10 +93,12 @@ OrbishLookAndFeel::OrbishLookAndFeel() {
     setColour(juce::PopupMenu::ColourIds::highlightedTextColourId, yellow);
 
     // sliders
-    setColour(juce::Slider::ColourIds::backgroundColourId, darkGrey);
-    setColour(juce::Slider::ColourIds::trackColourId, lightGrey);
-    setColour(juce::Slider::ColourIds::thumbColourId, yellow);
+    setColour(juce::Slider::backgroundColourId, lightGrey);
+    setColour(juce::Slider::trackColourId, sliderLowerHalf);
+    setColour(juce::Slider::thumbColourId, yellow);
+    setColour(juce::Slider::textBoxOutlineColourId, darkGrey);
 
+    
     // progress bars
     setColour(juce::ProgressBar::ColourIds::backgroundColourId, juce::Colour(0xff42403a));
     setColour(juce::ProgressBar::ColourIds::foregroundColourId, yellow);
@@ -239,3 +274,94 @@ Image OrbishLookAndFeel::getImageForButton(ButtonShape shape, ButtonState state)
     }
     return ImageFileFormat::loadFrom(BinaryData::buttonbase_png, BinaryData::buttonbase_pngSize);
 }
+
+int OrbishLookAndFeel::getSliderPopupPlacement (Slider&)
+{
+    return BubbleComponent::above;
+}
+
+void OrbishLookAndFeel::drawLinearSliderThumb (Graphics & g, int x, int y, int width, int height, float sliderPos, float minSliderPos, float maxSliderPos, const Slider::SliderStyle style, Slider & slider) {
+    Image image;
+        image = ImageFileFormat::loadFrom(BinaryData::sliderhandle_png, BinaryData::sliderhandle_pngSize);
+    //image.rescaled(width, height);
+    if (sliderPos != 1) {
+        int bidon =1;
+    }
+    g.drawImageWithin(image
+                      , style == Slider::LinearBarVertical ? (float) x :sliderPos
+                      , style == Slider::LinearBarVertical ? sliderPos - image.getHeight()*.5f: (float) y
+                      , width, image.getHeight(), RectanglePlacement(), false);
+}
+
+//==============================================================================
+void OrbishLookAndFeel::drawLinearSliderBackground (Graphics& g, int x, int y, int width, int height,
+                                                 float sliderPos,
+                                                 float minSliderPos,
+                                                 float maxSliderPos,
+                                                 const Slider::SliderStyle style, Slider& slider)
+{
+    auto sliderRadius = (float) (getSliderThumbRadius (slider) - 2);
+ //   auto gradCol1 = trackColour.overlaidWith (Colours::black.withAlpha (slider.isEnabled() ? 0.25f : 0.13f));
+ //   auto gradCol2 = trackColour.overlaidWith (Colour (0x14000000));
+
+    Path emptyBarPart;
+    Path fullBarPart;
+
+
+        const float ix = (float) x + (float) width * 0.5f - sliderRadius * 0.5f;
+        const float iw = sliderRadius;
+
+ //       g.setGradientFill (ColourGradient::horizontal (gradCol1, ix, gradCol2, ix + iw));
+
+    emptyBarPart.addRoundedRectangle (ix, (float) y - sliderRadius * 0.5f,
+                                    iw, (float) sliderPos,
+                                    5.0f);
+    fullBarPart.addRoundedRectangle (ix, sliderPos,
+                                iw, (float) height - sliderPos,
+                                5.0f);
+    g.setColour(slider.findColour(Slider::backgroundColourId));
+    g.fillPath (emptyBarPart);
+    g.setColour(slider.findColour(Slider::trackColourId));
+    g.fillPath (fullBarPart);
+
+}
+
+
+void OrbishLookAndFeel::drawLinearSlider (Graphics& g, int x, int y, int width, int height,
+                                       float sliderPos, float minSliderPos, float maxSliderPos,
+                                       const Slider::SliderStyle style, Slider& slider)
+{
+   // g.fillAll (slider.findColour (Slider::backgroundColourId));
+
+
+//    if (style == Slider::LinearBar || style == Slider::LinearBarVertical)
+//    {
+//        const bool isMouseOver = slider.isMouseOverOrDragging() && slider.isEnabled();
+
+        
+//        drawShinyButtonShape (g,
+//                              (float) x,
+//                              style == Slider::LinearBarVertical ? sliderPos
+//                                                                 : (float) y,
+//                              style == Slider::LinearBarVertical ? (float) width: (sliderPos - (float) x),
+//                              style == Slider::LinearBarVertical ? ((float) height - sliderPos): (float) height, 0.0f,
+//                              baseColour,
+//                              slider.isEnabled() ? 0.9f : 0.3f,
+//                              true, true, true, true);
+
+        drawLinearSliderBackground (g, x, y, width, height, sliderPos, minSliderPos, maxSliderPos, style, slider);
+        drawLinearSliderThumb (g, x
+                               , y
+                               , (float) width
+                               , (float) height
+                               , sliderPos, minSliderPos, maxSliderPos, style, slider);
+}
+
+int OrbishLookAndFeel::getSliderThumbRadius (Slider& slider)
+{
+    return jmin (7,
+                 slider.getHeight() / 2,
+                 slider.getWidth() / 2) + 2;
+}
+
+

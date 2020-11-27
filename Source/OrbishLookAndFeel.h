@@ -42,12 +42,36 @@ private:
     void drawPushButton(juce::Graphics& g, juce::Button& button, const juce::Colour& backgroundColour, bool isHovering, bool isButtonDown, ButtonShape shape);
     void drawToggleButton(juce::Graphics& g, juce::Button& button, const juce::Colour& backgroundColour, bool isHovering, bool isButtonDown, ButtonShape shape);
     
-    
     bool isPushButton(juce::Button* button);
     bool isSquareButton(juce::Button* button);
     
     Image getImageForButton(ButtonShape shape, ButtonState state);
-
+    
+    void drawLinearSlider (Graphics &, int x, int y, int width, int height, float sliderPos, float minSliderPos, float maxSliderPos, const Slider::SliderStyle, Slider &) override;
+    
+    int getSliderPopupPlacement (Slider&) override;
+    
+    void drawLinearSliderBackground (Graphics &, int x, int y, int width, int height, float sliderPos, float minSliderPos, float maxSliderPos, const Slider::SliderStyle style, Slider &) override;
+    void drawLinearSliderThumb (Graphics &, int x, int y, int width, int height, float sliderPos, float minSliderPos, float maxSliderPos, const Slider::SliderStyle, Slider &) override;
+    int getSliderThumbRadius (Slider &) override;
+//
+//    void drawRotarySlider (Graphics &, int x, int y, int width, int height, float sliderPosProportional, float rotaryStartAngle, float rotaryEndAngle, Slider &) override;
+//
+//    Button *     createSliderButton (Slider &, bool isIncrement) override;
+//
+//    Label *     createSliderTextBox (Slider &) override;
+//
+//    ImageEffectFilter *     getSliderEffect (Slider &) override;
+//
+//    Font     getSliderPopupFont (Slider &) override;
+//
+//    int     getSliderPopupPlacement (Slider &) override;
+//
+//    Slider::SliderLayout     getSliderLayout (Slider &) override;
+    
+    
+    void drawShinyButtonShape (Graphics&,
+                               float x, float y, float w, float h, float maxCornerSize,
+                               const Colour&, float strokeWidth,
+                               bool flatOnLeft, bool flatOnRight, bool flatOnTop, bool flatOnBottom) noexcept;
 };
-
-
