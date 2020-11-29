@@ -12,6 +12,7 @@
 
 #include <JuceHeader.h>
 #include "exu/Label.hpp"
+#include "OrbishSlider.h"
 class OrbishAudioProcessorEditor;
 
 //==============================================================================
@@ -26,12 +27,12 @@ public:
     void paint (juce::Graphics&) override;
     void resized() override;
 
-    Slider outputLevelSlider{ "Output Level" };
+    OrbishSlider outputLevelSlider{ "Output Level" };
     exu::Label outputLevelLabel{ "Output Level" };
     Component outputSliderComp;
     FFAU::LevelMeter outputMeter{ FFAU::LevelMeter::Minimal };
 
-    Slider globalVolumeSlider{ "Global Volume" };
+    OrbishSlider globalVolumeSlider{ "Global Volume" };
     exu::Label globalVolumeLabel{ "Global Volume" };
 
     void setEditor(OrbishAudioProcessorEditor*);

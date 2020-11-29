@@ -222,4 +222,5 @@ private:
     bool firstPass = true;
     std::unique_ptr<Synchronizer> primarySynchronizer;
     std::unique_ptr<Synchronizer> secondarySynchronizer;
+    int getLimit();
 };

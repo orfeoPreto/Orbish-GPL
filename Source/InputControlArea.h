@@ -12,6 +12,8 @@
 
 #include <JuceHeader.h>
 #include "exu/Label.hpp"
+#include "OrbishSlider.h"
+
 class OrbishAudioProcessorEditor;
 
 //==============================================================================
@@ -27,7 +29,7 @@ public:
     void resized() override;
 
     FFAU::LevelMeter inputMeter{ FFAU::LevelMeter::Minimal };
-    Slider inputLevelSlider{ "Input Level" };
+    OrbishSlider inputLevelSlider{ "Input Level" };
     exu::Label inputLevelLabel{ "Input Level" };
 
     void setEditor(OrbishAudioProcessorEditor*);

@@ -129,6 +129,14 @@ parameters(*this, nullptr, "OrbishState", {
     context->layerQueue = new boost::lockfree::spsc_queue<Layer*, boost::lockfree::capacity<3> >;
     context->xchange = new DataExchange();
     initGroups();
+//    auto formatMgr = std::make_unique<AudioFormatManager>();
+//    
+//    formatMgr->registerBasicFormats();
+//    std::unique_ptr<AudioFormatReader> reader(formatMgr->createReaderFor(std::make_unique<MemoryInputStream>( BinaryData::BellsTriangle_2_Mute_aif, BinaryData::BellsTriangle_2_Mute_aifSize, false)));
+//    context->clickBuffer = std::make_unique<AudioSampleBuffer>(reader->numChannels, (int)reader->lengthInSamples);
+//    std::unique_ptr<AudioFormatReader> reader2(formatMgr->createReaderFor(std::make_unique<MemoryInputStream>( BinaryData::BellsTriangle_1_Mute_aif,BinaryData::BellsTriangle_1_Mute_aifSize, false)));
+//    context->barStartClickBuffer = std::make_unique<AudioSampleBuffer>(reader2->numChannels, (int)reader2->lengthInSamples);
+    
     primarySynchronizer =  new HostSynchronizer(context);
     secondarySynchronizer =  new InternalSynchronizer(context,nullptr);
     context->allocatorThread = std::thread(
@@ -1378,6 +1386,10 @@ void OrbishAudioProcessor::processBlock(AudioBuffer<float>& buffer, MidiBuffer& 
     
 }
 
+void OrbishAudioProcessor::handleClick(OrbishContext* context, int start, int stop){
+    context->buffer->addFrom(0, 0, context->clickBuffer->getReadPointer(0), start, stop);
+}
+
 void OrbishAudioProcessor::handleRecordBlock(int start, int stop) {
     int resetCurrentIndex = false;
     int indexUpdate = 0;
@@ -1685,7 +1697,7 @@ void OrbishAudioProcessor::handlePlaybackBlock(int start, int stop) {
                 else {
                     index = *track->LoopDuration + indexMinusDelayComp;
                 }
-                int currentPlayBuffer = *track->CurrentTop;
+                int currentPlayBuffer = track->getActivePlaybackLayer()->index;
                 if (track->Recording) {
                     // if in overdub mode decrement current play buffer as the uppermost buffer is used for recording
                     if (track->getRecordMode() == 0) {

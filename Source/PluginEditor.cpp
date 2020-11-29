@@ -139,6 +139,7 @@ OrbishAudioProcessorEditor::OrbishAudioProcessorEditor (OrbishAudioProcessor& p,
 void OrbishAudioProcessorEditor::showSettingsPage() {
 	settingsPage = std::make_shared<SettingsPage>(processor.context->loggingActive, processor.context->maxUndoHistory, nbrTracksInARow, processor.context->delayCompensation );
 	settingsPage->addListener(this);
+    settingsPage->setLookAndFeel(&getLookAndFeel());
 	addAndMakeVisible(*settingsPage);
 	resized();
 }
@@ -413,13 +414,15 @@ void OrbishAudioProcessorEditor::timerCallback(){
     removeLoop();
     updatePlayState();
     
-    
+    auto transportControlArea = &infoAndControlArea.controlArea.buttonControlArea.transportControlArea; &infoAndControlArea.controlArea.buttonControlArea.modeAndNavigationControlArea.modeControlArea;
     auto modeControlArea = &infoAndControlArea.controlArea.buttonControlArea.modeAndNavigationControlArea.modeControlArea;
 	if (processor.activeTrack->Recording || processor.activeTrack->Playing) {
-        modeControlArea->recModeCombo.setEnabled(false);
+        modeControlArea->recModeCombo.setEnabled(true);
+        transportControlArea->bounceButton.setEnabled(false);
 	}
 	else {
         modeControlArea->recModeCombo.setEnabled(true);
+        transportControlArea->bounceButton.setEnabled(true);
 	}
     
 }

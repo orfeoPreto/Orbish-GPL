@@ -1,12 +1,12 @@
 /*
-  ==============================================================================
-
-    CustomButton.h
-    Created: 28 Jul 2020 12:37:37pm
-    Author:  Lennart Cockx
-
-  ==============================================================================
-*/
+ ==============================================================================
+ 
+ CustomButton.h
+ Created: 28 Jul 2020 12:37:37pm
+ Author:  Lennart Cockx
+ 
+ ==============================================================================
+ */
 
 #pragma once
 
@@ -18,15 +18,15 @@ public:
     CustomButton(const String&, bool, bool);
     CustomButton(const String&, bool);
     ~CustomButton();
-
+    
     bool isPushButton();
     bool isSquareButton();
     bool isIconButton();
-
+    
     void setIcon(Image icon);
-
+    
     void paintButton(Graphics&, bool, bool) override;
-
+    
 private:
     bool pushButton = false;
     bool squareButton = false;

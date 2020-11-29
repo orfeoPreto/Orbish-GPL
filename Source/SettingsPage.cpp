@@ -1,4 +1,5 @@
 #include "SettingsPage.h"
+
 SettingsPage::SettingsPage() {}
 
 SettingsPage::SettingsPage(bool loggingActive, int maxHistory, int tracksPerRow, int latency) {
@@ -26,8 +27,8 @@ SettingsPage::SettingsPage(bool loggingActive, int maxHistory, int tracksPerRow,
 
 
 	latencySlider.setSliderStyle(Slider::LinearHorizontal);
-	latencySlider.getLookAndFeel().setColour(Slider::trackColourId, Colours::black);
-	latencySlider.getLookAndFeel().setColour(Slider::backgroundColourId, Colours::white);
+//	latencySlider.getLookAndFeel().setColour(Slider::trackColourId, Colours::black);
+//	latencySlider.getLookAndFeel().setColour(Slider::backgroundColourId, Colours::white);
 	latencySlider.setTextBoxStyle(Slider::TextEntryBoxPosition::TextBoxLeft, true, 0, 0);
 	latencySlider.setPopupDisplayEnabled(true, false, this);
 	settingsCentre.addAndMakeVisible(latencySlider);
@@ -37,8 +38,8 @@ SettingsPage::SettingsPage(bool loggingActive, int maxHistory, int tracksPerRow,
 	maxUndoHistorySlider.setSliderStyle(Slider::LinearHorizontal);
 	maxUndoHistorySlider.setValue(maxHistory);
     maxUndoHistorySlider.setRange(0,99);
-	maxUndoHistorySlider.getLookAndFeel().setColour(Slider::trackColourId, Colours::black);
-	maxUndoHistorySlider.getLookAndFeel().setColour(Slider::backgroundColourId, Colours::white);
+//	maxUndoHistorySlider.getLookAndFeel().setColour(Slider::trackColourId, Colours::black);
+//	maxUndoHistorySlider.getLookAndFeel().setColour(Slider::backgroundColourId, Colours::white);
 	maxUndoHistorySlider.setTextBoxStyle(Slider::TextEntryBoxPosition::TextBoxLeft, true, 0, 0);
 	maxUndoHistorySlider.setPopupDisplayEnabled(true, false, this);
 	maxUndoHistorySlider.addListener(this);
@@ -50,8 +51,8 @@ SettingsPage::SettingsPage(bool loggingActive, int maxHistory, int tracksPerRow,
     tracksPerRowSlider.setSliderStyle(Slider::LinearHorizontal);
     tracksPerRowSlider.setValue(tracksPerRow);
     tracksPerRowSlider.setRange(2, 8);
-    tracksPerRowSlider.getLookAndFeel().setColour(Slider::trackColourId, Colours::black);
-    tracksPerRowSlider.getLookAndFeel().setColour(Slider::backgroundColourId, Colours::white);
+//    tracksPerRowSlider.getLookAndFeel().setColour(Slider::trackColourId, Colours::black);
+//    tracksPerRowSlider.getLookAndFeel().setColour(Slider::backgroundColourId, Colours::white);
     tracksPerRowSlider.setTextBoxStyle(Slider::TextEntryBoxPosition::TextBoxLeft, true, 0, 0);
     tracksPerRowSlider.setPopupDisplayEnabled(true, false, this);
     tracksPerRowSlider.addListener(this);
@@ -77,7 +78,7 @@ void SettingsPage::paint(Graphics& g){
 	g.fillRect(left.getBounds());
 	g.fillRect(top.getBounds());
 	g.fillRect(bottom.getBounds());
-	g.setColour(Colours::black);
+	g.setColour(getLookAndFeel().findColour(juce::ResizableWindow::backgroundColourId));
 	g.fillRect(settingsCentre.getBounds());
 	settingsCentre.setAlpha(1.0f);
 }

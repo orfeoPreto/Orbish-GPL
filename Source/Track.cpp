@@ -737,9 +737,11 @@ void Track::RemoveLoopAfter(){
 
 void Track::SetPreviousBefore(){
     auto l = getActivePlaybackLayer();
-    if(nullptr != l && l->index > 0){
-        RunAfters.push_back(&Track::SetPreviousAfter);
-        getActivePlaybackLayer()->LastLayerBuffer = true;
+    if(nullptr != l
+       && nullptr != l->Buffer
+        && l->index > 0){
+            RunAfters.push_back(&Track::SetPreviousAfter);
+            getActivePlaybackLayer()->LastLayerBuffer = true;
     }
 }
 
@@ -761,15 +763,19 @@ void Track::SetNextBefore(){
     RunAfters.push_back(&Track::SetNextAfter);
 }
 
-void Track::SetNextAfter(){
+int Track::getLimit(){
     int limit = int(Layers->size()) - 1;
     if (limit > 0) {
         if(!(*Layers)[limit]->dirty){
             --limit;
         }
-    }else{
-        return;
     }
+    return limit;
+}
+
+void Track::SetNextAfter(){
+    int limit = getLimit();
+    if (limit <=0) return;
     if (*CurrentTop < limit) {
         ++(*CurrentTop);
     }
@@ -991,6 +997,10 @@ void Track::setAutoTrigger(bool newValue){
 }
 
 Layer* Track::getActivePlaybackLayer(){
+    if(nullptr == ActiveLoop->activePlaybackLayer){
+        *CurrentTop = getLimit();
+        ActiveLoop->activePlaybackLayer = (*Layers)[*CurrentTop];
+    }
     return ActiveLoop->activePlaybackLayer;
     
 }

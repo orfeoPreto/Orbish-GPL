@@ -74,4 +74,6 @@ private:
                                float x, float y, float w, float h, float maxCornerSize,
                                const Colour&, float strokeWidth,
                                bool flatOnLeft, bool flatOnRight, bool flatOnTop, bool flatOnBottom) noexcept;
+    
+//    void drawBubble (Graphics&, setNumDecimalPlacesToDisplayt Rectangle<float>& body) override;
 };

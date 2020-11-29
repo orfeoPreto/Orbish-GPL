@@ -29,7 +29,7 @@ InputControlArea::InputControlArea(){
     inputLevelSlider.setTextBoxStyle(Slider::TextEntryBoxPosition::NoTextBox, true, 0, 0);
     inputLevelSlider.setPopupDisplayEnabled(true, false, this);
     inputLevelSlider.setTooltip("Adjust the level of the input signal for the active track");
-    inputLevelSlider.textFromValueFunction = [this](double val) {return String(val, 1); };
+   // inputLevelSlider.textFromValueFunction = [this](double val) {return String(val, 1); };
     addAndMakeVisible(inputLevelSlider);
 
     addAndMakeVisible(inputMeter);

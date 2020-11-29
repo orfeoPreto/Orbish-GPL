@@ -74,7 +74,8 @@ struct OrbishContext {
 	float timeRatio;
 	AudioBuffer<float>* buffer = nullptr;
     AudioBuffer<float>* inputBuffer = nullptr;
-    AudioBuffer<float>* clickBuffer = nullptr;
+    std::unique_ptr<AudioBuffer<float>> clickBuffer;
+    std::unique_ptr<AudioBuffer<float>> barStartClickBuffer;
 	int samplesPerBlock;
 	Observer* observer;
 	int trackCount;

@@ -7,15 +7,25 @@
               bundleIdentifier="exu.Orbish" companyName="exu" version="0.2.0">
   <MAINGROUP id="MOZJJ5" name="Orbish">
     <GROUP id="{40BAF4D8-7324-156C-E5E8-0098A128DC2C}" name="resources">
-      <FILE id="f46FOQ" name="orbish-name.png" compile="0" resource="1" file="../../../../Pictures/orbish-name.png"/>
-      <FILE id="Xtdapr" name="logo_orbish_x_small.png" compile="0" resource="1"
-            file="../../../../Pictures/logo_orbish_x_small.png"/>
+      <FILE id="sZBqhy" name="orbish-name.png" compile="0" resource="1" file="resources/Bases/orbish-name.png"/>
+      <FILE id="UY8jpv" name="logo_orbish_x_small.png" compile="0" resource="1"
+            file="resources/Bases/logo_orbish_x_small.png"/>
+      <FILE id="SxEq9E" name="scrollbar-handle.png" compile="0" resource="1"
+            file="resources/Bases/scrollbar-handle.png"/>
+      <FILE id="vxAb3D" name="Bells-Triangle 1 Mute.aif" compile="0" resource="1"
+            file="resources/Bases/Bells-Triangle 1 Mute.aif"/>
+      <FILE id="IQujUb" name="Bells-Triangle 2 Mute.aif" compile="0" resource="1"
+            file="resources/Bases/Bells-Triangle 2 Mute.aif"/>
       <GROUP id="{E7575BD2-818E-B016-4510-E160E018B19F}" name="sliders">
-        <FILE id="IGiRHW" name="slider-handle.png" compile="0" resource="1"
-              file="../../../../Pictures/slider-handle.png"/>
+        <FILE id="HLORcN" name="slider-handle-90.png" compile="0" resource="1"
+              file="resources/Bases/slider-handle-90.png"/>
+        <FILE id="yYsZ4q" name="slider-handle.png" compile="0" resource="1"
+              file="resources/Bases/slider-handle.png"/>
       </GROUP>
       <FILE id="pTTo96" name="logo_orbish_small.png" compile="0" resource="1"
             file="../../../../Downloads/logo_orbish_small.png"/>
+      <FILE id="HBMg9p" name="orbish-logo-web-down.png" compile="0" resource="1"
+            file="resources/orbish-logo-web-down.png"/>
       <FILE id="VDBc1t" name="logo_orbish_big.png" compile="0" resource="1"
             file="../../../../Downloads/logo_orbish_big.png"/>
       <GROUP id="{DD2D5306-C731-51D8-E32F-F8D89EB36CF7}" name="buttons">
@@ -106,6 +116,9 @@
               file="Source/PluginProcessor.h"/>
       </GROUP>
       <GROUP id="{B1708198-2297-7033-0C5C-79B08021FDA1}" name="ApplicationView">
+        <FILE id="XLAcCl" name="OrbishSlider.cpp" compile="1" resource="0"
+              file="Source/OrbishSlider.cpp"/>
+        <FILE id="pDyrTt" name="OrbishSlider.h" compile="0" resource="0" file="Source/OrbishSlider.h"/>
         <FILE id="zadO8A" name="Label.hpp" compile="0" resource="0" file="exu/Label.hpp"/>
         <FILE id="O2JfcA" name="UIStateGuard.hpp" compile="0" resource="0"
               file="exu/UIStateGuard.hpp"/>

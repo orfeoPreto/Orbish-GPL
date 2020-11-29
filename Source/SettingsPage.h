@@ -4,8 +4,8 @@
 #ifndef SetPg_h
 #define SetPg_h
 
-#include "../JuceLibraryCode/JuceHeader.h"
-
+#include <JuceHeader.h>
+#include "OrbishSlider.h"
 
 
 class SettingsPage:public Component,
@@ -29,19 +29,19 @@ public:
 	void labelTextChanged(Label* label) override;
 	void parentSizeChanged() override;
 	Component settingsCentre;
-		Component right;
-		Component left;
-		Component top;
-		Component bottom;
+    Component right;
+    Component left;
+    Component top;
+    Component bottom;
 	TextButton activateLoggingButton;
 	Label activateLoggingLabel;
 	TextButton closeSettingsButton;
 	Label latencyLabel;
-	Slider latencySlider;
+    OrbishSlider latencySlider;
 	Label maxUndoHistoryLabel{ "History" };
-	Slider maxUndoHistorySlider{ "History" };
+    OrbishSlider maxUndoHistorySlider{ "History" };
     Label tracksPerRowLabel{ "Tracks per row" };
-    Slider tracksPerRowSlider{ "Tracks per row" };
+    OrbishSlider tracksPerRowSlider{ "Tracks per row" };
 
 	class  Listener
 	{

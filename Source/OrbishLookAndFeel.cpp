@@ -10,36 +10,35 @@
 
 #include "OrbishLookAndFeel.h"
 
-namespace LookAndFeelHelpers
-{
-    static Colour createBaseColour (Colour buttonColour,
-                                    bool hasKeyboardFocus,
-                                    bool shouldDrawButtonAsHighlighted,
-                                    bool shouldDrawButtonAsDown) noexcept
-    {
-        const float sat = hasKeyboardFocus ? 1.3f : 0.9f;
-        const Colour baseColour (buttonColour.withMultipliedSaturation (sat));
 
-        if (shouldDrawButtonAsDown)        return baseColour.contrasting (0.2f);
-        if (shouldDrawButtonAsHighlighted) return baseColour.contrasting (0.1f);
-
-        return baseColour;
-    }
-
-    static TextLayout layoutTooltipText (const String& text, Colour colour) noexcept
-    {
-        const float tooltipFontSize = 13.0f;
-        const int maxToolTipWidth = 400;
-
-        AttributedString s;
-        s.setJustification (Justification::centred);
-        s.append (text, Font (tooltipFontSize, Font::bold), colour);
-
-        TextLayout tl;
-        tl.createLayoutWithBalancedLineLengths (s, (float) maxToolTipWidth);
-        return tl;
-    }
-}
+//    static Colour createBaseColour (Colour buttonColour,
+//                                    bool hasKeyboardFocus,
+//                                    bool shouldDrawButtonAsHighlighted,
+//                                    bool shouldDrawButtonAsDown) noexcept
+//    {
+//        const float sat = hasKeyboardFocus ? 1.3f : 0.9f;
+//        const Colour baseColour (buttonColour.withMultipliedSaturation (sat));
+//
+//        if (shouldDrawButtonAsDown)        return baseColour.contrasting (0.2f);
+//        if (shouldDrawButtonAsHighlighted) return baseColour.contrasting (0.1f);
+//
+//        return baseColour;
+//    }
+//
+//    static TextLayout OrbishLookAndFeel::layoutTooltipText (const String& text, Colour colour) noexcept
+//    {
+//        const float tooltipFontSize = 13.0f;
+//        const int maxToolTipWidth = 400;
+//
+//        AttributedString s;
+//        s.setJustification (Justification::topLeft);
+//        s.append (text, Font (tooltipFontSize, Font::bold), colour);
+//
+//        TextLayout tl;
+//        tl.createLayoutWithBalancedLineLengths (s, (float) maxToolTipWidth);
+//        return tl;
+//    }
+//}
 
 OrbishLookAndFeel::OrbishLookAndFeel() {
     // colours
@@ -277,20 +276,37 @@ Image OrbishLookAndFeel::getImageForButton(ButtonShape shape, ButtonState state)
 
 int OrbishLookAndFeel::getSliderPopupPlacement (Slider&)
 {
-    return BubbleComponent::above;
+    return BubbleComponent::below;
 }
 
 void OrbishLookAndFeel::drawLinearSliderThumb (Graphics & g, int x, int y, int width, int height, float sliderPos, float minSliderPos, float maxSliderPos, const Slider::SliderStyle style, Slider & slider) {
     Image image;
+    int w, h;
+    float ratio;
+    if(style == Slider::LinearBarVertical ){
         image = ImageFileFormat::loadFrom(BinaryData::sliderhandle_png, BinaryData::sliderhandle_pngSize);
-    //image.rescaled(width, height);
-    if (sliderPos != 1) {
-        int bidon =1;
+        ratio = image.getWidth() / width;
+        image = image.rescaled(width, image.getHeight()/ratio);
+        y = sliderPos - image.getHeight() * .5f;
+        w = width;
+        h = image.getHeight();
+    }else if (style == Slider::LinearHorizontal){
+        image = ImageFileFormat::loadFrom(BinaryData::sliderhandle90_png, BinaryData::sliderhandle90_pngSize);
+        ratio = image.getHeight() / height;
+        image = image.rescaled(image.getWidth()/ratio, height);
+        x = sliderPos - image.getWidth() * .5f;
+        w = image.getWidth();
+        h = height;
+    }else{
+        w = width;
+        h = height;
     }
+
+
     g.drawImageWithin(image
-                      , style == Slider::LinearBarVertical ? (float) x :sliderPos
-                      , style == Slider::LinearBarVertical ? sliderPos - image.getHeight()*.5f: (float) y
-                      , width, image.getHeight(), RectanglePlacement(), false);
+                      , x
+                      , y
+                      , w, h, RectanglePlacement(), false);
 }
 
 //==============================================================================
@@ -306,19 +322,37 @@ void OrbishLookAndFeel::drawLinearSliderBackground (Graphics& g, int x, int y, i
 
     Path emptyBarPart;
     Path fullBarPart;
-
-
-        const float ix = (float) x + (float) width * 0.5f - sliderRadius * 0.5f;
-        const float iw = sliderRadius;
+    
+    const float ix = (float) x + (float) width * 0.5f - sliderRadius * 0.5f;
+    const float iw = sliderRadius;
+    const float iy = (float) x + (float) height * 0.5f - sliderRadius * 0.5f;
+    const float ih = sliderRadius;
 
  //       g.setGradientFill (ColourGradient::horizontal (gradCol1, ix, gradCol2, ix + iw));
+    if(style == Slider::LinearBarVertical ){
+        emptyBarPart.addRoundedRectangle (ix
+                                        , (float) y - sliderRadius * 0.5f
+                                        ,iw
+                                        , (float) sliderPos
+                                        , 5.0f);
+        fullBarPart.addRoundedRectangle (ix
+                                         , sliderPos
+                                         , iw
+                                         , (float) height - sliderPos
+                                         , 5.0f);
+    }else if (style == Slider::LinearHorizontal){
+        emptyBarPart.addRoundedRectangle ((float) x - sliderRadius * 0.5f
+                                          , iy
+                                          , (float) sliderPos
+                                          , ih
+                                          , 5.0f);
+        fullBarPart.addRoundedRectangle (sliderPos
+                                         , iy
+                                         ,(float) width - sliderPos
+                                         , ih
+                                         , 5.0f);
+    }
 
-    emptyBarPart.addRoundedRectangle (ix, (float) y - sliderRadius * 0.5f,
-                                    iw, (float) sliderPos,
-                                    5.0f);
-    fullBarPart.addRoundedRectangle (ix, sliderPos,
-                                iw, (float) height - sliderPos,
-                                5.0f);
     g.setColour(slider.findColour(Slider::backgroundColourId));
     g.fillPath (emptyBarPart);
     g.setColour(slider.findColour(Slider::trackColourId));
@@ -331,23 +365,6 @@ void OrbishLookAndFeel::drawLinearSlider (Graphics& g, int x, int y, int width, 
                                        float sliderPos, float minSliderPos, float maxSliderPos,
                                        const Slider::SliderStyle style, Slider& slider)
 {
-   // g.fillAll (slider.findColour (Slider::backgroundColourId));
-
-
-//    if (style == Slider::LinearBar || style == Slider::LinearBarVertical)
-//    {
-//        const bool isMouseOver = slider.isMouseOverOrDragging() && slider.isEnabled();
-
-        
-//        drawShinyButtonShape (g,
-//                              (float) x,
-//                              style == Slider::LinearBarVertical ? sliderPos
-//                                                                 : (float) y,
-//                              style == Slider::LinearBarVertical ? (float) width: (sliderPos - (float) x),
-//                              style == Slider::LinearBarVertical ? ((float) height - sliderPos): (float) height, 0.0f,
-//                              baseColour,
-//                              slider.isEnabled() ? 0.9f : 0.3f,
-//                              true, true, true, true);
 
         drawLinearSliderBackground (g, x, y, width, height, sliderPos, minSliderPos, maxSliderPos, style, slider);
         drawLinearSliderThumb (g, x
@@ -364,4 +381,11 @@ int OrbishLookAndFeel::getSliderThumbRadius (Slider& slider)
                  slider.getWidth() / 2) + 2;
 }
 
+//void OrbishLookAndFeel::drawBubble (Graphics& g, BubbleComponent& b,
+//                         const Point<float>& positionOfTip,
+//                                            const Rectangle<float>& body) {
+//    if (!b.isCurrentlyModal()) {
+//        b.enterModalState();
+//    }
+//}
 
