@@ -203,7 +203,11 @@ void OrbishAudioProcessorEditor::setProjectName(String name) {
 }
 
 void OrbishAudioProcessorEditor::saveProject() {
-//	if (!project.dirty && !project.newProject)return;
+    for(auto track: processor.tracks){
+        if(track->IsPlaying() || track->Recording){
+            return;
+        }
+    }
 	if (project.newProject || !project.directory.exists()) {
 		File dir = File(File::getSpecialLocation(File::userHomeDirectory));
 		if (dir.getChildFile("Orbish").exists()) {

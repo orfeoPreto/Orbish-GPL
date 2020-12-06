@@ -2050,12 +2050,13 @@ bool OrbishAudioProcessor::loadLoopFromValueTree(ValueTree* loopTree, Loop* loop
                     reader->read(buffer.get(), 0, (int)reader->lengthInSamples, 0, true, true);
                     layer->Buffer->setSize(buffer->getNumChannels(), buffer->getNumSamples());
                     layer->Buffer->clear();
-                    layer->Buffer->copyFrom(0, 0, *buffer, 0, 0, buffer->getNumSamples());
-                    layer->Buffer->copyFrom(1, 0, *buffer, 1, 0, buffer->getNumSamples());
+                    for(auto i=0;i<buffer->getNumChannels();++i){
+                        layer->Buffer->copyFrom(i, 0, *buffer, i, 0, buffer->getNumSamples());
+                    }
                     loop->LoopDuration = buffer->getNumSamples();
                 }
                 catch (...) {
-                    context->logMessage("write of audio file failed: " + String(filePath));
+                    context->logMessage("read of audio file failed: " + String(filePath));
                 }
             }
             layer->dirty = true;
