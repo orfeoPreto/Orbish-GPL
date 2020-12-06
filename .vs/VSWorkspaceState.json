@@ -1,8 +1,9 @@
 {
   "ExpandedNodes": [
     "",
+    "\\JuceLibraryCode",
     "\\Source"
   ],
-  "SelectedNode": "\\Source\\MofflRAudioFormatReader.cpp",
+  "SelectedNode": "\\Source\\MainMenu.h",
   "PreviewInSolutionExplorer": false
 }

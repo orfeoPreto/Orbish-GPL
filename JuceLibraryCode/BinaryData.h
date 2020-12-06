@@ -29,14 +29,8 @@ namespace BinaryData
     extern const char*   sliderhandle_png;
     const int            sliderhandle_pngSize = 758;
 
-    extern const char*   logo_orbish_small_png;
-    const int            logo_orbish_small_pngSize = 19653;
-
     extern const char*   orbishlogowebdown_png;
     const int            orbishlogowebdown_pngSize = 295190;
-
-    extern const char*   logo_orbish_big_png;
-    const int            logo_orbish_big_pngSize = 126513;
 
     extern const char*   clearicon_png;
     const int            clearicon_pngSize = 495;
@@ -117,7 +111,7 @@ namespace BinaryData
     const int            squarebuttonbase_pngSize = 2503;
 
     // Number of elements in the namedResourceList and originalFileNames arrays.
-    const int namedResourceListSize = 36;
+    const int namedResourceListSize = 34;
 
     // Points to the start of a list of resource names.
     extern const char* namedResourceList[];

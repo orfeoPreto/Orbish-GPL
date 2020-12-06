@@ -381,6 +381,71 @@ int OrbishLookAndFeel::getSliderThumbRadius (Slider& slider)
                  slider.getWidth() / 2) + 2;
 }
 
+int OrbishLookAndFeel::getPopupMenuColumnSeparatorWidthWithOptions(PopupMenu::Options const&)
+{
+	return 0;
+}
+
+int OrbishLookAndFeel::getPopupMenuColumnSeparatorWithOptions(Graphics&, Rectangle<int> const&, PopupMenu::Options const&)
+{
+	return 0;
+}
+
+int OrbishLookAndFeel::getPopupMenuBorderSizeWithOptions(juce::PopupMenu::Options const&)
+{
+	return 0;
+}
+
+void OrbishLookAndFeel::getIdealPopupMenuItemSizeWithOptions(juce::String const&, bool, int, int&, int&, juce::PopupMenu::Options const&)
+{
+}
+
+void OrbishLookAndFeel::drawPopupMenuUpDownArrowWithOptions(juce::Graphics&, int, int, bool, juce::PopupMenu::Options const&)
+{
+}
+
+void OrbishLookAndFeel::drawPopupMenuSectionHeaderWithOptions(juce::Graphics&, juce::Rectangle<int> const&, juce::String const&, juce::PopupMenu::Options const&)
+{
+}
+
+void OrbishLookAndFeel::drawPopupMenuItemWithOptions(juce::Graphics& g, juce::Rectangle<int> const& r, bool b, juce::PopupMenu::Item const& item, juce::PopupMenu::Options const& options)
+{
+	//LookAndFeel_V2::drawPopupMenuItemWithOptions(g, r, b, item, options);
+	const auto colour = item.colour != Colour() ? &item.colour : nullptr;
+	const auto hasSubMenu = item.subMenu != nullptr
+		&& (item.itemID == 0 || item.subMenu->getNumItems() > 0);
+
+	drawPopupMenuItem(g,
+		r,
+		item.isSeparator,
+		item.isEnabled,
+		b,
+		item.isTicked,
+		hasSubMenu,
+		item.text,
+		"",
+		item.image.get(),
+		colour);
+}
+//Font LookAndFeel_V2::getPopupMenuFont() {
+//	return Font(getLabelFont())
+//}
+
+void OrbishLookAndFeel::drawMenuBarItem(Graphics& g, int width, int height,
+	int itemIndex,
+	const String& itemText,
+	bool isMouseOverItem,
+	bool isMenuOpen,
+	bool isMouseOverBar,
+	MenuBarComponent& menuBar) {
+	LookAndFeel_V2::drawMenuBarItem(g, width, height, itemIndex, itemText, isMouseOverItem, isMenuOpen, isMouseOverBar, menuBar);
+}
+
+void OrbishLookAndFeel::drawPopupMenuBackgroundWithOptions(juce::Graphics& g, int x, int y, juce::PopupMenu::Options const& options)
+{
+	LookAndFeel_V2::drawPopupMenuBackgroundWithOptions(g, x, y, options);
+}
+
 //void OrbishLookAndFeel::drawBubble (Graphics& g, BubbleComponent& b,
 //                         const Point<float>& positionOfTip,
 //                                            const Rectangle<float>& body) {

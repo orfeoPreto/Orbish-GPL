@@ -13,7 +13,7 @@
 #ifndef Editor_h
 #define Editor_h
 
-#include <JuceHeader.h>
+
 #include "PluginProcessor.h"
 #include "Observer.h"
 #include "Orbish.h"

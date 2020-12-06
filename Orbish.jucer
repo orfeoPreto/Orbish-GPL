@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<JUCERPROJECT id="iqI92f" name="Orbish" projectType="audioplug" headerPath="../../..&#10;../..&#10;../../JuceLibraryCode&#10;..&#10;"
+<JUCERPROJECT id="iqI92f" name="Orbish" projectType="audioplug" headerPath="&#10;"
               pluginManufacturer="Exu" pluginManufacturerCode="Exu" pluginCode="Orb"
               pluginFormats="buildAU,buildVST3" displaySplashScreen="1" jucerFormatVersion="1"
               aaxIdentifier="Exu" pluginChannelConfigs="{1,1},{2,2}" pluginAAXCategory="8192"
@@ -22,12 +22,8 @@
         <FILE id="yYsZ4q" name="slider-handle.png" compile="0" resource="1"
               file="resources/Bases/slider-handle.png"/>
       </GROUP>
-      <FILE id="pTTo96" name="logo_orbish_small.png" compile="0" resource="1"
-            file="../../../../Downloads/logo_orbish_small.png"/>
       <FILE id="HBMg9p" name="orbish-logo-web-down.png" compile="0" resource="1"
             file="resources/orbish-logo-web-down.png"/>
-      <FILE id="VDBc1t" name="logo_orbish_big.png" compile="0" resource="1"
-            file="../../../../Downloads/logo_orbish_big.png"/>
       <GROUP id="{DD2D5306-C731-51D8-E32F-F8D89EB36CF7}" name="buttons">
         <GROUP id="{D752B9EC-EB18-9EC9-ABD3-38AC98EE5785}" name="Icons">
           <FILE id="u0Ngzt" name="clear-icon.png" compile="0" resource="1" file="resources/Bases/button-icons/clear-icon.png"/>

@@ -35,6 +35,7 @@ public:
     MenuBarModel* getMenuModel();
     StringArray getMenuNames();
     void createMenu(PopupMenu&, const String& menuName) override;
+	
     void createFileMenu(PopupMenu& menu);
     void createEditMenu(PopupMenu& menu);
     void createSettingsMenu(PopupMenu& menu);

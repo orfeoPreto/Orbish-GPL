@@ -140,6 +140,7 @@ void HeaderArea::createMenu(PopupMenu& menu, const String& menuName){
     else jassertfalse; // names have changed?
 }
 
+
 void HeaderArea::createFileMenu(PopupMenu& menu){
     menu.addCommandItem(commandManager.get(), CommandIDs::newProject);
     menu.addCommandItem(commandManager.get(), CommandIDs::open);
@@ -172,5 +173,6 @@ void HeaderArea::createEditMenu(PopupMenu& menu){
 }
 
 void HeaderArea::createSettingsMenu(PopupMenu& menu){
+
     menu.addCommandItem(commandManager.get(), CommandIDs::showProjectSettings);
 }
