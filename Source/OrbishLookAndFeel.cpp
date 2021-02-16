@@ -283,10 +283,11 @@ void OrbishLookAndFeel::drawLinearSliderThumb (Graphics & g, int x, int y, int w
     Image image;
     int w, h;
     float ratio;
+    if(width==0 || height == 0)return;
     if(style == Slider::LinearBarVertical ){
         image = ImageFileFormat::loadFrom(BinaryData::sliderhandle_png, BinaryData::sliderhandle_pngSize);
-        ratio = image.getWidth() / width;
-        image = image.rescaled(width, image.getHeight()/ratio);
+        ratio = image.getWidth() / (width>1?width:1);
+        image = image.rescaled(width, (image.getHeight()>ratio?image.getHeight()/ratio:1));
         y = sliderPos - image.getHeight() * .5f;
         w = width;
         h = image.getHeight();

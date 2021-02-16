@@ -877,7 +877,8 @@ void OrbishAudioProcessor::realign(){
         //                                        if (abs(diffHost) < context->samplesPerBlock * 0.5f) {
         if (abs(diffHost) < context->samplesPerBlock * 0.5f) {
             for(auto track:tracks){
-                auto diffPlugin = context->differenceFromClosestBeatInSamples(*track->CurrentPlayingIndex);
+                auto currentPosition = *track->CurrentPlayingIndex;
+                auto diffPlugin = context->differenceFromClosestBeatInSamples(currentPosition);
                 // logMessage(String("diffHost:") + String(diffHost) + String("\ndiffPlugin: ") + String(diffPlugin));
                 int diff=0;
                 if(((diffHost<0)&&(diffPlugin>0)) || ((diffPlugin<0)&&(diffHost>0))){
@@ -887,6 +888,9 @@ void OrbishAudioProcessor::realign(){
                 }else{
                     diff = int(diffHost - diffPlugin);
                 }
+//                if(diffHost<0)diffHost=context->samplesPerBeat + diffHost;
+//                if(diffPlugin<0)diffPlugin=context->samplesPerBeat + diffPlugin;
+//                diff = int(diffHost - diffPlugin);
                 if (abs(diff) > context->fadeTime) {
                     if (!((diff < 0 && *track->CurrentPlayingIndex < abs(diff))
                           || (diff > 0 && *track->CurrentPlayingIndex > * track->LoopDuration - diff))) {
@@ -1680,8 +1684,11 @@ void OrbishAudioProcessor::handlePlaybackBlock(int start, int stop) {
                 //}
 //            }
             int tail = std::min(context->maxBlockSize,std::max(samplesToRead + *track->CurrentPlayingIndex - *track->LoopDuration,0));
-            if ((!track->Muted && !aTrackIsSoloed)
-                || (track->Soloed)) {
+            auto activeLayer = track->getActivePlaybackLayer();
+            if ((!(nullptr == activeLayer) &&
+                 !(nullptr == activeLayer->Buffer) ) &&
+                ((!track->Muted && !aTrackIsSoloed)
+                || (track->Soloed))) {
                 // read loop content
                 int index = *track->CurrentPlayingIndex;
                 int indexMinusDelayComp = index - context->delayCompensation;
@@ -1697,7 +1704,8 @@ void OrbishAudioProcessor::handlePlaybackBlock(int start, int stop) {
                 else {
                     index = *track->LoopDuration + indexMinusDelayComp;
                 }
-                int currentPlayBuffer = track->getActivePlaybackLayer()->index;
+
+                int currentPlayBuffer = activeLayer->index;
                 if (track->Recording) {
                     // if in overdub mode decrement current play buffer as the uppermost buffer is used for recording
                     if (track->getRecordMode() == 0) {
@@ -1764,6 +1772,7 @@ void OrbishAudioProcessor::handlePlaybackBlock(int start, int stop) {
                                 // write fade out with signal from unadjusted position
                                 fadeOut = fadeIn = std::min(reSync->getCurrentOffset(), context->samplesPerBlock - targetIndex);
                                 adjustedPosition = track->getAdjustedLoopPosition(sourceIndex, reSync->getTotalOffset());
+                                fadeIn = std::min(*track->LoopDuration - adjustedPosition - 1, fadeIn);
                                 temp->addFromWithRamp(c
                                                       , targetIndex
                                                       , (*track->Layers)[l]->Buffer->getReadPointer(c, sourceIndex)
@@ -1789,7 +1798,8 @@ void OrbishAudioProcessor::handlePlaybackBlock(int start, int stop) {
                                     || track->FirstSoloBuffer
                                     || track->LastMuteBuffer
                                     || (track->getActivePlaybackLayer()->index == l && track->getActivePlaybackLayer()->FirstLayerBuffer)) {
-                                    fadeIn = std::min(samplesToRead, context->fadeTime);
+                                    int diffToEnd = adjustedPosition - *track->LoopDuration;
+                                    fadeIn = std::min(std::abs(diffToEnd),std::min(samplesToRead, context->fadeTime));
                                     temp->addFromWithRamp(c
                                                           , targetIndex
                                                           , (*track->Layers)[l]->Buffer->getReadPointer(c, sourceIndex)
@@ -1838,6 +1848,7 @@ void OrbishAudioProcessor::handlePlaybackBlock(int start, int stop) {
 //                                context->logMessage("temp->getNumSamples(): " + String(temp->getNumSamples()));
 
                             }
+                            
                             temp->addFrom(c
                                           , targetIndex + fadeIn
                                           , (*track->Layers)[l]->Buffer->getReadPointer(c, adjustedPosition + fadeIn)
@@ -2011,7 +2022,7 @@ bool OrbishAudioProcessor::loadFromValueTree(ValueTree* tree) {
 }
 
 bool OrbishAudioProcessor::loadTrackFromValueTree(ValueTree* trackTree, Track* track) {
-    int numLoopsToLoad = trackTree->getNumChildren();
+    int numLoopsToLoad = trackTree->getNumChildren() - 1;
     for (auto i = 0;i < numLoopsToLoad;++i) {
         ValueTree lChild(trackTree->getChild(i));
         auto loopIdx = int(lChild.getProperty("index", -1));
@@ -2062,6 +2073,7 @@ bool OrbishAudioProcessor::loadLoopFromValueTree(ValueTree* loopTree, Loop* loop
             layer->dirty = true;
         }
     }
+    loop->activePlaybackLayer = loop->Layers[loop->CurrentTop];
     return true;
 }
 

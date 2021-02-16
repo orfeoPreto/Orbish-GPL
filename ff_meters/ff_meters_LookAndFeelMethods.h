@@ -618,6 +618,7 @@ void drawMeterBarBackground (juce::Graphics& g,
     g.fillRect  (bounds);
 
     g.setColour (findColour (FFAU::LevelMeter::lmMeterOutlineColour));
+    if(bounds.getWidth() <0 ||bounds.getHeight() <0)return;
     g.drawRect (bounds, 1.0);
 }
 

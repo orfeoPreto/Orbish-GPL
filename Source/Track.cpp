@@ -313,7 +313,9 @@ void Track::RemoveAllLayers() {
     }
     Layers->clear();
     *CurrentTop = -1;
-    ActiveLoop->activePlaybackLayer  = ActiveLoop->activeRecordingLayer = nullptr;
+    //ActiveLoop->activePlaybackLayer  = ActiveLoop->activeRecordingLayer = nullptr;
+    setActivePlaybackLayer(nullptr);
+    setActiveRecordingLayer(nullptr);
 }
 
 int Track::BounceHistory(int startCheckPoint, int endCheckPoint) {
@@ -334,7 +336,10 @@ int Track::BounceHistory(int startCheckPoint, int endCheckPoint) {
         if ((*Layers)[i]->Checkpoint == endCheckPoint)
             break;
     }
-    ActiveLoop->activePlaybackLayer  = ActiveLoop->activeRecordingLayer = (*Layers)[*CurrentTop];
+    auto l = (*Layers)[*CurrentTop];
+    setActivePlaybackLayer(l);
+    setActiveRecordingLayer(l);
+
     return startIdx;
 }
 
@@ -358,11 +363,16 @@ void Track::BounceAllHistory() {
     while (Layers->size() > 1) {
         RemoveTopLayer();
     }
-    ActiveLoop->activePlaybackLayer  = ActiveLoop->activeRecordingLayer = (*Layers)[0];
+    auto l = (*Layers)[0];
+    setActivePlaybackLayer(l);
+    setActiveRecordingLayer(l);
     UpdateLoopVisualizer();
 }
 
 int Track::getAdjustedLoopPosition(int currentIndex, int adjustment){
+    if (Reverse) {
+        adjustment *= -1;
+    }
     if (adjustment >= 0) {
         if (currentIndex + adjustment > *LoopDuration) {
             return currentIndex + adjustment - *LoopDuration;
@@ -421,8 +431,9 @@ void Track::StartRecordingBefore()
 //        ActiveLoop->activeRecordingLayer = (*Layers)[*CurrentTop];
     }
     else if (getRecordMode() < 3 && *CurrentTop < Layers->size() - uint(1)) {
-       ActiveLoop->activePlaybackLayer = (*Layers)[*CurrentTop];
-       ActiveLoop->activeRecordingLayer = (*Layers)[*CurrentTop];
+        auto l = (*Layers)[*CurrentTop];
+        setActivePlaybackLayer(l);
+        setActiveRecordingLayer(l);
     }
     // actually start Recording
     Recording = true;
@@ -999,7 +1010,15 @@ void Track::setAutoTrigger(bool newValue){
 Layer* Track::getActivePlaybackLayer(){
     if(nullptr == ActiveLoop->activePlaybackLayer){
         *CurrentTop = getLimit();
-        ActiveLoop->activePlaybackLayer = (*Layers)[*CurrentTop];
+        if (*CurrentTop >= Layers->size()){
+            *CurrentTop = getLimit();
+        }
+        setActivePlaybackLayer((*Layers)[*CurrentTop]);
+    }
+    auto b = ActiveLoop->activePlaybackLayer->Buffer;
+    if (nullptr==b){
+        *CurrentTop = getLimit();
+        setActivePlaybackLayer((*Layers)[*CurrentTop]);
     }
     return ActiveLoop->activePlaybackLayer;
     

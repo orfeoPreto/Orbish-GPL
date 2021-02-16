@@ -174,6 +174,7 @@ void OrbishAudioProcessorEditor::createNewProject() {
 		alert->setVisible(false);
 	}
 	int zero = 0;
+    processor.processStopAllChange();
 	processor.changeTrack(zero);
 	doChangeTrack();
 	for (auto i = tracks.size() - 1;i > 0;i--) {
@@ -328,7 +329,8 @@ void OrbishAudioProcessorEditor::askUserToOpenFile() {
 		if (save) { saveProject(); };
 	}
 	int zero = 0;
-	processor.changeTrack(zero);
+    processor.processStopAllChange();
+    processor.changeTrack(zero);
 	doChangeTrack();
     
 	for (auto i = processor.tracks.size() - 1;i > 0;i--) {
@@ -395,17 +397,16 @@ void OrbishAudioProcessorEditor::changeListenerCallback (ChangeBroadcaster* ){
 
 void OrbishAudioProcessorEditor::timerCallback(){
     // update thumbnail from ringbuffer
-	BufferForVisualisation* b;
+    std::shared_ptr<BufferForVisualisation> b;
 	if (processor.context->xchange->readVisualisationBufferQueue->read_available()) {
 		processor.context->xchange->readVisualisationBufferQueue->pop(b);
-        if(nullptr == b->buffer){
-            b->buffer = new AudioBuffer<float>();
-            b->buffer->setSize(processor.context->audioOutputsCount, 0);
+        if(nullptr != b->buffer &&
+           b->buffer->getNumChannels() <= processor.context->audioOutputsCount &&
+           b->buffer->getNumChannels() > 0
+           ){
+            updateLoopVisualiser(*b->buffer, b->numSamples);
         }
-		updateLoopVisualiser(*b->buffer, b->numSamples);
-        b->buffer = nullptr;
-		String s = String(pointer_sized_int(b));
-		delete b;
+       // b->buffer = nullptr;
 	}
     
     // run ACT methods in response to flags set by notification callbacks
@@ -664,12 +665,16 @@ AudioThumbnail* OrbishAudioProcessorEditor::getThumbnailInstance(){
 }
 
 bool OrbishAudioProcessorEditor::getReverseState(){
-  //  if (0 == reverseState)return true;
-    if (reverseState == Off ){
-        return true;
-    }
-    else {
-        return false;
+    switch(reverseState){
+        case On:
+            return false;
+            break;
+        case Off:
+            return true;
+            break;
+        default:
+            return false;
+            break;
     }
 }
 
