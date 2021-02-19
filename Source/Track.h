@@ -34,7 +34,7 @@ public:
     
 	OwnedArray<Loop> loops;
 	Loop* ActiveLoop;
-	std::vector<Layer*>* Layers;
+	std::vector<std::shared_ptr<Layer> >* Layers;
 	uint32 Index = 0;
 	bool Recording = false;
 	int* CurrentPlayingIndex = nullptr;
@@ -71,7 +71,7 @@ public:
 	double* Progress;
     Realignment* realignment;
     
-	Layer* AddLayer(bool incrementTop);
+	std::shared_ptr<Layer> AddLayer(bool incrementTop);
 
 	void RemoveTopLayer();
     
@@ -185,10 +185,10 @@ public:
     void processNewLoop();
     void processRemoveLoop();
 
-    Layer* getActivePlaybackLayer();
-    void setActivePlaybackLayer(Layer*);
-    Layer* getActiveRecordingLayer();
-    void setActiveRecordingLayer(Layer*);
+    std::shared_ptr<Layer> getActivePlaybackLayer();
+    void setActivePlaybackLayer(std::shared_ptr<Layer>);
+    std::shared_ptr<Layer> getActiveRecordingLayer();
+    void setActiveRecordingLayer(std::shared_ptr<Layer>);
     void setMuteArmed(bool newValue);
     void setSoloArmed(bool newValue);
     void setStopArmed(bool newValue);

@@ -27,7 +27,7 @@ public:
     ~GainModifier();
     void applyGain();
     
-    AudioBuffer<float>* buffer;
+    std::shared_ptr<AudioBuffer<float> > buffer;
     int startIndex=0;
     int numberOfSamples=0;
     float startLevel=0;

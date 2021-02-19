@@ -272,10 +272,8 @@ void Track::RegisterLoop(int loopIdx){
 }
 
 void Track::AddLoop(){
-    auto* l = new Loop();
-    l->Index = loops.size();
+    auto* l = new Loop(loops.size());
     loops.add(l);
-    l->Layers.reserve(100);
 }
 
 void Track::RemoveLoop(){
@@ -284,7 +282,7 @@ void Track::RemoveLoop(){
     }
 }
 
-Layer* Track::AddLayer(bool incrementTop) {
+std::shared_ptr<Layer> Track::AddLayer(bool incrementTop) {
     LayersReady = false;
     ActiveLoop->AddLayer(incrementTop, context);
     LayersReady = true;
@@ -294,33 +292,24 @@ Layer* Track::AddLayer(bool incrementTop) {
 
 
 void Track::RemoveTopLayer() {
-    
-    auto* layer = Layers->back();
     Layers->pop_back();
-//    if(layer->index == ActiveLoop->activeLayer->index){
-//        ActiveLoop->activeLayer = Layers->back();
-//    }
-    delete layer->Buffer;
     if (*CurrentTop > int(Layers->size()) - 1)
         *CurrentTop = int(Layers->size()) -1;
 }
 
 void Track::RemoveAllLayers() {
     while (Layers->size() > 0) {
-        auto* layer = Layers->back();
-        delete layer->Buffer;
         Layers->pop_back();
     }
     Layers->clear();
     *CurrentTop = -1;
-    //ActiveLoop->activePlaybackLayer  = ActiveLoop->activeRecordingLayer = nullptr;
     setActivePlaybackLayer(nullptr);
     setActiveRecordingLayer(nullptr);
 }
 
 int Track::BounceHistory(int startCheckPoint, int endCheckPoint) {
     int startIdx = -1;
-    AudioBuffer<float>* startBuffer = nullptr;
+    std::shared_ptr<AudioBuffer<float> > startBuffer = nullptr;
     for (uint i = 0; i < Layers->size(); i++) {
         if ((*Layers)[i]->Checkpoint == startCheckPoint) {
             startIdx = i;
@@ -705,7 +694,7 @@ void Track::UpdateLoopVisualizer(){
     if (guiAlive) {
         if (context->xchange->writeVisualisationBufferQueue->read_available()
             && context->xchange->readVisualisationBufferQueue->write_available()) {
-            BufferForVisualisation* b;
+            std::shared_ptr<BufferForVisualisation> b;
             context->xchange->writeVisualisationBufferQueue->pop(b);
             if (*CurrentTop >= 0) {
                 int index = std::max((*Layers)[*CurrentTop]->dirty ? *CurrentTop : *CurrentTop - 1, 0);
@@ -1007,7 +996,7 @@ void Track::setAutoTrigger(bool newValue){
     state->setProperty("trigger", newValue, nullptr);
 }
 
-Layer* Track::getActivePlaybackLayer(){
+std::shared_ptr<Layer> Track::getActivePlaybackLayer(){
     if(nullptr == ActiveLoop->activePlaybackLayer){
         *CurrentTop = getLimit();
         if (*CurrentTop >= Layers->size()){
@@ -1023,14 +1012,14 @@ Layer* Track::getActivePlaybackLayer(){
     return ActiveLoop->activePlaybackLayer;
     
 }
-void Track::setActivePlaybackLayer(Layer* l){
+void Track::setActivePlaybackLayer(std::shared_ptr<Layer> l){
     ActiveLoop->activePlaybackLayer = l;
 }
-Layer* Track::getActiveRecordingLayer(){
+std::shared_ptr<Layer> Track::getActiveRecordingLayer(){
     return ActiveLoop->activeRecordingLayer;
     
 }
-void Track::setActiveRecordingLayer(Layer* l){
+void Track::setActiveRecordingLayer(std::shared_ptr<Layer> l){
     ActiveLoop->activeRecordingLayer = l;
 }
 

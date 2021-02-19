@@ -12,18 +12,10 @@
 #include <deque>
 #include <boost/lockfree/spsc_queue.hpp>
 #include "DataExchange.h"
-//#include "TrackGroup.hpp"
 
 typedef unsigned int uint;
 
-struct Layer {
-	AudioBuffer<float>* Buffer{};
-    int Checkpoint = -1;
-	bool dirty = false;
-    int index = 0;
-    bool FirstLayerBuffer = false;
-    bool LastLayerBuffer = false;
-};
+
 
 struct OrbishContext {
 	OrbishContext() {
@@ -92,7 +84,6 @@ struct OrbishContext {
 	int timeSigBottom;
 	int timeSigTop;
 	int hey;
-	boost::lockfree::spsc_queue<Layer*, boost::lockfree::capacity<3> > * layerQueue;
 	DataExchange* xchange;
     bool loggingActive = false;
     int clickStart=-1, clickStop=0;

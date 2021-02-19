@@ -130,7 +130,7 @@ OrbishAudioProcessorEditor::OrbishAudioProcessorEditor (OrbishAudioProcessor& p,
     for (auto track : processor.tracks) {
         doCreateTrack(track->Index);
     }
-    tracks.getFirst()->setActive(true);
+    tracks[processor.activeTrack->Index]->setActive(true);
 
     setSize (1300, 800);
 }
@@ -405,6 +405,9 @@ void OrbishAudioProcessorEditor::timerCallback(){
            b->buffer->getNumChannels() > 0
            ){
             updateLoopVisualiser(*b->buffer, b->numSamples);
+        }else{
+            AudioBuffer<float> dummy{};
+            updateLoopVisualiser(dummy, 0);
         }
        // b->buffer = nullptr;
 	}

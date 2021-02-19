@@ -13,7 +13,7 @@
 #ifndef Processor_h
 #define Processor_h
 
-#include "../JuceLibraryCode/JuceHeader.h"
+#include "JuceHeader.h"
 #include "Track.h"
 #include "MidiProcessor.h"
 #include "TrackGroup.h"

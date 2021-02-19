@@ -2,15 +2,15 @@
 #include <boost/lockfree/spsc_queue.hpp>
 #include "JuceHeader.h"
 #include "GainModifier.h"
+#include "Layer.h"
 
 
 class BufferForVisualisation{
 public:
 	BufferForVisualisation() {}
 	~BufferForVisualisation() {
-		delete buffer;
 	}
-	AudioBuffer<float>* buffer;
+	std::shared_ptr<AudioBuffer<float> > buffer;
     int numSamples = 0;
 };
 
@@ -31,31 +31,29 @@ class DataExchange
 {
 public:
 	DataExchange() {
-		writeVisualisationBufferQueue = new boost::lockfree::spsc_queue<BufferForVisualisation*, boost::lockfree::capacity<3> >;
-		readVisualisationBufferQueue = new boost::lockfree::spsc_queue<BufferForVisualisation*, boost::lockfree::capacity<3> >;
+		writeVisualisationBufferQueue = new boost::lockfree::spsc_queue<std::shared_ptr<BufferForVisualisation>, boost::lockfree::capacity<3> >;
+		readVisualisationBufferQueue = new boost::lockfree::spsc_queue<std::shared_ptr<BufferForVisualisation>, boost::lockfree::capacity<3> >;
         logWriteMessageQueue = new boost::lockfree::spsc_queue<std::string*, boost::lockfree::capacity<10000> >;
         logReadMessageQueue = new boost::lockfree::spsc_queue<std::string*, boost::lockfree::capacity<10000> >;
-        readBufferQueue = new boost::lockfree::spsc_queue<AudioBuffer<float>*, boost::lockfree::capacity<200> >;
-        deleteBufferQueue = new boost::lockfree::spsc_queue<AudioBuffer<float>*, boost::lockfree::capacity<200> >;
+        readBufferQueue = new boost::lockfree::spsc_queue<std::shared_ptr<AudioBuffer<float> >, boost::lockfree::capacity<200> >;
         writeGainModifierQueue = new boost::lockfree::spsc_queue<GainModifier*, boost::lockfree::capacity<200> >;
         readGainModifierQueue = new boost::lockfree::spsc_queue<GainModifier*, boost::lockfree::capacity<200> >;
         writeMeasureBufferQueue = new boost::lockfree::spsc_queue<MeasureBuffer*, boost::lockfree::capacity<10> >;
         readMeasureBufferQueue = new boost::lockfree::spsc_queue<MeasureBuffer*, boost::lockfree::capacity<10> >;
+        layerQueue = new boost::lockfree::spsc_queue<std::shared_ptr<Layer>, boost::lockfree::capacity<3> >;
 	}
 	~DataExchange() {
 
 	}
 
-	boost::lockfree::spsc_queue<BufferForVisualisation*, boost::lockfree::capacity<3> >* writeVisualisationBufferQueue;
-	boost::lockfree::spsc_queue<BufferForVisualisation*, boost::lockfree::capacity<3> >* readVisualisationBufferQueue;
+	boost::lockfree::spsc_queue<std::shared_ptr<BufferForVisualisation>, boost::lockfree::capacity<3> >* writeVisualisationBufferQueue;
+	boost::lockfree::spsc_queue<std::shared_ptr<BufferForVisualisation>, boost::lockfree::capacity<3> >* readVisualisationBufferQueue;
 	bool writeBufferDirty = false;
 
     boost::lockfree::spsc_queue<std::string*, boost::lockfree::capacity<10000> >* logReadMessageQueue;
     boost::lockfree::spsc_queue<std::string*, boost::lockfree::capacity<10000> >* logWriteMessageQueue;
 
-    boost::lockfree::spsc_queue<AudioBuffer<float>*, boost::lockfree::capacity<200> >* readBufferQueue;
-    boost::lockfree::spsc_queue<AudioBuffer<float>*, boost::lockfree::capacity<200> >* deleteBufferQueue;
-
+    boost::lockfree::spsc_queue<std::shared_ptr<AudioBuffer<float> >, boost::lockfree::capacity<200> >* readBufferQueue;
     
     boost::lockfree::spsc_queue<MeasureBuffer*, boost::lockfree::capacity<10> >* writeMeasureBufferQueue;
 
@@ -63,5 +61,7 @@ public:
     
     boost::lockfree::spsc_queue<GainModifier*, boost::lockfree::capacity<200> >* writeGainModifierQueue;
     boost::lockfree::spsc_queue<GainModifier*, boost::lockfree::capacity<200> >* readGainModifierQueue;
+    boost::lockfree::spsc_queue<std::shared_ptr<Layer>, boost::lockfree::capacity<3> > * layerQueue;
+
 };
 
