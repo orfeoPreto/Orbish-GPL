@@ -15,7 +15,7 @@ class SettingsPage:public Component,
 	public Label::Listener {
 public:
 	SettingsPage();
-	SettingsPage(bool loggingActive, int maxHistory, int tracksPerRow, int latency);
+	SettingsPage(bool, bool , int , int , int );
 
 	
 	~SettingsPage();
@@ -35,6 +35,8 @@ public:
     Component bottom;
 	TextButton activateLoggingButton;
 	Label activateLoggingLabel;
+    TextButton monitoringButton;
+    Label monitoringLabel;
 	TextButton closeSettingsButton;
 	Label latencyLabel;
     OrbishSlider latencySlider;

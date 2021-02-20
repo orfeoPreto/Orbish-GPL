@@ -257,7 +257,7 @@ void Track::RegisterLoop(int loopIdx){
         Progress = &(ActiveLoop->Progress);
         LoopDuration = &(ActiveLoop->LoopDuration);
         CurrentPlayingIndex = &(ActiveLoop->CurrentPlayingIndex);
-        Layers = &(ActiveLoop->Layers);
+        Layers = ActiveLoop->Layers;
 //        if(Layers->size() < 1){
 //            AddLayer(true);
 //        }

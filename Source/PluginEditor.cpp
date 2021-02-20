@@ -137,7 +137,7 @@ OrbishAudioProcessorEditor::OrbishAudioProcessorEditor (OrbishAudioProcessor& p,
 
 
 void OrbishAudioProcessorEditor::showSettingsPage() {
-	settingsPage = std::make_shared<SettingsPage>(processor.context->loggingActive, processor.context->maxUndoHistory, nbrTracksInARow, processor.context->delayCompensation );
+	settingsPage = std::make_shared<SettingsPage>(processor.context->postMixMonitoring, processor.context->loggingActive, processor.context->maxUndoHistory, nbrTracksInARow, processor.context->delayCompensation );
 	settingsPage->addListener(this);
     settingsPage->setLookAndFeel(&getLookAndFeel());
 	addAndMakeVisible(*settingsPage);
@@ -447,8 +447,8 @@ String OrbishAudioProcessorEditor::saveBuffer(int trackIdx
 	}
 	auto l = t->loops[loopIdx];
     if (nullptr == l)return String();
-	if (l->Layers.size() <= layerIdx) { return String(); }
-	auto layer = l->Layers[layerIdx];
+	if (l->Layers->size() <= layerIdx) { return String(); }
+    std::shared_ptr<Layer> layer = l->Layers.get()->at(layerIdx);
 	if (layer->Buffer->getNumSamples() == 0) {
 		return String();
 	}
@@ -720,6 +720,9 @@ void OrbishAudioProcessorEditor::clicked(Button* button) {
 	if (button == &settingsPage->activateLoggingButton) {
 			processor.context->loggingActive = button->getToggleState();
 	}
+    if (button == &settingsPage->monitoringButton) {
+            processor.context->postMixMonitoring = button->getToggleState();
+    }
 }
 
 void OrbishAudioProcessorEditor::sliderChanged(Slider* slider) {

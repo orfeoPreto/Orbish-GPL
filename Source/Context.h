@@ -64,10 +64,10 @@ struct OrbishContext {
 	std::thread allocatorThread;
 	int defaultLoopLength; // 60 seconds max activeTrack.Recording
 	float timeRatio;
-	AudioBuffer<float>* buffer = nullptr;
-    AudioBuffer<float>* inputBuffer = nullptr;
-    std::unique_ptr<AudioBuffer<float>> clickBuffer;
-    std::unique_ptr<AudioBuffer<float>> barStartClickBuffer;
+	std::shared_ptr<AudioBuffer<float> > buffer = nullptr;
+    std::shared_ptr<AudioBuffer<float> > inputBuffer = nullptr;
+    std::unique_ptr<AudioBuffer<float> > clickBuffer;
+    std::unique_ptr<AudioBuffer<float> > barStartClickBuffer;
 	int samplesPerBlock;
 	Observer* observer;
 	int trackCount;
@@ -86,6 +86,7 @@ struct OrbishContext {
 	int hey;
 	DataExchange* xchange;
     bool loggingActive = false;
+    bool postMixMonitoring = false;
     int clickStart=-1, clickStop=0;
     int64 timestamp = 0;
     float maxDelta = 0.1;

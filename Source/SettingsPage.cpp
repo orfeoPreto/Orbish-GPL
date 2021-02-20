@@ -2,12 +2,16 @@
 
 SettingsPage::SettingsPage() {}
 
-SettingsPage::SettingsPage(bool loggingActive, int maxHistory, int tracksPerRow, int latency) {
+SettingsPage::SettingsPage(bool monitoring, bool loggingActive, int maxHistory, int tracksPerRow, int latency) {
 	addAndMakeVisible(settingsCentre);
 	activateLoggingButton.setClickingTogglesState(true);
 	activateLoggingButton.addListener(this);
 	activateLoggingButton.setToggleState(loggingActive, NotificationType::sendNotification);
 	settingsCentre.addAndMakeVisible(activateLoggingButton);
+    monitoringButton.setClickingTogglesState(true);
+    monitoringButton.addListener(this);
+    monitoringButton.setToggleState(monitoring, NotificationType::sendNotification);
+    settingsCentre.addAndMakeVisible(monitoringButton);
 	settingsCentre.addAndMakeVisible(closeSettingsButton);
 	addAndMakeVisible(right);
 	addAndMakeVisible(left);
@@ -63,6 +67,8 @@ SettingsPage::SettingsPage(bool loggingActive, int maxHistory, int tracksPerRow,
     
 	activateLoggingLabel.setText("Activate Logging: ", NotificationType::dontSendNotification);
 	settingsCentre.addAndMakeVisible(activateLoggingLabel);
+    monitoringLabel.setText("Monitoring Pre/Post Mix: ", NotificationType::dontSendNotification);
+    settingsCentre.addAndMakeVisible(monitoringLabel);
 }
 SettingsPage::~SettingsPage() {
 }
@@ -84,7 +90,6 @@ void SettingsPage::paint(Graphics& g){
 }
 void SettingsPage::resized(){
 	settingsCentre.setBounds(getWidth() * .2f, getHeight() * .2f, getWidth() * .6f, getHeight() * .6f);
-	activateLoggingButton.setBounds(margin, margin, buttonSize, buttonSize);
 	closeSettingsButton.setBounds(settingsCentre.getWidth() - margin - buttonSize, margin, buttonSize, buttonSize);
 	top.setBounds(0, 0, getWidth(), getHeight() * .2f);
 bottom.setBounds(0, getHeight() - getHeight() * .2f, getWidth(), getHeight() * .2f);
@@ -98,6 +103,8 @@ maxUndoHistorySlider.setBounds(160, 70, 50, 15);
     tracksPerRowSlider.setBounds(160,105,50,15);
     activateLoggingLabel.setBounds(10, 130, 150, 15);
     activateLoggingButton.setBounds(160,135,15,15);
+    monitoringLabel.setBounds(10, 165, 150, 15);
+    monitoringButton.setBounds(160,170,15,15);
     
 }
 void SettingsPage::buttonClicked(Button* button){

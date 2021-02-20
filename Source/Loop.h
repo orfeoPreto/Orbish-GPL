@@ -12,11 +12,12 @@ class Loop
 public:
     Loop(int index){
         Index = index;
-        Layers.reserve(100);
+        Layers = std::make_shared<std::vector<std::shared_ptr<Layer> > >();
+        Layers->reserve(100);
     };
     ~Loop(){};
 
-	std::vector<std::shared_ptr<Layer>> Layers;
+	std::shared_ptr<std::vector<std::shared_ptr<Layer> > > Layers;
 	uint32 Index = 0;
 	int CurrentPlayingIndex = 0;
 	int LoopDuration = 0;
@@ -43,15 +44,15 @@ public:
 //				l = context->layerQueue->front();
 //            } while (l != nullptr && l->Buffer->getNumChannels() == 0);
             l = context->xchange->layerQueue->front();
-            l->index = int(Layers.size());
-			Layers.push_back(l);
+            l->index = int(Layers->size());
+			Layers->push_back(l);
 				end1 = Time::getHighResolutionTicks();
 				start2 = Time::getHighResolutionTicks();
 			context->xchange->layerQueue->pop();
 				end2 = Time::getHighResolutionTicks();
 				context->logMessage("time for Layers->add: " + String(end1 - start1));
 				context->logMessage("time for pop_front: " + String(end2 - start2));
-			if (incrementTop) CurrentTop = int(Layers.size()) - 1;
+			if (incrementTop) CurrentTop = int(Layers->size()) - 1;
 		}
 		LayersReady = true;
 	}

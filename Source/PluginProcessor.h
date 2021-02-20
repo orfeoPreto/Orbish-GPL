@@ -160,8 +160,8 @@ public:
     bool aTrackIsSoloed = false;
     double previousMixLevel = -1;
     bool changingTrack = false;
-    Synchronizer* primarySynchronizer;
-    Synchronizer* secondarySynchronizer;
+    std::unique_ptr<Synchronizer> primarySynchronizer;
+    std::unique_ptr<Synchronizer> secondarySynchronizer;
     //===========^*==================================================================
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (OrbishAudioProcessor)
 };

@@ -121,8 +121,8 @@ parameters(*this, nullptr, "OrbishState", {
 })
 {
     context = new OrbishContext();
-    context->buffer = new AudioBuffer<float>();
-    context->inputBuffer = new AudioBuffer<float>();
+    context->buffer = std::make_shared<AudioBuffer<float> >();
+    context->inputBuffer = std::make_shared<AudioBuffer<float> >();
 
     context->feedback = Decibels::decibelsToGain(float(-0.3));
     context->mix = Decibels::decibelsToGain(parameters.getParameter("globalMix")->getValue());
@@ -137,8 +137,8 @@ parameters(*this, nullptr, "OrbishState", {
 //    std::unique_ptr<AudioFormatReader> reader2(formatMgr->createReaderFor(std::make_unique<MemoryInputStream>( BinaryData::BellsTriangle_1_Mute_aif,BinaryData::BellsTriangle_1_Mute_aifSize, false)));
 //    context->barStartClickBuffer = std::make_unique<AudioSampleBuffer>(reader2->numChannels, (int)reader2->lengthInSamples);
     
-    primarySynchronizer =  new HostSynchronizer(context);
-    secondarySynchronizer =  new InternalSynchronizer(context,nullptr);
+    primarySynchronizer = std::make_unique<HostSynchronizer>(context);
+    secondarySynchronizer =  std::make_unique<InternalSynchronizer>(context,nullptr);
     context->allocatorThread = std::thread(
                                            [this] {
         File file = File(File::getSpecialLocation(File::userHomeDirectory)).getChildFile("Orbish").getChildFile("Orbish.log");
@@ -148,6 +148,11 @@ parameters(*this, nullptr, "OrbishState", {
         }
         while (keepRunning) {
             if (context->audioInputsCount > 0) {
+                if(context->xchange->resetBuffers.get()){
+                    context->xchange->layerQueue->reset();
+                    context->xchange->readBufferQueue->reset();
+                    context->xchange->resetBuffers = false;
+                }
                 if (context->xchange->layerQueue->write_available() > 0) {
                     auto l = std::make_shared<Layer>(context->audioInputsCount, context->allocatedLength);
                     if (l->Buffer->getNumChannels() == 0
@@ -208,7 +213,7 @@ parameters(*this, nullptr, "OrbishState", {
                 context->xchange->readBufferQueue->push(rb);
             };
             while (context->xchange->writeGainModifierQueue->write_available() > 0){
-                auto gm = new GainModifier();
+                auto gm = std::make_shared<GainModifier>();
                 context->xchange->writeGainModifierQueue->push(gm);
             };
             while (context->xchange->readGainModifierQueue->read_available() > 0){
@@ -216,10 +221,9 @@ parameters(*this, nullptr, "OrbishState", {
                 context->xchange->readGainModifierQueue->pop();
                 gm->applyGain();
                 gm->buffer = nullptr;
-                delete gm;
             };
             while (context->xchange->writeMeasureBufferQueue->write_available() > 0){
-                auto mb = new MeasureBuffer();
+                auto mb = std::make_shared<MeasureBuffer>();
                 mb->buffer = nullptr;
                 context->xchange->writeMeasureBufferQueue->push(mb);
             };
@@ -227,8 +231,6 @@ parameters(*this, nullptr, "OrbishState", {
                 auto mb = context->xchange->readMeasureBufferQueue->front();
                 context->xchange->readMeasureBufferQueue->pop();
                 mb->measure();
-                mb->buffer = nullptr;
-                delete mb;
             };
         }
     }
@@ -410,41 +412,12 @@ void OrbishAudioProcessor::prepareToPlay(double sampleRate, int samplesPerBlock)
     if (context == nullptr) {
         context = new OrbishContext();
     }
-    bool channelSizeOk = false;
-    int counter = 0;
     if (getTotalNumOutputChannels() != context->audioOutputsCount) {
-        auto firstRun = context->audioOutputsCount == 0;
         context->audioInputsCount = getTotalNumInputChannels();
         context->audioOutputsCount = getTotalNumOutputChannels();
         context->buffer->setSize(context->audioInputsCount, samplesPerBlock);
         context->inputBuffer->setSize(context->audioInputsCount, samplesPerBlock);
-        do{
-            if(context->xchange->layerQueue->read_available() > 0){
-                auto ly = context->xchange->layerQueue->front();
-                if (ly->Buffer->getNumChannels() == context->audioOutputsCount) {
-                    channelSizeOk = true;
-                }else{
-                    context->xchange->layerQueue->pop();
-                }
-            }else{
-                std::this_thread::sleep_for(std::chrono::milliseconds(1));
-                ++counter;
-            }
-        } while (!(channelSizeOk || (firstRun && counter >= 1000)));
-        counter = 0;
-        bool bufferSizeOk= false;
-        do{
-            if(context->xchange->readBufferQueue->read_available() > 0){
-                auto db = context->xchange->readBufferQueue->front();
-                if (db->getNumSamples() == samplesPerBlock) {
-                    bufferSizeOk = true;
-                }else{
-                    context->xchange->readBufferQueue->pop();
-                }
-            }else{
-                ++counter;
-            }
-        } while (!(bufferSizeOk || counter >= 100000));
+        context->xchange->resetBuffers = true;
     }
     
     context->allocatedLength = int(sampleRate * context->defaultLoopLength);
@@ -468,20 +441,7 @@ void OrbishAudioProcessor::prepareToPlay(double sampleRate, int samplesPerBlock)
             track->realignment->setRealigned(true);
             track->realignment->setBlockSize(samplesPerBlock);
         }
-        counter = 0;
-        bool bufferSizeOk= false;
-        do{
-            if(context->xchange->readBufferQueue->read_available() > 0){
-                auto db = context->xchange->readBufferQueue->front();
-                if (db->getNumSamples() == samplesPerBlock) {
-                    bufferSizeOk = true;
-                }else{
-                    context->xchange->readBufferQueue->pop();
-                }
-            }else{
-                ++counter;
-            }
-        } while (!(bufferSizeOk || counter >= 100000));
+        context->xchange->resetBuffers = true;
     }
     if (sampleRate != context->sampleRate) {
         context->sampleRate = int(sampleRate);
@@ -1235,8 +1195,12 @@ void OrbishAudioProcessor::processBlock(AudioBuffer<float>& buffer, MidiBuffer& 
     context->buffer->clear();
     context->inputBuffer->clear();
     for (uint c = 0; c < context->audioInputsCount; ++c) {
-        smoothVolume(activeTrack->PreviousInputLevel, activeTrack->getInputLevel(), std::min(context->maxBlockSize, buffer.getNumSamples()), &buffer, context->buffer, c);
-        context->inputBuffer->copyFrom(c, 0, buffer.getReadPointer(c, 0),  context->maxBlockSize);
+        smoothVolume(activeTrack->PreviousInputLevel, activeTrack->getInputLevel(), std::min(context->maxBlockSize, buffer.getNumSamples()), &buffer, context->buffer.get(), c);
+        if(context->postMixMonitoring){
+            context->inputBuffer->copyFrom(c, 0, context->buffer->getReadPointer(c, 0),  context->maxBlockSize);
+        }else{
+            context->inputBuffer->copyFrom(c, 0, buffer.getReadPointer(c, 0),  context->maxBlockSize);
+        }
         //        const float* pt = buffer.getReadPointer(c);
         //        const float* pt2 = context->buffer->getReadPointer(c);
         
@@ -1306,8 +1270,9 @@ void OrbishAudioProcessor::processBlock(AudioBuffer<float>& buffer, MidiBuffer& 
         }
         if (!activeTrack->isMonitoring()) {
             // prevent input from ending up in the output buffer
-            context->buffer->clear();
+            context->inputBuffer->clear();
         }
+        context->buffer->clear();
         if (context->info->isPlaying) {
             int64 startPlay = Time::getHighResolutionTicks();
             handlePlaybackBlock((e.startReverseSample >= 0) ? e.startReverseSample : e.startPlayingSample, (e.stopReverseSample >= 0) ? e.stopReverseSample : e.stopPlayingSample);
@@ -1330,7 +1295,8 @@ void OrbishAudioProcessor::processBlock(AudioBuffer<float>& buffer, MidiBuffer& 
     // overwrite the output buffer with the processed audio
     for (uint c = 0; c < context->audioInputsCount; ++c) {
         buffer.clear(c, 0, context->maxBlockSize);
-         smoothVolume(previousMixLevel, context->mix, context->maxBlockSize, context->buffer, &buffer, c);
+        context->buffer->addFrom(c, 0, context->inputBuffer->getReadPointer(c, 0),  context->maxBlockSize);
+         smoothVolume(previousMixLevel, context->mix, context->maxBlockSize, context->buffer.get(), &buffer, c);
     }
     int64 endFinal = Time::getHighResolutionTicks();
     
@@ -1361,7 +1327,7 @@ void OrbishAudioProcessor::processBlock(AudioBuffer<float>& buffer, MidiBuffer& 
     //context->logMessage("Final section:" + String(endFinal - startFinal));
     //context->logMessage("Measure section:" + String(endMeasure - startMeasure));
     
-    //  logMessage("begin processBlock");
+    //  logMessage("begin iock");
     int64 diff, endMark = Time::getHighResolutionTicks();
     diff = endMark - beginMark;
     //context->logMessage("nano secs spent in callback:" + String(diff = endMark - beginMark));
@@ -1860,7 +1826,7 @@ void OrbishAudioProcessor::handlePlaybackBlock(int start, int stop) {
                                     context->logMessage("Previously nok");
                                 }
                             }else{
-                                smoothVolume(track->PreviousOutputLevel, track->getOutputLevel(), samplesToRead+tail, temp.get(), context->buffer, c);
+                                smoothVolume(track->PreviousOutputLevel, track->getOutputLevel(), samplesToRead+tail, temp.get(), context->buffer.get(), c);
                             }
                         }
                     }
@@ -2016,10 +1982,10 @@ bool OrbishAudioProcessor::loadLoopFromValueTree(ValueTree* loopTree, Loop* loop
         auto lyChild = loopTree->getChild(i);
         auto layerIdx = int(lyChild.getProperty("index", -1));
         if (layerIdx >= 0) {
-            if (layerIdx == loop->Layers.size()) {
+            if (layerIdx == loop->Layers->size()) {
                 loop->AddLayer(true, context);
             }
-            std::shared_ptr<Layer> layer(loop->Layers[layerIdx]);
+            std::shared_ptr<Layer> layer(loop->Layers.get()->at(layerIdx));
             String filePath = lyChild.getProperty("file");
             if (filePath.isEmpty())return false;
             File file(filePath);
@@ -2045,7 +2011,7 @@ bool OrbishAudioProcessor::loadLoopFromValueTree(ValueTree* loopTree, Loop* loop
             layer->dirty = true;
         }
     }
-    loop->activePlaybackLayer = loop->Layers[loop->CurrentTop];
+    loop->activePlaybackLayer = loop->Layers.get()->at(loop->CurrentTop) ;
     return true;
 }
 

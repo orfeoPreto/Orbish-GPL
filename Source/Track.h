@@ -34,7 +34,7 @@ public:
     
 	OwnedArray<Loop> loops;
 	Loop* ActiveLoop;
-	std::vector<std::shared_ptr<Layer> >* Layers;
+	std::shared_ptr<std::vector<std::shared_ptr<Layer> > > Layers;
 	uint32 Index = 0;
 	bool Recording = false;
 	int* CurrentPlayingIndex = nullptr;
