@@ -39,9 +39,6 @@ int InternalSynchronizer::getNextSample(SnapMode snapMode){
       {
           expectedPos = *currentPos;
       }
-    if(expectedPos < context->maxBlockSize){
-        int bidon = 0;
-    }
     return expectedPos - *currentPos;
 }
 

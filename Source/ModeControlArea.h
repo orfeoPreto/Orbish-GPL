@@ -16,7 +16,10 @@
 //==============================================================================
 /*
 */
-class ModeControlArea  : public juce::Component
+class ModeControlArea  :
+public juce::Component,
+public ComboBox::Listener
+
 {
 public:
     ModeControlArea();
@@ -27,6 +30,8 @@ public:
 
     ComboBox recModeCombo;
     ComboBox snapModeCombo;
+    ComboBox fixedSizeBeatsCombo;
+    void comboBoxChanged (ComboBox*) override;
 
     exu::Label recModeLabel = { {}, {"Record Mode"} };
     exu::Label snapModeLabel = { {}, {"Snap Mode"} };

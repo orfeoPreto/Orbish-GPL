@@ -54,14 +54,14 @@ private:
     void drawLinearSliderBackground (Graphics &, int x, int y, int width, int height, float sliderPos, float minSliderPos, float maxSliderPos, const Slider::SliderStyle style, Slider &) override;
     void drawLinearSliderThumb (Graphics &, int x, int y, int width, int height, float sliderPos, float minSliderPos, float maxSliderPos, const Slider::SliderStyle, Slider &) override;
     int getSliderThumbRadius (Slider &) override;
-	int getPopupMenuColumnSeparatorWidthWithOptions(PopupMenu::Options const&);
+	int getPopupMenuColumnSeparatorWidthWithOptions(PopupMenu::Options const&) override;
 	int getPopupMenuColumnSeparatorWithOptions(Graphics&, Rectangle<int> const&, PopupMenu::Options const&);
-	int getPopupMenuBorderSizeWithOptions(class juce::PopupMenu::Options const&);
-	void getIdealPopupMenuItemSizeWithOptions(class juce::String const&, bool, int, int&, int&, class juce::PopupMenu::Options const&);
-	void drawPopupMenuUpDownArrowWithOptions(class juce::Graphics&, int, int, bool, class juce::PopupMenu::Options const&);
-	void drawPopupMenuSectionHeaderWithOptions(class juce::Graphics&, class juce::Rectangle<int> const&, class juce::String const&, class juce::PopupMenu::Options const&);
-		void drawPopupMenuItemWithOptions(class juce::Graphics&, class juce::Rectangle<int> const&, bool, struct juce::PopupMenu::Item const&, class juce::PopupMenu::Options const&);
-		void drawPopupMenuBackgroundWithOptions(class juce::Graphics&, int, int, class juce::PopupMenu::Options const&);
+	int getPopupMenuBorderSizeWithOptions(class juce::PopupMenu::Options const&) override;
+	void getIdealPopupMenuItemSizeWithOptions(class juce::String const&, bool, int, int&, int&, class juce::PopupMenu::Options const&) override;
+	void drawPopupMenuUpDownArrowWithOptions(class juce::Graphics&, int, int, bool, class juce::PopupMenu::Options const&) override;
+	void drawPopupMenuSectionHeaderWithOptions(class juce::Graphics&, class juce::Rectangle<int> const&, class juce::String const&, class juce::PopupMenu::Options const&) override;
+		void drawPopupMenuItemWithOptions(class juce::Graphics&, class juce::Rectangle<int> const&, bool, struct juce::PopupMenu::Item const&, class juce::PopupMenu::Options const&) override;
+		void drawPopupMenuBackgroundWithOptions(class juce::Graphics&, int, int, class juce::PopupMenu::Options const&) override;
         void drawMenuBarItem (Graphics&, int width, int height,
                                       int itemIndex,
                                       const String& itemText,

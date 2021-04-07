@@ -76,7 +76,11 @@ public:
 	void RemoveTopLayer();
     
     void UpdateLoopVisualizer();
+  
+    void UpdateLoopVisualizer(Layer*);
 
+    void RefreshLoopVisualizer();
+    
     int getAdjustedLoopPosition(int, int);
 
     void AddLoop();
@@ -210,11 +214,13 @@ public:
     bool isMonitoring();
     bool isRecordingArmed();
     bool isAutoTrigger();
+    int fixedSize = 1;
     SnapMode getSnapMode();
     RecordMode getRecordMode();
 	ValueTree* state;
     std::shared_ptr<FileLogger> logger;
     void setState(ValueTree*);
+    std::atomic<bool> refresh;
 private:
 	AudioProcessorValueTreeState& params;
     bool active = false;

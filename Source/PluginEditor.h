@@ -26,6 +26,7 @@
 #include "HeaderArea.h"
 #include "InfoAndControlArea.h"
 #include "TrackArea.h"
+#include "OpenGLComponents.h"
 
 //==============================================================================
 /**
@@ -52,7 +53,9 @@ enum CallBackFlags {
   shouldCreateLoop      = 0x40,
   shouldChangeLoop      = 0x80,
   shouldRemoveLoop      = 0x100,
-  shouldUpdatePlayState   = 0x200
+  shouldUpdatePlayState   = 0x200,
+  shouldChangeLayer      = 0x400,
+  shouldUpdateHostPosition  = 0x600,
 };
 
 
@@ -68,6 +71,8 @@ class OrbishAudioProcessorEditor : public AudioProcessorEditor,
 	public SettingsPage::Listener,
 	private Timer,
 	public DragAndDropContainer
+//    ,public OpenGLRenderer
+
 
 {
 public:
@@ -91,16 +96,20 @@ public:
     void doUpdatePlayState();
     void doRemoveTrack();
     void mouseDrag(const MouseEvent& event) override;
-    void updateLoopVisualiser(const AudioBuffer<float>& buffer, int numSamples) override;
+    void updateLoopVisualiser(AudioBuffer<float>& buffer, int numSamples) override;
     void askToUpdatePlayHead(int position, bool reverse) override;
     void updatePlayHead();
+    void updateHostPosition();
     void doHandleMidiMessages(const MidiBuffer& midiMessages);
+    void doUpdateHostPosition();
     void changeTrack() ;
     void doChangeTrack() ;
     void createLoop();
     void doCreateLoop();
     void askToChangeTrack(int trackNumber) override;
     void askToChangeLoop(int trackNumber, int loopNumber) override;
+    void askToChangeLayer(int trackNumber, int layerNumber) override;
+    void askToUpdateHostPosition(int ) override;
 	String saveBuffer(int trackIdx, int loopIdx, int layerIdx, File dir, String name, bool overwrite);
 	void clicked(Button*) override;
 	void sliderChanged(Slider*) override;
@@ -129,23 +138,39 @@ public:
     void setTracksDirty();
     void toggleLayout();
     OrbishAudioProcessor* getProcessor();
-    AudioThumbnail* getThumbnailInstance();
+    std::shared_ptr<OpenGLAudioThumbnail> getThumbnailInstance();
     bool getReverseState();
     void setUpObserverCallbacks();
     void askToHandleMidiMessages(const MidiBuffer& midiMessages) override;
     void doUpdatePlayHead();
     void changeLoop();
     void doChangeLoop();
+    void changeLayer();
+    void doChangeLayer();
     bool isTrackLayoutHorizontal();
     void logMessage(String);
-    
+    void setupGlobalButtons();
+    void setupGroupingButtons();
+    void setupThumbnail();
+    void setupModeControls(ButtonControlArea*);
+    void setupTransportControls(ButtonControlArea*);
+    void setupNavigationControls(ButtonControlArea*);
+    void setupTracks();
+    void setupWitness();
+    void markActiveTrackForRefresh(bool);
+
+//    void renderOpenGL() override;
+//    
+//    void newOpenGLContextCreated() override;
+//    void openGLContextClosing() override;
 private:
     std::atomic<uint> flags;
     MidiBuffer processedMidi;
-    OpenGLContext openGLContext;
-    int playHeadPosition=0;
+    std::shared_ptr<OpenGLContext> openGLContext;
+    std::atomic<int> playHeadPosition;
+    std::atomic<float> hostPosition;
     HeaderArea headerArea{};
-    InfoAndControlArea infoAndControlArea{};
+    std::unique_ptr<InfoAndControlArea> infoAndControlArea;
     TrackArea tracksArea{};
     bool destructiveSave = true;
     int nbrTracksInARow = 4;
@@ -161,11 +186,12 @@ private:
 	bool showDialogWindow(String title, String message, AlertWindow::AlertIconType icon, String firstButtonText, String secondButtonText);
     AudioFormatManager formatManager;                    // [3]
     std::unique_ptr<AudioFormatReaderSource> readerSource;
-    AudioTransportSource transportSource;
-    AudioThumbnailCache thumbnailCache;                  // [1]
-    AudioThumbnail thumbnail;
+    std::shared_ptr<OpenGLAudioThumbnail> thumbnail;
+    std::shared_ptr<OpenGLClickWitness> witness;
+    //AudioThumbnail thumbnail;
     std::unique_ptr<AudioProcessorValueTreeState::ComboBoxAttachment> recModeAttachment;
     std::unique_ptr<AudioProcessorValueTreeState::ComboBoxAttachment> snapModeAttachment;
+    std::unique_ptr<AudioProcessorValueTreeState::ComboBoxAttachment> fixedSizeAttachment;
     Component trackArea {};
     Viewport  tracksViewport{};
     FFAU::LevelMeterSource outputMeterSource;
@@ -218,13 +244,15 @@ private:
     int activeTrack = 0;
     int activeLoop = 0;
     bool dirty = false;
-	
+    bool refreshLayers = false;
     int nextTrackNumber = 0;
     int nextLoopNumber = -1;
+    std::atomic<int> nextLayerNumber;
     int trackToRemove = -1;
     int trackToChange = -1;
     int updatedTrackNumber = -1;
-    
+    std::vector<OpenGLRenderer *> renderers;
+
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (OrbishAudioProcessorEditor)
 };
 

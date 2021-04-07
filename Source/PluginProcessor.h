@@ -124,6 +124,7 @@ public:
     bool handleSoloEvent(int);
     void handleLoopChangeEvent(int);
     void handleEvents(Events&);
+    void processTempoChange(int);
     TrackGroup* getTrackGroup(Track* t);
 	bool loadFromValueTree(ValueTree* tree);
 	bool loadTrackFromValueTree(ValueTree* trackTree, Track* track);
@@ -133,6 +134,7 @@ public:
     OrbishContext* context;
     TrackGroup* CurrentGroup;
 	TrackGroup* SelectedGroup;
+    //std::unique_ptr<RubberBand::RubberBandStretcher> stretcher;
     void initParams();
     Track* activeTrack = nullptr;
 	AudioProcessorEditor* editor;

@@ -37,22 +37,25 @@ public:
     LoopChange loopChange = 0;
     typedef void (Observer::*LoopRemoval) ();
     LoopRemoval loopRemoval = 0;
+    typedef void (Observer::*LayerChange) (int, int);
+    LoopChange layerChange = 0;
     typedef void (Observer::* PlayChanged)(int);
     PlayChanged playChanged = 0;
+    typedef void (Observer::* HostPositionChanged)(int);
+    HostPositionChanged hostPositionChanged = 0;
     
-    virtual void updateLoopVisualiser (const AudioBuffer<float>& , int ) {};
+    virtual void updateLoopVisualiser (AudioBuffer<float>& , int ) {};
     virtual void askToUpdatePlayHead(int , bool ) {};
     virtual void askToHandleMidiMessages(const MidiBuffer& ) {};
-    
     virtual void askToCreateTrack() {};
     virtual void askToChangeTrack(int ) {};
     virtual void askToRemoveTrack(int ) {};
-    
     virtual void askToCreateLoop() {};
     virtual void askToChangeLoop(int , int ) {};
     virtual void askToRemoveLoop() {};
-
+    virtual void askToChangeLayer(int, int ) {};
     virtual void askToUpdatePlayState(int ) {};
+    virtual void askToUpdateHostPosition(int ) {};
 
 };
 #endif /* Observer_hpp */

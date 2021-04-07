@@ -11,6 +11,8 @@
 #pragma once
 
 #include <JuceHeader.h>
+#include "OpenGLAudioThumbnail.h"
+
 class OrbishAudioProcessorEditor;
 
 //==============================================================================
@@ -34,7 +36,7 @@ public:
     void updatePlayHead(int);
 
 private:
-
+    std::shared_ptr<OpenGLAudioThumbnail> thumbnail{nullptr};
     OrbishAudioProcessorEditor* editor;
     bool fileLoaded = false;
     float playHeadPosition = 0;

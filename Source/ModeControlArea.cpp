@@ -10,20 +10,23 @@
 
 #include <JuceHeader.h>
 #include "ModeControlArea.h"
+#include "Orbish.h"
 
 //==============================================================================
 ModeControlArea::ModeControlArea(){
-    Array<StringArray> buttonRecModeNames;
-    buttonRecModeNames.add({ "Overdub", "Record multiple layers within same loop" });
-    buttonRecModeNames.add({ "Repeat","Record additional layer while extending loop size repeating previous layers" });
-    buttonRecModeNames.add({ "Append","Record new layer while extending without repeating previous layers" });
-    buttonRecModeNames.add({ "Overwrite", "overwrite content of current layer with new material, and extend original loop until recording ends" });
-    buttonRecModeNames.add({ "Punch","Record while replacing previous material on current layer" });
-    for (int i = 0; i < buttonRecModeNames.size(); ++i){
-        recModeCombo.addItem(buttonRecModeNames[i][0], i + 1);
+    Array<StringArray> listRecModeNames;
+    listRecModeNames.add({ "Overdub", "Record multiple layers within same loop" });
+    listRecModeNames.add({ "Fixed", "Record multiple layers. Fixed loop length" });
+    listRecModeNames.add({ "Repeat","Record additional layer while extending loop size repeating previous layers" });
+    listRecModeNames.add({ "Append","Record new layer while extending without repeating previous layers" });
+    listRecModeNames.add({ "Overwrite", "overwrite content of current layer with new material, and extend original loop until recording ends" });
+    listRecModeNames.add({ "Punch","Record while replacing previous material on current layer" });
+    for (int i = 0; i < listRecModeNames.size(); ++i){
+        recModeCombo.addItem(listRecModeNames[i][0], i + 1);
     }
 
     String str = String("Overdub: Record multiple layers within same loop\n") +
+    String("Fixed: Record multiple layers in fixed length loop\n") +
         String("Repeat: Record additional layer while extending loop size repeating previous layers\n") +
         String("Append: Record new layer while extending without repeating previous layers") +
         String("Overwrite: overwrite content of current layer with new material, and extend original loop until recording ends\n") +
@@ -35,12 +38,12 @@ ModeControlArea::ModeControlArea(){
     addAndMakeVisible(recModeLabel);
 
 
-    Array<StringArray> buttonSnapModeNames;
-    buttonSnapModeNames.add({ "No Sync", "Snap disabled, functionality goes into effect instantly" });
-    buttonSnapModeNames.add({ "Bar","Snaps to bar" });
-    buttonSnapModeNames.add({ "Beat","Snaps to the beat (bottom of time signature)" });
-    for (int i = 0; i < buttonSnapModeNames.size(); ++i){
-        snapModeCombo.addItem(buttonSnapModeNames[i][0], i + 1);
+    Array<StringArray> listSnapModeNames;
+    listSnapModeNames.add({ "No Sync", "Snap disabled, functionality goes into effect instantly" });
+    listSnapModeNames.add({ "Bar","Snaps to bar" });
+    listSnapModeNames.add({ "Beat","Snaps to the beat (bottom of time signature)" });
+    for (int i = 0; i < listSnapModeNames.size(); ++i){
+        snapModeCombo.addItem(listSnapModeNames[i][0], i + 1);
     }
 
     str = String("No Sync: Snap disabled, functionality goes into effect instantly\n") +
@@ -51,7 +54,38 @@ ModeControlArea::ModeControlArea(){
     snapModeCombo.setSelectedId(2);
     addAndMakeVisible(snapModeCombo);
     addAndMakeVisible(snapModeLabel);
+    
+    Array<StringArray> listFixedSizeBeats;
+    listFixedSizeBeats.add({ "1", "1 Beat" });
+    listFixedSizeBeats.add({ "2","2 Beats" });
+    listFixedSizeBeats.add({ "3","3 Beats" });
+    listFixedSizeBeats.add({ "4","4 Beats" });
+    listFixedSizeBeats.add({ "5","5 Beats" });
+    listFixedSizeBeats.add({ "6","6 Beats" });
+    listFixedSizeBeats.add({ "7","7 Beats" });
+    listFixedSizeBeats.add({ "8","8 Beats" });
+    listFixedSizeBeats.add({ "9","9 Beats" });
+    listFixedSizeBeats.add({ "10","10 Beats" });
+    listFixedSizeBeats.add({ "11","11 Beats" });
+    listFixedSizeBeats.add({ "12","12 Beats" });
+    listFixedSizeBeats.add({ "13","13 Beats" });
+    listFixedSizeBeats.add({ "14","14 Beats" });
+    listFixedSizeBeats.add({ "15","15 Beats" });
+    listFixedSizeBeats.add({ "16","16 Beats" });
 
+
+    for (int i = 0; i < listFixedSizeBeats.size(); ++i){
+        fixedSizeBeatsCombo.addItem(listFixedSizeBeats[i][0], i + 1);
+    }
+    str = String("Length of the fixed size loop in number of beats");
+
+    fixedSizeBeatsCombo.setTooltip(str);
+    fixedSizeBeatsCombo.setEnabled(false);
+//    fixedSizeBeatsCombo.onChange = [this]{
+//        comboBoxChanged(&fixedSizeBeatsCombo);
+//    };
+    recModeCombo.addListener(this);
+    addAndMakeVisible(fixedSizeBeatsCombo);
 }
 
 ModeControlArea::~ModeControlArea(){
@@ -60,7 +94,6 @@ ModeControlArea::~ModeControlArea(){
 void ModeControlArea::paint (juce::Graphics& g){
     auto bounds = getLocalBounds().reduced(5);
     g.drawRoundedRectangle(bounds.toFloat(), 4.0f, 0.5f);
-
 }
 
 void ModeControlArea::resized(){
@@ -73,12 +106,22 @@ void ModeControlArea::resized(){
     grid.setGap(Grid::Px(10));
 
     grid.templateRows = { Track(Fr(1)), Track(Fr(3)) };
-    grid.templateColumns = { Track(Fr(1)), Track(Fr(1)) };
+    grid.templateColumns = { Track(Fr(3)), Track(Fr(2)), Track(Fr(3)) };
 
     grid.items = {
-        juce::GridItem(recModeLabel), juce::GridItem(snapModeLabel),
-        juce::GridItem(recModeCombo), juce::GridItem(snapModeCombo)
+        juce::GridItem(recModeLabel), juce::GridItem(), juce::GridItem(snapModeLabel),
+        juce::GridItem(recModeCombo), juce::GridItem(fixedSizeBeatsCombo), juce::GridItem(snapModeCombo)
     };
 
     grid.performLayout(bounds);
+}
+
+void ModeControlArea::comboBoxChanged (ComboBox *comboBoxThatHasChanged){
+    if (comboBoxThatHasChanged == &recModeCombo) {
+        if(recModeCombo.getSelectedId()==2) {
+            fixedSizeBeatsCombo.setEnabled(true);
+        }else{
+            fixedSizeBeatsCombo.setEnabled(false);
+        }
+    }
 }

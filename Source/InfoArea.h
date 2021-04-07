@@ -12,6 +12,7 @@
 
 #include <JuceHeader.h>
 #include "exu/Label.hpp"
+#include "OpenGLComponents.h"
 
 //==============================================================================
 /*
@@ -51,6 +52,13 @@ public:
     void updateBarWitness(double alpha);
     void updateBeatWitness(double alpha);
     void setGroupColour(Colour);
+    void setOpenGLContext(std::shared_ptr<OpenGLContext> ctxt);
+    void setSubDivs(float subDivs);
+    void setWitness(std::shared_ptr<OpenGLClickWitness> witness);
+//    void setTimeSigNumerator(int);
+//    void setTimeSigDenominator(int);
+    std::shared_ptr<OpenGLClickWitness> witness;
+
 private:
     exu::Label projectLabel{};
     exu::Label timeSigLabel;
@@ -64,7 +72,7 @@ private:
     DrawablePath beatWitness{};
     ImageComponent logo;
     ImageComponent name;
-
+    std::shared_ptr<OpenGLContext> openGLContext;
     double beatAlpha = 0.2;
     double barAlpha = 0.2;
 

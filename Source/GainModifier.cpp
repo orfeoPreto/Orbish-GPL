@@ -12,6 +12,7 @@ GainModifier::GainModifier(){}
 GainModifier::~GainModifier(){}
 
 void GainModifier::applyGain(){
+    if(startIndex + numberOfSamples > buffer->getNumSamples())return;
     switch (operation) {
         case OperationType::ChannelRegion:
            for (auto channel = 0; channel<buffer->getNumChannels();++channel){

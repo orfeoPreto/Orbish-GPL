@@ -76,24 +76,24 @@ void HeaderArea::getCommandInfo(CommandID commandID, ApplicationCommandInfo& res
     switch (commandID)
     {
     case CommandIDs::newProject:
-        result.setInfo("New Project...", "Creates a new Loopable project", CommandCategories::general, 0);
+        result.setInfo("New", "Creates a new Loopable project", CommandCategories::general, 0);
         result.defaultKeypresses.add(KeyPress('n', ModifierKeys::ctrlModifier, 0));
         result.setActive(true);
         break;
     case CommandIDs::open:
-        result.setInfo("Open Project...", "Opens an existing Loopable project", CommandCategories::general, 0);
+        result.setInfo("Open", "Opens an existing Loopable project", CommandCategories::general, 0);
         result.defaultKeypresses.add(KeyPress('o', ModifierKeys::ctrlModifier, 0));
         break;
     case CommandIDs::saveProject:
-        result.setInfo("Save Project...", "Saves the current Loopable project", CommandCategories::general, 0);
+        result.setInfo("Save", "Saves the current Loopable project", CommandCategories::general, 0);
         result.defaultKeypresses.add(KeyPress('s', ModifierKeys::ctrlModifier, 0));
         break;
     case CommandIDs::saveProjectAs:
-        result.setInfo("Save Project As...", "Saves the current Loopable project under a different name", CommandCategories::general, 0);
+        result.setInfo("Save As", "Saves the current Loopable project under a different name", CommandCategories::general, 0);
         result.defaultKeypresses.add(KeyPress('a', ModifierKeys::ctrlModifier, 0));
         break;
     case CommandIDs::showProjectSettings:
-        result.setInfo("Show Settings...", "Show the project settings", CommandCategories::general, 0);
+        result.setInfo("Settings", "Show the project settings", CommandCategories::general, 0);
         result.defaultKeypresses.add(KeyPress('p', ModifierKeys::ctrlModifier, 0));
         break;
 

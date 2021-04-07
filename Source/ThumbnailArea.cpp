@@ -22,7 +22,8 @@ ThumbnailArea::~ThumbnailArea(){
 }
 
 void ThumbnailArea::paint (juce::Graphics& g){
-    g.fillAll (getLookAndFeel().findColour (juce::ResizableWindow::backgroundColourId));   // clear the background
+    return;
+    g.fillAll (Colour(0x00ffffffff));   // clear the background
 
     g.setColour (juce::Colours::black);
     g.drawRoundedRectangle(getLocalBounds().reduced(5).toFloat(), 4.0f, 1.0f);
@@ -33,9 +34,9 @@ void ThumbnailArea::paint (juce::Graphics& g){
     if (editor == nullptr ){
         return;
     }
+    auto thumbnail = editor->getThumbnailInstance();
 
     if (fileLoaded) {
-        auto thumbnail = editor->getThumbnailInstance();
         auto processor = editor->getProcessor();
         
         Path pth{};
@@ -43,7 +44,8 @@ void ThumbnailArea::paint (juce::Graphics& g){
 
         g.setColour(findColour(TextButton::ColourIds::textColourOnId));
         auto audioLength(thumbnail->getTotalLength());                                      // [12]
-        thumbnail->drawChannels(g, bounds, 0.0, audioLength, 1.0f);
+      //  thumbnail->drawChannels(g, bounds, 0.0, audioLength, 1.0f);
+        thumbnail->start();
         g.setColour(Colours::white);
         playHead.setBounds(std::max(int(playHeadPosition) - 2, bounds.getX()), bounds.getY(), 2, bounds.getHeight());
         g.setOpacity(.4f);
@@ -78,11 +80,16 @@ void ThumbnailArea::paint (juce::Graphics& g){
         pth.addRectangle(bounds.withSizeKeepingCentre(bounds.getWidth() + 10, bounds.getHeight() + 10));
 
         g.setColour(findColour(Label::textColourId));
-        g.drawFittedText("No Loop", bounds, Justification::centred, 1);
+   //     g.drawFittedText("No Loop", bounds, Justification::centred, 1);
     }
 }
 
 void ThumbnailArea::resized(){
+    auto thumbnail = editor->getThumbnailInstance();
+    thumbnail->setBounds(getParentComponent()->getBoundsInParent().getX()
+                         , getParentComponent()->getParentComponent()->getBoundsInParent().getY()
+                         ,getWidth()
+                         ,getHeight());
 }
 
 void ThumbnailArea::setFileLoaded(bool loaded){
@@ -93,6 +100,8 @@ void ThumbnailArea::setEditor(OrbishAudioProcessorEditor* pluginEditor){
     editor = pluginEditor;
     inputDisplay.setSamplesPerBlock(editor->getProcessor()->context->maxBlockSize);
     inputDisplay.setBufferSize(editor->getProcessor()->context->samplesPerBlock);
+    thumbnail = editor->getThumbnailInstance();
+    addAndMakeVisible(thumbnail.get());
 }
 
 void ThumbnailArea::updatePlayHead(int position){
@@ -104,17 +113,17 @@ void ThumbnailArea::updatePlayHead(int position){
 
     if (editor->getReverseState() == On) {
         if (thumbnail->getTotalLength() > 0) {
-            float audioPosition = jmax(.0f, float(thumbnail->getNumSamplesFinished() - position));
-            playHeadPosition = ((audioPosition / thumbnail->getNumSamplesFinished()) * bounds.getWidth() + bounds.getX());
+            float audioPosition = jmax(.0f, float(thumbnail->getTotalLength() - position));
+            playHeadPosition = ((audioPosition / thumbnail->getTotalLength()) * bounds.getWidth() + bounds.getX());
         }
         else {
-            playHeadPosition = float(thumbnail->getNumSamplesFinished() - 1);
+            playHeadPosition = float(thumbnail->getTotalLength() - 1);
         }
     }
     else {
         if (thumbnail->getTotalLength() > 0) {
             float audioPosition = float(position);
-            playHeadPosition = ((audioPosition / thumbnail->getNumSamplesFinished()) * bounds.getWidth() + bounds.getX());
+            playHeadPosition = ((audioPosition / thumbnail->getTotalLength()) * bounds.getWidth() + bounds.getX());
         }
         else {
             playHeadPosition = 0;

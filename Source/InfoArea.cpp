@@ -15,7 +15,6 @@
 InfoArea::InfoArea(){
     projectLabel.setFont(Font(18, Font::bold));
     addAndMakeVisible(projectLabel);
-
     timeSigLabel.setTooltip("Current time signature\nComes from the host");
     addAndMakeVisible(timeSigLabel);
 
@@ -39,41 +38,33 @@ InfoArea::InfoArea(){
 InfoArea::~InfoArea(){
 }
 
+void InfoArea::setOpenGLContext(std::shared_ptr<OpenGLContext> ctxt){
+    openGLContext = ctxt;
+    witness->setOpenGLContext(openGLContext);
+    addAndMakeVisible(*witness);
+    witness->start();
+}
+
+void InfoArea::setWitness(std::shared_ptr<OpenGLClickWitness> witness){
+    this->witness = witness;
+}
+
+
 void InfoArea::paint (juce::Graphics& g){
     g.fillAll (getLookAndFeel().findColour (juce::ResizableWindow::backgroundColourId));   // clear the background
 
     projectLabel.setColour(Label::textColourId, findColour(TextButton::ColourIds::textColourOnId));
-
-    auto labelHeight = 30;
-    // draw beatWitness
-    Path path;
-    path.addEllipse(20, labelHeight*11+21, 10, 10);
-    beatWitness.setPath(path);
-    beatWitness.setFill(Colours::orangered);
-    beatWitness.setStrokeFill(Colours::orange);
-    beatWitness.setAlpha(beatAlpha);
-    beatWitness.setStrokeThickness(2.0f);
-    addAndMakeVisible(beatWitness);
-
-    // draw barWitness
-    Path path2;
-    path2.addEllipse(40, labelHeight*11+21, 10, 10);
-    barWitness.setPath(path2);
-    barWitness.setFill(Colours::green);
-    barWitness.setStrokeFill(Colours::greenyellow);
-    barWitness.setAlpha(barAlpha);
-    barWitness.setStrokeThickness(2.0f);
-    addAndMakeVisible(barWitness);
-    addAndMakeVisible(name);
-    addAndMakeVisible(logo);
+    progressLabel.repaint();
+    return;
 }
 
 void InfoArea::resized(){
+    addAndMakeVisible(name);
+    addAndMakeVisible(logo);
     auto bounds = getLocalBounds();
     auto labelHeight = 30;
     bounds.removeFromLeft(10);
     bounds.removeFromTop(80);
-
     projectLabel.setBounds(bounds.removeFromTop(labelHeight));
 
     trackNumberLabel.setBounds(bounds.removeFromTop(labelHeight));
@@ -88,6 +79,8 @@ void InfoArea::resized(){
     
     bounds.removeFromLeft(50);
     progressLabel.setBounds(bounds.removeFromTop(labelHeight));
+    witness->setBounds(20, progressLabel.getY(), int(std::ceil(labelHeight*1.3)), int(std::ceil(labelHeight*1.3)));
+
     auto ratio = logo.getImage().getHeight() / 50;
     logo.setBounds(10,20, logo.getImage().getWidth()/ratio,50);
     logo.setAlpha(.8f);
@@ -105,6 +98,17 @@ void InfoArea::setTimeSignature(String timeSig){
 String InfoArea::getTimeSignature(){
     return timeSigLabel.getText();
 }
+void InfoArea::setSubDivs(float subDivs){
+    witness->setPosition(subDivs);
+}
+
+//void setTimeSigNumerator(int numerator){
+//    
+//}
+//
+//void setTimeSigDenominator(int denominator){
+//    
+//}
 
 void InfoArea::setBeatsPerMinute(String bpm){
     bpmLabel.setText(bpm, NotificationType::dontSendNotification);
