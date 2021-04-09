@@ -24,7 +24,7 @@ namespace exu{
         void paint(Graphics& g) override{
            if(isTouched()){
                     juce::Label::paint(g);
-                   // unTouch();
+                    unTouch();
                 }
             }
         

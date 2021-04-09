@@ -537,7 +537,7 @@ void OrbishAudioProcessorEditor::timerCallback(){
         modeControlArea->recModeCombo.setEnabled(true);
         transportControlArea->bounceButton.setEnabled(true);
 	}
-    
+    paintInfoSection();
 }
 
 String OrbishAudioProcessorEditor::saveBuffer(int trackIdx
@@ -641,7 +641,7 @@ void OrbishAudioProcessorEditor::paint (Graphics& g){
 
     }
 
-    paintInfoSection(g);
+    paintInfoSection();
     g.setColour(Colours::black);
     g.drawRoundedRectangle(tracksViewport.getBoundsInParent().expanded(5).toFloat(), 4.0f, 1.0f);
 
@@ -673,7 +673,7 @@ void OrbishAudioProcessorEditor::paint (Graphics& g){
     }
 }
 
-void OrbishAudioProcessorEditor::paintInfoSection(Graphics&){
+void OrbishAudioProcessorEditor::paintInfoSection(){
     String timeSig = String(processor.context->info->timeSigNumerator) + "/" + String(processor.context->info->timeSigDenominator);
     if(timeSig != infoAndControlArea->infoArea.getTimeSignature()){
         infoAndControlArea->infoArea.setTimeSignature(timeSig);
@@ -723,19 +723,6 @@ void OrbishAudioProcessorEditor::paintInfoSection(Graphics&){
         infoAndControlArea->infoArea.setGroupNumber(groupName);
         infoAndControlArea->infoArea.setGroupColour(grpCol);
     }
-    if (processor.activeTrack->Playing) {
-        if ((beats == 1 && subSubDiv == 1 && rest < (processor.context->bpm * 0.003f))){
-            infoAndControlArea->infoArea.updateBarWitness(1);
-        } else {
-            infoAndControlArea->infoArea.updateBarWitness(0.2);
-        }
-        if(processor.activeTrack->Playing && subSubDiv == 1 && rest < (processor.context->bpm * 0.003f)){
-            infoAndControlArea->infoArea.updateBeatWitness(1);
-        }else{
-            infoAndControlArea->infoArea.updateBeatWitness(0.2);
-        }
-    }
-    infoAndControlArea->infoArea.repaint();
 }
 
 void OrbishAudioProcessorEditor::resized() {
@@ -1204,7 +1191,7 @@ void OrbishAudioProcessorEditor::doCreateTrack(int trackNumber) {
         auto* t = new TrackComponent(trackNumber, prg, tracksLayoutHorizontal, audioTrack);
         t->addMouseListener(this, true);
         tracks.add(t);
-       // trackArea.addAndMakeVisible(t);
+        trackArea.addAndMakeVisible(t);
     }
     else {
         while(tracks[trackNumber]->Loops.size() > 0){

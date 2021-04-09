@@ -58,7 +58,6 @@ public:
     
     void setTotalAudioLength(int);
     int getTotalLength();
-    void setOffset(int);
     GLuint createTexture(GLint, GLint, bool isDepth=false);
     void setAudio();
     std::unique_ptr<AudioBuffer<GLfloat> > readBuffer;

@@ -12,20 +12,14 @@
 #include <JuceHeader.h>
 namespace exu{
     class UIStateGuard {
-
     public:
         UIStateGuard(){}
-        
         ~UIStateGuard(){}
-        
         bool isTouched(){ return touched;}
         void touch(){ touched = true; }
         void unTouch(){ touched = false; }
-        
-
     private:
         bool touched=true;
-        
     };
 }
 #endif /* UIStateGuard_hpp */

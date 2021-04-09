@@ -120,7 +120,7 @@ public:
     void mouseDown(const MouseEvent &event) override;
 	void makeTracks();
     void highlightActiveTrack(Graphics& g);
-    void paintInfoSection(Graphics&);
+    void paintInfoSection();
     void askToCreateTrack() override;
     void createTrack();
     void askToCreateLoop() override;

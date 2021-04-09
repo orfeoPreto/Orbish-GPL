@@ -22,66 +22,6 @@ ThumbnailArea::~ThumbnailArea(){
 }
 
 void ThumbnailArea::paint (juce::Graphics& g){
-    return;
-    g.fillAll (Colour(0x00ffffffff));   // clear the background
-
-    g.setColour (juce::Colours::black);
-    g.drawRoundedRectangle(getLocalBounds().reduced(5).toFloat(), 4.0f, 1.0f);
-
-    auto bounds = getLocalBounds().reduced(5);
-
-    inputDisplay.setBounds(bounds);
-    if (editor == nullptr ){
-        return;
-    }
-    auto thumbnail = editor->getThumbnailInstance();
-
-    if (fileLoaded) {
-        auto processor = editor->getProcessor();
-        
-        Path pth{};
-        pth.addRectangle(bounds);
-
-        g.setColour(findColour(TextButton::ColourIds::textColourOnId));
-        auto audioLength(thumbnail->getTotalLength());                                      // [12]
-      //  thumbnail->drawChannels(g, bounds, 0.0, audioLength, 1.0f);
-        thumbnail->start();
-        g.setColour(Colours::white);
-        playHead.setBounds(std::max(int(playHeadPosition) - 2, bounds.getX()), bounds.getY(), 2, bounds.getHeight());
-        g.setOpacity(.4f);
-        if (playHead.getX() < 0)playHead.setX(0);
-        g.fillRect(playHead);
-        auto c1 = Colour(0x00FFFFFF);
-        auto c2 = Colour(0x8FFFFF00);
-        double tmpDenom = processor->context->samplesToBeats(float(*processor->activeTrack->LoopDuration));
-        int denominator = int(std::ceil(tmpDenom));
-        denominator = int(denominator / (processor->context->timeSigBottom * .25));
-        denominator = int(denominator / processor->context->timeSigTop) * int(60 / processor->context->info->bpm);
-        denominator = jmin(jmax(denominator * 2, 8), 40);
-        if (processor->activeTrack->Playing) {
-            if (editor->getReverseState() == On) {
-                float tailWidth =
-                    float(std::min(bounds.getWidth() / denominator, bounds.getWidth() - (playHead.getX() - bounds.getX())));
-                auto tail = Rectangle<float>(float(playHead.getX()), float(bounds.getY()), tailWidth, float(bounds.getHeight()));
-                g.setGradientFill(ColourGradient::horizontal(c2, c1, tail));
-                g.fillRect(tail);
-            }
-            else {
-                float tailWidth = float(std::min(bounds.getWidth() / denominator, playHead.getX() - bounds.getX()));
-                auto tail = Rectangle<float>(float(playHead.getX() - tailWidth), float(bounds.getY()), tailWidth, float(bounds.getHeight()));
-                g.setGradientFill(ColourGradient::horizontal(c1, c2, tail));
-                g.fillRect(tail);
-            }
-        }
-    }
-    else {
-        g.setColour(Colours::white);
-        Path pth{};
-        pth.addRectangle(bounds.withSizeKeepingCentre(bounds.getWidth() + 10, bounds.getHeight() + 10));
-
-        g.setColour(findColour(Label::textColourId));
-   //     g.drawFittedText("No Loop", bounds, Justification::centred, 1);
-    }
 }
 
 void ThumbnailArea::resized(){

@@ -54,8 +54,14 @@ void InfoArea::paint (juce::Graphics& g){
     g.fillAll (getLookAndFeel().findColour (juce::ResizableWindow::backgroundColourId));   // clear the background
 
     projectLabel.setColour(Label::textColourId, findColour(TextButton::ColourIds::textColourOnId));
-    progressLabel.repaint();
-    return;
+    projectLabel.touch();
+    progressLabel.touch();
+    trackNumberLabel.touch();
+    loopNumberLabel.touch();
+    layerNumberLabel.touch();
+    groupNumberLabel.touch();
+    timeSigLabel.touch();
+    bpmLabel.touch();
 }
 
 void InfoArea::resized(){
@@ -88,11 +94,14 @@ void InfoArea::resized(){
 
 void InfoArea::setProjectName(String name){
     projectLabel.setText(name, NotificationType::dontSendNotification);
+    projectLabel.touch();
+    projectLabel.repaint();
 }
 
 void InfoArea::setTimeSignature(String timeSig){
     timeSigLabel.setText(timeSig, NotificationType::dontSendNotification);
     timeSigLabel.touch();
+    timeSigLabel.repaint();
 }
 
 String InfoArea::getTimeSignature(){
@@ -113,6 +122,7 @@ void InfoArea::setSubDivs(float subDivs){
 void InfoArea::setBeatsPerMinute(String bpm){
     bpmLabel.setText(bpm, NotificationType::dontSendNotification);
     bpmLabel.touch();
+    bpmLabel.repaint();
 }
 
 String InfoArea::getBeatsPerMinute(){
@@ -121,6 +131,8 @@ String InfoArea::getBeatsPerMinute(){
 
 void InfoArea::setProgress(String progress){
     progressLabel.setText(progress, NotificationType::dontSendNotification);
+    progressLabel.touch();
+    progressLabel.repaint();
 }
 
 String InfoArea::getProgress(){
@@ -129,6 +141,7 @@ String InfoArea::getProgress(){
 
 void InfoArea::setTrackNumber(String trackNumber){
     trackNumberLabel.setText(trackNumber, NotificationType::dontSendNotification);
+    trackNumberLabel.repaint();
 }
 
 String InfoArea::getTrackNumber(){
@@ -137,6 +150,7 @@ String InfoArea::getTrackNumber(){
 
 void InfoArea::setLoopNumber(String loopNumber){
     loopNumberLabel.setText(loopNumber, NotificationType::dontSendNotification);
+    loopNumberLabel.repaint();
 }
 
 String InfoArea::getLoopNumber(){
@@ -145,6 +159,7 @@ String InfoArea::getLoopNumber(){
 
 void InfoArea::setLayerNumber(String layerNumber){
     layerNumberLabel.setText(layerNumber, NotificationType::dontSendNotification);
+    layerNumberLabel.repaint();
 }
 
 String InfoArea::getLayerNumber(){
@@ -153,6 +168,7 @@ String InfoArea::getLayerNumber(){
 
 void InfoArea::setGroupNumber(String groupNumber){
     groupNumberLabel.setText(groupNumber, NotificationType::dontSendNotification);
+    groupNumberLabel.repaint();
 }
 
 String InfoArea::getGroupNumber(){
