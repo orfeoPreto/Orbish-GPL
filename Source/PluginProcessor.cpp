@@ -848,7 +848,8 @@ void OrbishAudioProcessor::realign(){
                     if (!((diff < 0 && *track->CurrentPlayingIndex < abs(diff))
                           || (diff > 0 && *track->CurrentPlayingIndex > * track->LoopDuration - diff))) {
                         //  if(abs(diff)<context->samplesPerBlock){
-                        diff = std::min(diff, context->sampleRate / 200);
+                      //  diff = std::min(abs(diff), (context->sampleRate / 200) * (diff / abs(diff)));
+                      //  diff = std::min(diff, context->sampleRate / 200);
                         if (!track->realignment->isSyncInProgress()){
                             track->realignment->setTotalOffset(diff);
                         }
@@ -1235,7 +1236,7 @@ void OrbishAudioProcessor::processBlock(AudioBuffer<float>& buffer, MidiBuffer& 
         context->xchange->writeMeasureBufferQueue->pop();
         context->xchange->readMeasureBufferQueue->push(mb);
     }else{
-        inputMeterSource.measureBlock(buffer);
+        inputMeterSource.measureBlock(*context->inputBuffer);
     }
     int64 endMeasure = Time::getHighResolutionTicks();
     if(activeTrack->refresh){
@@ -1337,7 +1338,7 @@ void OrbishAudioProcessor::processBlock(AudioBuffer<float>& buffer, MidiBuffer& 
     if(context->xchange->writeMeasureBufferQueue->read_available() > 0 &&
        context->xchange->readMeasureBufferQueue->write_available() > 0){
         auto mb = context->xchange->writeMeasureBufferQueue->front();
-        mb->buffer = context->buffer;
+        mb->buffer = std::make_shared<AudioBuffer<float>>(buffer);
         mb->source = &outputMeterSource;
         context->xchange->writeMeasureBufferQueue->pop();
         context->xchange->readMeasureBufferQueue->push(mb);
@@ -1749,7 +1750,7 @@ void OrbishAudioProcessor::handlePlaybackBlock(int start, int stop) {
                                 // write fade out with signal from unadjusted position
                                 fadeOut = fadeIn = min(reSync->getCurrentOffset(), context->samplesPerBlock - targetIndex);
                                 adjustedPosition = track->getAdjustedLoopPosition(sourceIndex, reSync->getTotalOffset());
-                                fadeIn = min(*track->LoopDuration - adjustedPosition - 1, fadeIn);
+                                fadeIn = max(0,min(*track->LoopDuration - adjustedPosition - 1, fadeIn));
                                 temp->addFromWithRamp(c
                                                       , targetIndex
                                                       , (*track->Layers)[l]->Buffer->getReadPointer(c, sourceIndex)

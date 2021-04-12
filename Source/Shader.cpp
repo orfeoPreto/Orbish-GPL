@@ -66,8 +66,9 @@ void Shader::loadFile(const char* fn, std::string &str, GLuint mode){
     fullName = s.toStdString();
     fullName += "_" + extension;
     const char *CFullName = fullName.c_str();
+    int size = int(fullName.size());
     auto shaderResource = BinaryData::getNamedResource(CFullName, size);
-    is = std::make_unique<MemoryInputStream> (shaderResource,size, false);
+    is = std::make_unique<MemoryInputStream> (shaderResource,size, false); 
     str.clear();
     while (! is->isExhausted()) // [3]
            {

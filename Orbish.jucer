@@ -7,6 +7,22 @@
               bundleIdentifier="exu.Orbish" companyName="exu" version="0.2.0">
   <MAINGROUP id="MOZJJ5" name="Orbish">
     <GROUP id="{40BAF4D8-7324-156C-E5E8-0098A128DC2C}" name="resources">
+      <GROUP id="{326E6A86-688F-EE95-6795-579693EE4BF4}" name="shaders">
+        <FILE id="ch7gIY" name="circle.fs" compile="0" resource="1" file="resources/shaders/circle.fs"/>
+        <FILE id="ANk3C1" name="circle.vs" compile="0" resource="1" file="resources/shaders/circle.vs"/>
+        <FILE id="kokpvS" name="meterBar.fs" compile="0" resource="1" file="resources/shaders/meterBar.fs"/>
+        <FILE id="qDLC5q" name="meterBar.vs" compile="0" resource="1" file="resources/shaders/meterBar.vs"/>
+        <FILE id="kgdcXP" name="render.fs" compile="0" resource="1" file="resources/shaders/render.fs"/>
+        <FILE id="ndlz7y" name="render.vs" compile="0" resource="1" file="resources/shaders/render.vs"/>
+        <FILE id="hZjmby" name="thumbnail-playhead.fs" compile="0" resource="1"
+              file="resources/shaders/thumbnail-playhead.fs"/>
+        <FILE id="BgTKJZ" name="thumbnail-playhead.vs" compile="0" resource="1"
+              file="resources/shaders/thumbnail-playhead.vs"/>
+        <FILE id="w2LzMr" name="thumbnail-wave.fs" compile="0" resource="1"
+              file="resources/shaders/thumbnail-wave.fs"/>
+        <FILE id="AgDZEH" name="thumbnail-wave.vs" compile="0" resource="1"
+              file="resources/shaders/thumbnail-wave.vs"/>
+      </GROUP>
       <FILE id="sZBqhy" name="orbish-name.png" compile="0" resource="1" file="resources/Bases/orbish-name.png"/>
       <FILE id="UY8jpv" name="logo_orbish_x_small.png" compile="0" resource="1"
             file="resources/Bases/logo_orbish_x_small.png"/>
@@ -77,6 +93,8 @@
       <FILE id="cKLJmU" name="Orbish.h" compile="0" resource="0" file="Source/Orbish.h"/>
       <GROUP id="{238DCF0C-CFA2-8E48-08B0-913B08613283}" name="AudioEngine">
         <GROUP id="{1E581F61-D6DB-D4ED-41CB-C415B46C330B}" name="Tracks">
+          <FILE id="GfCFf7" name="Layer.h" compile="0" resource="0" file="Source/Layer.h"/>
+          <FILE id="tSWIsz" name="Layer.cpp" compile="1" resource="0" file="Source/Layer.cpp"/>
           <FILE id="OlqLIs" name="TrackGroup.h" compile="0" resource="0" file="Source/TrackGroup.h"/>
           <FILE id="qWADbr" name="Track.cpp" compile="1" resource="0" file="Source/Track.cpp"/>
           <FILE id="qSSAPH" name="Track.h" compile="0" resource="0" file="Source/Track.h"/>
@@ -112,6 +130,32 @@
               file="Source/PluginProcessor.h"/>
       </GROUP>
       <GROUP id="{B1708198-2297-7033-0C5C-79B08021FDA1}" name="ApplicationView">
+        <FILE id="N0lOPc" name="OrbishLevelMeter.h" compile="0" resource="0"
+              file="Source/OrbishLevelMeter.h"/>
+        <FILE id="g9Vf3i" name="OrbishLevelMeter.cpp" compile="1" resource="0"
+              file="Source/OrbishLevelMeter.cpp"/>
+        <GROUP id="{994A3D94-15B8-2467-0AF2-65277DE4E54A}" name="OpenGLComponents">
+          <FILE id="illGiD" name="OpenGLAudioMeter.cpp" compile="1" resource="0"
+                file="Source/OpenGLAudioMeter.cpp"/>
+          <FILE id="yZpxtd" name="OpenGLAudioMeter.h" compile="0" resource="0"
+                file="Source/OpenGLAudioMeter.h"/>
+          <FILE id="tsSrBR" name="OpenGLAudioThumbnail.cpp" compile="1" resource="0"
+                file="Source/OpenGLAudioThumbnail.cpp"/>
+          <FILE id="qyxmDY" name="OpenGLAudioThumbnail.h" compile="0" resource="0"
+                file="Source/OpenGLAudioThumbnail.h"/>
+          <FILE id="NwTqu1" name="OpenGLClickWitness.cpp" compile="1" resource="0"
+                file="Source/OpenGLClickWitness.cpp"/>
+          <FILE id="hAI9p4" name="OpenGLClickWitness.h" compile="0" resource="0"
+                file="Source/OpenGLClickWitness.h"/>
+          <FILE id="vSJ3hz" name="OpenGLComponent.cpp" compile="1" resource="0"
+                file="Source/OpenGLComponent.cpp"/>
+          <FILE id="tm1VK5" name="OpenGLComponent.h" compile="0" resource="0"
+                file="Source/OpenGLComponent.h"/>
+          <FILE id="ZUQgfj" name="OpenGLComponents.h" compile="0" resource="0"
+                file="Source/OpenGLComponents.h"/>
+          <FILE id="AAsL9Y" name="Shader.cpp" compile="1" resource="0" file="Source/Shader.cpp"/>
+          <FILE id="JRqvST" name="Shader.h" compile="0" resource="0" file="Source/Shader.h"/>
+        </GROUP>
         <FILE id="XLAcCl" name="OrbishSlider.cpp" compile="1" resource="0"
               file="Source/OrbishSlider.cpp"/>
         <FILE id="pDyrTt" name="OrbishSlider.h" compile="0" resource="0" file="Source/OrbishSlider.h"/>

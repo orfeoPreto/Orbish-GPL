@@ -13,6 +13,8 @@
 #include <JuceHeader.h>
 #include "exu/Label.hpp"
 #include "OrbishSlider.h"
+#include "OrbishLevelMeter.h"
+
 class OrbishAudioProcessorEditor;
 
 //==============================================================================
@@ -30,7 +32,7 @@ public:
     OrbishSlider outputLevelSlider{ "Output Level" };
     exu::Label outputLevelLabel{ "Output Level" };
     Component outputSliderComp;
-    FFAU::LevelMeter outputMeter{ FFAU::LevelMeter::Minimal };
+    OrbishLevelMeter outputMeter{ FFAU::LevelMeter::Minimal };
 
     OrbishSlider globalVolumeSlider{ "Global Volume" };
     exu::Label globalVolumeLabel{ "Global Volume" };

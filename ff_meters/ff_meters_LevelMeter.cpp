@@ -87,26 +87,26 @@ void FFAU::LevelMeter::paint (Graphics& g)
 
     LookAndFeel& l = getLookAndFeel();
     if (LookAndFeelMethods* lnf = dynamic_cast<LookAndFeelMethods*> (&l)) {
-        const juce::Rectangle<float> bounds = getLocalBounds().toFloat();
-        int numChannels = source ? source->getNumChannels() : 1;
-        if (useBackgroundImage) {
-            // This seems to only speed up, if you use complex drawings on the background. For
-            // "normal" vector graphics the image approach seems actually slower
-            if (backgroundNeedsRepaint) {
-                backgroundImage = Image (Image::ARGB, getWidth(), getHeight(), true);
-                Graphics backGraphics (backgroundImage);
-                lnf->drawBackground (backGraphics, meterType, bounds);
-                lnf->drawMeterBarsBackground (backGraphics, meterType, bounds, numChannels, fixedNumChannels);
-                backgroundNeedsRepaint = false;
-            }
-            g.drawImageAt (backgroundImage, 0, 0);
-            lnf->drawMeterBars (g, meterType, bounds, source, fixedNumChannels, selectedChannel);
-        }
-        else {
-            lnf->drawBackground (g, meterType, bounds);
-            lnf->drawMeterBarsBackground (g, meterType, bounds, numChannels, fixedNumChannels);
-            lnf->drawMeterBars (g, meterType, bounds, source, fixedNumChannels, selectedChannel);
-        }
+//        const juce::Rectangle<float> bounds = getLocalBounds().toFloat();
+//        int numChannels = source ? source->getNumChannels() : 1;
+//        if (useBackgroundImage) {
+//            // This seems to only speed up, if you use complex drawings on the background. For
+//            // "normal" vector graphics the image approach seems actually slower
+//            if (backgroundNeedsRepaint) {
+//                backgroundImage = Image (Image::ARGB, getWidth(), getHeight(), true);
+//                Graphics backGraphics (backgroundImage);
+//                lnf->drawBackground (backGraphics, meterType, bounds);
+//                lnf->drawMeterBarsBackground (backGraphics, meterType, bounds, numChannels, fixedNumChannels);
+//                backgroundNeedsRepaint = false;
+//            }
+//            g.drawImageAt (backgroundImage, 0, 0);
+//            lnf->drawMeterBars (g, meterType, bounds, source, fixedNumChannels, selectedChannel);
+//        }
+//        else {
+//            lnf->drawBackground (g, meterType, bounds);
+//            lnf->drawMeterBarsBackground (g, meterType, bounds, numChannels, fixedNumChannels);
+//            lnf->drawMeterBars (g, meterType, bounds, source, fixedNumChannels, selectedChannel);
+//        }
     }
     else {
         // This LookAndFeel is missing the LevelMeter::LookAndFeelMethods.

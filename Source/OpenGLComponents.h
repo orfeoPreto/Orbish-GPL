@@ -10,5 +10,6 @@
 #define OpenGLComponents_h
 #include "OpenGLAudioThumbnail.h"
 #include "OpenGLClickWitness.h"
+#include "OpenGLAudioMeter.h"
 
 #endif /* OpenGLComponents_h */

@@ -8,6 +8,36 @@
 
 namespace BinaryData
 {
+    extern const char*   circle_fs;
+    const int            circle_fsSize = 474;
+
+    extern const char*   circle_vs;
+    const int            circle_vsSize = 82;
+
+    extern const char*   meterBar_fs;
+    const int            meterBar_fsSize = 212;
+
+    extern const char*   meterBar_vs;
+    const int            meterBar_vsSize = 82;
+
+    extern const char*   render_fs;
+    const int            render_fsSize = 171;
+
+    extern const char*   render_vs;
+    const int            render_vsSize = 242;
+
+    extern const char*   thumbnailplayhead_fs;
+    const int            thumbnailplayhead_fsSize = 913;
+
+    extern const char*   thumbnailplayhead_vs;
+    const int            thumbnailplayhead_vsSize = 82;
+
+    extern const char*   thumbnailwave_fs;
+    const int            thumbnailwave_fsSize = 1453;
+
+    extern const char*   thumbnailwave_vs;
+    const int            thumbnailwave_vsSize = 82;
+
     extern const char*   orbishname_png;
     const int            orbishname_pngSize = 3045;
 
@@ -111,7 +141,7 @@ namespace BinaryData
     const int            squarebuttonbase_pngSize = 2503;
 
     // Number of elements in the namedResourceList and originalFileNames arrays.
-    const int namedResourceListSize = 34;
+    const int namedResourceListSize = 44;
 
     // Points to the start of a list of resource names.
     extern const char* namedResourceList[];

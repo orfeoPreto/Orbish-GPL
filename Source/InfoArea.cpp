@@ -108,7 +108,7 @@ String InfoArea::getTimeSignature(){
     return timeSigLabel.getText();
 }
 void InfoArea::setSubDivs(float subDivs){
-    witness->setPosition(subDivs);
+    witness->setOffset(subDivs);
 }
 
 //void setTimeSigNumerator(int numerator){

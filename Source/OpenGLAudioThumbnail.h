@@ -71,6 +71,8 @@ public:
     std::shared_ptr<OpenGLContext> openGLContext;
     int sampleRate = 0;
     bool reverse = false;
+    String shaderName;
+
 private:
     
     GLuint vbo, vao, ebo, fbo, fbo2;
