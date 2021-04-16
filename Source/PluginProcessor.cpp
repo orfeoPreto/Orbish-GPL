@@ -476,7 +476,7 @@ void OrbishAudioProcessor::init(){
     
     //                                        logMessage("outputchannels:" + String(context->audioInputsCount));
     //                                        logMessage("context buffer channels:" + String(context->buffer->getNumChannels()));
-    int holdValue = 50;
+    int holdValue = 150;
     inputMeterSource.setMaxHoldMS(holdValue);
     outputMeterSource.setMaxHoldMS(holdValue);
     inputMeterSource.resize(context->audioInputsCount, holdValue);
@@ -1422,6 +1422,11 @@ void OrbishAudioProcessor::handleRecordBlock(int start, int stop) {
                 end1 = Time::getHighResolutionTicks();
                 //} );
                 end2 = Time::getHighResolutionTicks();
+                context->logMessage("1. at loop start overdub ");
+                
+                context->logMessage("playback layer: " + String(activeTrack->getActivePlaybackLayer()->index));
+                context->logMessage("recording layer: " + String(l->index));
+                context->logMessage("layers size: " + String(activeTrack->Layers->size()));
                 //context->logMessage("Duration outer block: " + String(end2 - start2));
                 //context->logMessage("Duration inner block: " + String(end1 - start1));
             }
@@ -1559,8 +1564,8 @@ void OrbishAudioProcessor::handleRecordBlock(int start, int stop) {
             }
             if (*activeTrack->CurrentTop < (*activeTrack->Layers).size() - int(1)) {
                 (*activeTrack->Layers)[*activeTrack->CurrentTop]->dirty = true;
-                activeTrack->setActivePlaybackLayer((*activeTrack->Layers)[*activeTrack->CurrentTop]);
                 ++(*activeTrack->CurrentTop);
+                activeTrack->setActivePlaybackLayer((*activeTrack->Layers)[*activeTrack->CurrentTop]);
                 activeTrack->setActiveRecordingLayer((*activeTrack->Layers)[*activeTrack->CurrentTop]);
             }else if((*activeTrack->Layers).size() == 0 || activeTrack->getActiveRecordingLayer()->dirty){
                 start1 = Time::getHighResolutionTicks();
@@ -1569,7 +1574,12 @@ void OrbishAudioProcessor::handleRecordBlock(int start, int stop) {
                // activeTrack->setActivePlaybackLayer(l);
                 activeTrack->setActiveRecordingLayer(l);
                 end1 = Time::getHighResolutionTicks();
-                //context->logMessage("2. adding layer at: " + String(activeTrack->CurrentRecordingIndex));
+                context->logMessage("2. in overlap overdub ");
+
+                context->logMessage("playback layer: " + String(activeTrack->getActivePlaybackLayer()->index));
+                context->logMessage("recording layer: " + String(l->index));
+                context->logMessage("layers size: " + String(activeTrack->Layers->size()));
+
                 //} );
                 //context->logMessage("Duration inner block: " + String(end1 - start1));
             }
@@ -1691,12 +1701,12 @@ void OrbishAudioProcessor::handlePlaybackBlock(int start, int stop) {
                 }
 
                 int currentPlayBuffer = activeLayer->index;
-                if (track->Recording) {
-                    // if in overdub mode decrement current play buffer as the uppermost buffer is used for recording
-                    if (track->getRecordMode() == 0) {
-                        currentPlayBuffer--;
-                    }
-                }
+//                if (track->Recording) {
+//                    // if in overdub mode decrement current play buffer as the uppermost buffer is used for recording
+//                    if (track->getRecordMode() == 0) {
+//                        currentPlayBuffer--;
+//                    }
+//                }
                 // set start to 0 if out of bounds
                 start = (start >= context->maxBlockSize) ? 0 : max(start, 0);
                 start=0;

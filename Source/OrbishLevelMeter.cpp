@@ -13,7 +13,7 @@ OrbishLevelMeter::OrbishLevelMeter (const MeterFlags type)
     FFAU::LevelMeter::LevelMeter (type)
 {
     rms = 0;
-    meterDisplay = std::make_unique<OpenGLAudioMeter>(rms);
+    meterDisplay = std::make_unique<OpenGLAudioMeter>(rms, rms2);
     addAndMakeVisible(*meterDisplay);
     meterDisplay->setOpenGLContext(std::make_unique<OpenGLContext>());
     meterDisplay->start();
@@ -28,5 +28,21 @@ void OrbishLevelMeter::resized(){
 }
 void OrbishLevelMeter::timerCallback ()
 {
-    rms = source->getRMSLevel (0);
+    auto newRMS = source->getRMSLevel (0);
+    auto newRMS2 = source->getRMSLevel(1);
+
+    int64 stamp = Time::getApproximateMillisecondCounter();
+    if (stamp - lastRmsUpdate > source->getMaxHoldMS() || newRMS < rms) {
+        if(stamp - lastRmsUpdate <= source->getMaxHoldMS()){
+            lastRmsUpdate = stamp;
+        }
+        lastRmsUpdate = stamp;
+        rms = source->getRMSLevel (0);
+    }
+    if (stamp - lastRmsUpdate2 > source->getMaxHoldMS() || newRMS2 < rms2) {
+        lastRmsUpdate2 = stamp;
+        rms2 = source->getRMSLevel (1);
+    }
+
+
 }

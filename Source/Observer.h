@@ -12,6 +12,7 @@
 
 #include <stdio.h>
 #include "JuceHeader.h"
+#include "DataExchange.h"
 
 
 class Observer{
@@ -19,7 +20,7 @@ public:
      virtual ~Observer() {}
      Observer() {}
 
-    typedef void (Observer::*UpdateBuffer) (const AudioBuffer<float>&, int);
+    typedef void (Observer::*UpdateBuffer) (std::shared_ptr<BufferForVisualisation>);
     UpdateBuffer updateLoopBuffer = 0;
     typedef void (Observer::*UpdatePosition) (int, bool);
     UpdatePosition updatePlayPosition = 0;
@@ -44,7 +45,7 @@ public:
     typedef void (Observer::* HostPositionChanged)(int);
     HostPositionChanged hostPositionChanged = 0;
     
-    virtual void updateLoopVisualiser (AudioBuffer<float>& , int ) {};
+    virtual void updateLoopVisualiser (std::shared_ptr<BufferForVisualisation>) {};
     virtual void askToUpdatePlayHead(int , bool ) {};
     virtual void askToHandleMidiMessages(const MidiBuffer& ) {};
     virtual void askToCreateTrack() {};

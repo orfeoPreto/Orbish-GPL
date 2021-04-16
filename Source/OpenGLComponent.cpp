@@ -13,7 +13,7 @@
 //==============================================================================
 
 
-OpenGLComponent::OpenGLComponent (std::atomic<float> &offset):
+OpenGLComponent::OpenGLComponent (std::atomic<float>& offset):
 vertices{
     1.0f,   1.0f,  0.0f,  // Top Right
     1.0f,  -1.0f,  0.0f,  // Bottom Right
@@ -90,16 +90,24 @@ void OpenGLComponent::renderOpenGL() {
         counter = 0;
     }
     updateScale();
-    glViewport(0, 0, width, height);
+    glViewport(x, y, width, height);
     glHint(GL_SAMPLES, 4);
     glEnable (GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
     glEnable(GL_MULTISAMPLE);
     //set background colour
-    OpenGLHelpers::clear(getLookAndFeel().findColour (ResizableWindow::backgroundColourId));
+    if(clearViewport){
+        OpenGLHelpers::clear(getLookAndFeel().findColour (ResizableWindow::backgroundColourId));
+    }else{
+        clearViewport = true;
+    }
     {
         shader->use();
-        setUniforms();
+        try {
+            setUniforms();
+        } catch (int e) {
+            std::cout << "Exception occured:" << e << "\n";
+        }
     }
     {
         glDisable(GL_DEPTH_TEST);

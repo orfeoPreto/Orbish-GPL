@@ -43,7 +43,7 @@ FFAU::LevelMeter::LevelMeter (const MeterFlags type)
     selectedChannel (-1),
     fixedNumChannels(-1),
     meterType       (type),
-    refreshRate     (30),
+    refreshRate     (60),
     useBackgroundImage (false),
     backgroundNeedsRepaint (true)
 {

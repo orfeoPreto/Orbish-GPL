@@ -139,7 +139,8 @@ void OrbishAudioProcessorEditor::setupModeControls(ButtonControlArea *buttonCont
 
 void OrbishAudioProcessorEditor::setupThumbnail(){
     // Audio Display
-    thumbnail = std::make_unique<OpenGLAudioThumbnail>(openGLContext);
+    thumbnail = std::make_unique<OpenGLAudioThumbnail>(playHeadPosition);
+    thumbnail->setOpenGLContext(std::make_shared<OpenGLContext>());
     thumbnail->setLookAndFeel(&getLookAndFeel());
 }
 
@@ -495,6 +496,22 @@ void OrbishAudioProcessorEditor::changeListenerCallback (ChangeBroadcaster* ){
            
 }
 
+
+void OrbishAudioProcessorEditor::updateLoopVisualiser(std::shared_ptr<BufferForVisualisation> b){
+        //thumbnail.reset (processor.context->audioInputsCount, processor.context->sampleRate, numSamples);
+    if (b->numSamples > 0) {
+        thumbnail->setBuffer(b->buffer, b->numSamples, b->layerIndex);
+        thumbnail->setActiveLayer(processor.activeTrack->getActivePlaybackLayer()->index);
+        thumbnail->sampleRate = processor.context->sampleRate;
+        thumbnail->start();
+        if(!thumbnail->isVisible()){thumbnail->setVisible(true);}
+    }else{
+        thumbnail->stop();
+        thumbnail->setVisible(false);
+    }
+    infoAndControlArea->controlArea.thumbnailAndGroupArea.thumbnailArea.repaint();
+}
+
 void OrbishAudioProcessorEditor::timerCallback(){
     // update thumbnail from ringbuffer
     std::shared_ptr<BufferForVisualisation> b;
@@ -508,10 +525,12 @@ void OrbishAudioProcessorEditor::timerCallback(){
            b->buffer->getNumChannels() <= processor.context->audioOutputsCount &&
            b->buffer->getNumChannels() > 0
            ){
-            updateLoopVisualiser(*b->buffer, b->numSamples);
+            updateLoopVisualiser(b);
         }else{
-            AudioBuffer<float> dummy{};
-            updateLoopVisualiser(dummy, 0);
+            b = std::make_shared<BufferForVisualisation>();
+            b->buffer = nullptr;
+            b->numSamples = 0;
+            updateLoopVisualiser(b);
         }
        // b->buffer = nullptr;
 	}
@@ -608,8 +627,7 @@ void OrbishAudioProcessorEditor::toggleStop(){
 void OrbishAudioProcessorEditor::toggleClear(){
     infoAndControlArea->controlArea.buttonControlArea.transportControlArea.playButton.setToggleState(false, NotificationType::dontSendNotification);
   //  thumbnail.reset(processor.context->audioInputsCount, processor.context->sampleRate, thumbnail.getNumSamplesFinished());
-    thumbnail->readBuffer.reset();
-   // thumbnail.clear();
+    thumbnail->clear();
     thumbnail->stop();
     playHeadPosition = 0;
     reverseState = ToggleState::Off;
@@ -632,14 +650,14 @@ void OrbishAudioProcessorEditor::paint (Graphics& g){
   // logMessage(String(thumbnail.getNumChannels()) + String(thumbnail.getTotalLength()));
 
 
-    if (nullptr == thumbnail->readBuffer ||
-        thumbnail->readBuffer->getNumChannels() == 0 || thumbnail->getTotalLength() <= 0) {
-        infoAndControlArea->controlArea.thumbnailAndGroupArea.thumbnailArea.setFileLoaded(false);
-    }
-    else {
-        infoAndControlArea->controlArea.thumbnailAndGroupArea.thumbnailArea.setFileLoaded(true);
-
-    }
+//    if (nullptr == thumbnail->readBuffer ||
+//        thumbnail->readBuffer->getNumChannels() == 0 || thumbnail->getTotalLength() <= 0) {
+//        infoAndControlArea->controlArea.thumbnailAndGroupArea.thumbnailArea.setFileLoaded(false);
+//    }
+//    else {
+//        infoAndControlArea->controlArea.thumbnailAndGroupArea.thumbnailArea.setFileLoaded(true);
+//
+//    }
 
     paintInfoSection();
     g.setColour(Colours::black);
@@ -810,23 +828,6 @@ void OrbishAudioProcessorEditor::makeTracks(){
     }
 }
 
-void OrbishAudioProcessorEditor::updateLoopVisualiser(AudioBuffer<float>& buffer, int numSamples){
-        //thumbnail.reset (processor.context->audioInputsCount, processor.context->sampleRate, numSamples);
-    if (numSamples > 0) {
-       // thumbnail.addBlock (0, buffer, 0, numSamples);
-        thumbnail->setTotalAudioLength(numSamples);
-        thumbnail->sampleRate = processor.context->sampleRate;
-        thumbnail->readBuffer = std::make_unique<AudioSampleBuffer>(buffer);
-        thumbnail->initVisualizationBuffer();
-        thumbnail->start();
-        if(!thumbnail->isVisible()){thumbnail->setVisible(true);}
-        thumbnail->setLayer(processor.activeTrack->getActivePlaybackLayer()->index);
-    }else{
-        thumbnail->stop();
-        thumbnail->setVisible(false);
-    }
-    infoAndControlArea->controlArea.thumbnailAndGroupArea.thumbnailArea.repaint();
-}
 
 void OrbishAudioProcessorEditor::clicked(Button* button) {
 	if (button == &settingsPage->closeSettingsButton) {
@@ -1109,7 +1110,7 @@ void OrbishAudioProcessorEditor::updatePlayState()
 //================ DO ACT ==============
 
 void OrbishAudioProcessorEditor::doUpdatePlayHead(){
-    thumbnail->setPlayhead(playHeadPosition);
+//    thumbnail->setPlayhead(playHeadPosition);
     thumbnail->reverse = getReverseState();
 //    float totalSubDiv = float(processor.context->samplesToBeats(playHeadPosition));
 //    infoAndControlArea->infoArea.setSubDivs(totalSubDiv);
@@ -1262,7 +1263,7 @@ void OrbishAudioProcessorEditor::doChangeLoop(){
 
 void OrbishAudioProcessorEditor::doChangeLayer(){
     if(nextLayerNumber>=0){
-        thumbnail->setLayer(nextLayerNumber);
+        thumbnail->setActiveLayer(nextLayerNumber);
     }
 }
 

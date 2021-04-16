@@ -239,6 +239,10 @@ public:
         holdMSecs = millis;
     }
 
+    juce::int64 getMaxHoldMS(){
+        return holdMSecs;
+    }
+    
     /**
      Returns the reduction level. This value is not computed but can be set 
      manually via \see setReductionLevel.
@@ -334,6 +338,7 @@ public:
     {
         suspended = shouldBeSuspended;
     }
+    
 
 private:
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (LevelMeterSource)
@@ -341,7 +346,7 @@ private:
     friend class juce::WeakReference<LevelMeterSource>;
 
     std::vector<ChannelData> levels;
-
+   
     juce::int64 holdMSecs;
 
     std::atomic<juce::int64> lastMeasurement;

@@ -51,7 +51,7 @@ public:
     void stop();
     void setOffset(float &);
     GLuint createTexture(GLint, GLint, bool isDepth=false);
-    void updateScale();
+    virtual void updateScale();
     // OpenGL Variables
     std::shared_ptr<OpenGLContext> openGLContext;
     virtual void setUniforms();
@@ -70,9 +70,9 @@ protected:
     GLuint indices[6];
     int runs = 0;
     GLfloat* subImage;
-    int width, height;
-    std::atomic<float>& offset;
-
+    int width=0, height=0, x=0, y=0;
+    std::atomic<float> &offset;
+    bool clearViewport = true;
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (OpenGLComponent);
 
 };

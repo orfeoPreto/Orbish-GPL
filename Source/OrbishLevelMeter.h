@@ -24,7 +24,10 @@ public:
     void timerCallback ();
 private:
     std::unique_ptr<OpenGLAudioMeter> meterDisplay;
-    std::atomic<float> rms;
+    std::atomic<float> rms, rms2;
+    int64 lastRmsUpdate = 0;
+    int64 lastRmsUpdate2 = 0;
+
 };
 
 #endif /* OrbishLevelMeter_hpp */

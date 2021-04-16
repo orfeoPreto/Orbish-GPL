@@ -96,7 +96,7 @@ public:
     void doUpdatePlayState();
     void doRemoveTrack();
     void mouseDrag(const MouseEvent& event) override;
-    void updateLoopVisualiser(AudioBuffer<float>& buffer, int numSamples) override;
+    void updateLoopVisualiser(std::shared_ptr<BufferForVisualisation>) override;
     void askToUpdatePlayHead(int position, bool reverse) override;
     void updatePlayHead();
     void updateHostPosition();
@@ -167,7 +167,7 @@ private:
     std::atomic<uint> flags;
     MidiBuffer processedMidi;
     std::shared_ptr<OpenGLContext> openGLContext;
-    std::atomic<int> playHeadPosition;
+    std::atomic<float> playHeadPosition;
     std::atomic<float> hostPosition;
     HeaderArea headerArea{};
     std::unique_ptr<InfoAndControlArea> infoAndControlArea;
