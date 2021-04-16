@@ -15,7 +15,7 @@ namespace BinaryData
     const int            circle_vsSize = 82;
 
     extern const char*   meterBar_fs;
-    const int            meterBar_fsSize = 212;
+    const int            meterBar_fsSize = 293;
 
     extern const char*   meterBar_vs;
     const int            meterBar_vsSize = 82;
