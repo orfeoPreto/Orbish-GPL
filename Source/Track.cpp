@@ -726,7 +726,6 @@ void Track::UpdateLoopVisualizer(Layer* l){
             (context->observer->*(context->observer->layerChange)) ( Index,b->layerIndex);
             context->xchange->readVisualisationBufferQueue->push(b);
         }
-        refresh = false;
     }
 }
 
@@ -748,6 +747,8 @@ void Track::RefreshLoopVisualizer(){
            && (*Layers)[i]->dirty) {
         UpdateLoopVisualizer((*Layers)[i].get());
     }
+	refresh = false;
+	(context->observer->*(context->observer->layersRefreshed))();
 }
 
 void Track::RemoveLoopBefore(){

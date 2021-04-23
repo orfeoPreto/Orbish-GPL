@@ -36,7 +36,7 @@ InputControlArea::InputControlArea(){
 }
 
 InputControlArea::~InputControlArea(){
-    inputMeter.setLookAndFeel(nullptr);
+//    inputMeter.setLookAndFeel(nullptr);
 }
 
 void InputControlArea::paint (juce::Graphics& g){

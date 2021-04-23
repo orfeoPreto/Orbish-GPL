@@ -55,7 +55,9 @@ enum CallBackFlags {
   shouldRemoveLoop      = 0x100,
   shouldUpdatePlayState   = 0x200,
   shouldChangeLayer      = 0x400,
-  shouldUpdateHostPosition  = 0x600,
+  shouldUpdateHostPosition  = 0x800,
+  shouldRefreshThumbnail = 0x1000,
+
 };
 
 
@@ -87,6 +89,7 @@ public:
     void toggleClear();
     void toggleReverse();
     void askToRemoveTrack(int) override;
+	void askToRefreshThumbnail() override;
     void removeTrack();
     void askToRemoveLoop() override;
     void removeLoop();
@@ -106,6 +109,8 @@ public:
     void doChangeTrack() ;
     void createLoop();
     void doCreateLoop();
+	void refreshThumbnail();
+	void doRefreshThumbnail(bool);
     void askToChangeTrack(int trackNumber) override;
     void askToChangeLoop(int trackNumber, int loopNumber) override;
     void askToChangeLayer(int trackNumber, int layerNumber) override;
@@ -244,7 +249,6 @@ private:
     int activeTrack = 0;
     int activeLoop = 0;
     bool dirty = false;
-    bool refreshLayers = false;
     int nextTrackNumber = 0;
     int nextLoopNumber = -1;
     std::atomic<int> nextLayerNumber;

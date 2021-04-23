@@ -45,7 +45,7 @@ public:
 	bool Playing = false;
 	bool Muted = false;
     bool Soloed = false;
-	double PreviousInputLevel;
+	double PreviousInputLevel = -1;
 	double PreviousOutputLevel = -1;
 	bool LayersReady = true;
 	bool FirstRecordingBuffer = false;

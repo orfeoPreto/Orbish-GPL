@@ -12,10 +12,12 @@
 #include <stdio.h>
 #include "Orbish.h"
 #include "OpenGLComponents.h"
+#include <ff_meters/ff_meters.h>
+
 
 
 class OrbishLevelMeter:
-    public FFAU::LevelMeter::LevelMeter
+    public FFAU::LevelMeter
 {
 public:
     OrbishLevelMeter (const MeterFlags type);

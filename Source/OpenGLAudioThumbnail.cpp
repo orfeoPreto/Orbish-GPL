@@ -72,12 +72,12 @@ void OpenGLAudioThumbnail::renderOpenGL() {
                 shaderThumbnailWave->uniforms->windowForLog->set (GLfloat(coeff));
             }
             {
-                glBindBuffer (GL_ARRAY_BUFFER, vbo);
-                glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STREAM_DRAW);
-                glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ebo);
-                glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STREAM_DRAW);
-                glVertexAttribPointer(0, 3, GL_FLOAT,GL_FALSE, sizeof(GLfloat) * 3, (GLvoid*)0);
-                glEnableVertexAttribArray(0);
+				openGLContext->extensions.glBindBuffer (GL_ARRAY_BUFFER, vbo);
+				openGLContext->extensions.glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STREAM_DRAW);
+				openGLContext->extensions.glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ebo);
+				openGLContext->extensions.glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STREAM_DRAW);
+				openGLContext->extensions.glVertexAttribPointer(0, 3, GL_FLOAT,GL_FALSE, sizeof(GLfloat) * 3, (GLvoid*)0);
+				openGLContext->extensions.glEnableVertexAttribArray(0);
                 glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
             }
         }

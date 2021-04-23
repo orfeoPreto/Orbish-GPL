@@ -38,7 +38,7 @@ void OpenGLComponent::setOpenGLContext(std::shared_ptr<OpenGLContext> openGLCont
 void OpenGLComponent::start()
 {
     openGLContext->setContinuousRepainting (true);
-    openGLContext->setSwapInterval(0);
+    //openGLContext->setSwapInterval(0);
 }
 
 void OpenGLComponent::stop()
@@ -75,8 +75,8 @@ void OpenGLComponent::updateScale(){
 void OpenGLComponent::newOpenGLContextCreated() {
     shader = std::make_unique<Shader>(shaderName.toStdString().c_str(), openGLContext);
     updateScale();
-    glGenBuffers(1, &vbo);
-    glGenBuffers(1, &ebo);
+	openGLContext->extensions.glGenBuffers(1, &vbo);
+	openGLContext->extensions.glGenBuffers(1, &ebo);
     
 }
 
@@ -91,7 +91,7 @@ void OpenGLComponent::renderOpenGL() {
     }
     updateScale();
     glViewport(x, y, width, height);
-    glHint(GL_SAMPLES, 4);
+    glHint(GL_LINE_SMOOTH_HINT, 4);
     glEnable (GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
     glEnable(GL_MULTISAMPLE);
@@ -111,15 +111,15 @@ void OpenGLComponent::renderOpenGL() {
     }
     {
         glDisable(GL_DEPTH_TEST);
-        glBindBuffer (GL_ARRAY_BUFFER, vbo);
-        glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STREAM_DRAW);
-        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ebo);
-        glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STREAM_DRAW);
-        glVertexAttribPointer(0, 3, GL_FLOAT,GL_FALSE, sizeof(GLfloat) * 3, (GLvoid*)0);
-        glEnableVertexAttribArray(0);
+		openGLContext->extensions.glBindBuffer (GL_ARRAY_BUFFER, vbo);
+		openGLContext->extensions.glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STREAM_DRAW);
+		openGLContext->extensions.glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ebo);
+		openGLContext->extensions.glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STREAM_DRAW);
+		openGLContext->extensions.glVertexAttribPointer(0, 3, GL_FLOAT,GL_FALSE, sizeof(GLfloat) * 3, (GLvoid*)0);
+		openGLContext->extensions.glEnableVertexAttribArray(0);
         glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
-        glBindBuffer(GL_ARRAY_BUFFER, 0);
-        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+		openGLContext->extensions.glBindBuffer(GL_ARRAY_BUFFER, 0);
+		openGLContext->extensions.glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
     }
 }
 

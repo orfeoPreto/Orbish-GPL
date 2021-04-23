@@ -44,7 +44,10 @@ public:
     PlayChanged playChanged = 0;
     typedef void (Observer::* HostPositionChanged)(int);
     HostPositionChanged hostPositionChanged = 0;
-    
+	typedef void (Observer::* LayersRefreshed)();
+	LayersRefreshed layersRefreshed = 0;
+
+
     virtual void updateLoopVisualiser (std::shared_ptr<BufferForVisualisation>) {};
     virtual void askToUpdatePlayHead(int , bool ) {};
     virtual void askToHandleMidiMessages(const MidiBuffer& ) {};
@@ -57,6 +60,7 @@ public:
     virtual void askToChangeLayer(int, int ) {};
     virtual void askToUpdatePlayState(int ) {};
     virtual void askToUpdateHostPosition(int ) {};
+	virtual void askToRefreshThumbnail() {};
 
 };
 #endif /* Observer_hpp */

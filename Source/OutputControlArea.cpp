@@ -77,7 +77,7 @@ void OutputControlArea::resized(){
 
 void OutputControlArea::setEditor(OrbishAudioProcessorEditor* pluginEditor){
     editor = pluginEditor;
-    outputMeter.setMeterSource(editor->getProcessor()->getOutputMeterSource());
+   outputMeter.setMeterSource(editor->getProcessor()->getOutputMeterSource());
 
 }
 

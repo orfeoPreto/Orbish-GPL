@@ -341,7 +341,7 @@ public:
     
 
 private:
-    JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (LevelMeterSource)
+	//JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(LevelMeterSource);
     juce::WeakReference<LevelMeterSource>::Master masterReference;
     friend class juce::WeakReference<LevelMeterSource>;
 

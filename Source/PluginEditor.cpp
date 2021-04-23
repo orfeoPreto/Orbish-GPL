@@ -17,9 +17,7 @@ OrbishAudioProcessorEditor::OrbishAudioProcessorEditor (OrbishAudioProcessor& p,
     openGLContext->setOpenGLVersionRequired(OpenGLContext::OpenGLVersion::openGL3_2);
    // openGLContext->setRenderer (this);
     openGLContext->attachTo (*this);
-   // openGLContext->setContinuousRepainting (true);
-    markActiveTrackForRefresh(true);
-    
+   // openGLContext->setContinuousRepainting (true);    
     // Define the Look and Feel of the application
     auto editorLookAndFeel = new OrbishLookAndFeel();
     setLookAndFeel(editorLookAndFeel);
@@ -55,6 +53,7 @@ OrbishAudioProcessorEditor::OrbishAudioProcessorEditor (OrbishAudioProcessor& p,
     setupNavigationControls(buttonControlArea);
     setupTracks();
     setSize (1300, 800);
+	markActiveTrackForRefresh(true);
 }
 
 //
@@ -90,7 +89,9 @@ void OrbishAudioProcessorEditor::setupTracks(){
     for (auto track : processor.tracks) {
         doCreateTrack(track->Index);
     }
-    tracks[processor.activeTrack->Index]->setActive(true);
+	auto t = tracks[processor.activeTrack->Index];
+    t->setActive(true);
+	t->setActiveLoop(t->getAudioTrack()->ActiveLoop->Index);
 }
 
 
@@ -280,30 +281,31 @@ void OrbishAudioProcessorEditor::saveProject() {
             return;
         }
     }
-    File tempDir;
+    std::unique_ptr<File> tempDir;
 	if (project.newProject || !project.directory.exists()) {
 		File dir = File(File::getSpecialLocation(File::userHomeDirectory));
 		if (dir.getChildFile("Orbish").exists()) {
         	dir = dir.getChildFile("Orbish");
 		}
-		FileChooser fc("Save As", dir,"",true);
-		if (fc.showDialog(
-            FileBrowserComponent::FileChooserFlags::canSelectDirectories
-            | FileBrowserComponent::FileChooserFlags::saveMode
-			, nullptr))
-            project.directory = fc.getResult().getParentDirectory();
-        setProjectName(fc.getResult().getFileName());
-		if (!project.directory.exists()) {
-			juce::Result result = project.directory.createDirectory();
-			if (result.failed()) {
-				logMessage(result.getErrorMessage());
+		FileChooser fc("Save As", dir,"*.orb", false);
+		fc.browseForFileToSave(true);
+			{
+				project.directory = fc.getResult().getParentDirectory();
+				setProjectName(fc.getResult().getFileNameWithoutExtension().replace(".orb","", true));
+				if (!project.directory.exists()) {
+					juce::Result result = project.directory.createDirectory();
+					if (result.failed()) {
+						logMessage(result.getErrorMessage());
+					}
+				}
+				tempDir = std::make_unique<File>(project.directory.getFullPathName() 
+					+ File::getSeparatorString()
+					+ fc.getResult().getFileNameWithoutExtension().replace(".orb","",true));
+				juce::Result result = fc.getResult().createDirectory();
+				if (result.failed()) {
+					logMessage(result.getErrorMessage());
+				}
 			}
-		}
-        tempDir = fc.getResult();
-        juce::Result result = fc.getResult().createDirectory();
-        if (result.failed()) {
-            logMessage(result.getErrorMessage());
-        }
 	}
     auto package = project.directory.getChildFile(project.name + ".orb");
     ZipFile::Builder zip{};
@@ -336,9 +338,9 @@ void OrbishAudioProcessorEditor::saveProject() {
                 return;
             }
 			for (auto k = 0;k <= track->getAudioTrack()->loops[loop->getIndex()]->CurrentTop;++k) {
-				auto result = saveBuffer(track->getIndex(), loop->getIndex(), k, tempDir
+				auto result = saveBuffer(track->getIndex(), loop->getIndex(), k, *tempDir
 					, track->getName() + "_" + String(loop->getIndex()) + "_" + String(k), true);
-                auto file = tempDir.getChildFile(result);
+                auto file = tempDir->getChildFile(result);
                 zip.addFile(file, 1);
 				ValueTree lyv(String("layer"));
 				lyv.setProperty("index", k, nullptr);
@@ -369,12 +371,15 @@ void OrbishAudioProcessorEditor::saveProject() {
 	loopTree->appendChild(*gsv, nullptr);
     loopTree->setProperty("bpm", processor.context->info->bpm, nullptr);
 	std::unique_ptr<XmlElement> el = loopTree->createXml();
-    auto file = tempDir.getChildFile(project.name + ".xml");
+    auto file = tempDir->getChildFile(project.name + ".xml");
     el->writeTo(file, XmlElement::TextFormat());
     zip.addFile(file, 1);
     auto stream = package.createOutputStream();
+	if (package.existsAsFile()) {
+		package.deleteFile();
+	}
     zip.writeToStream(*(stream.get()), nullptr);
-    tempDir.deleteRecursively();
+	tempDir->deleteRecursively();
 	project.dirty = false;
 }
 
@@ -442,14 +447,14 @@ void OrbishAudioProcessorEditor::askUserToOpenFile() {
 	processor.activeTrack->processResetChange();
 	File dir = File(File::getSpecialLocation(File::userHomeDirectory));
 		dir = dir.getChildFile("Orbish");
-	FileChooser fc("Open Project", dir, "*.orb");
+	FileChooser fc("Open Project", dir, "*.orb",false);
     if (fc.browseForFileToOpen()){
         project.directory = fc.getResult().getParentDirectory();
 		openFile(fc.getResult());
     }
 	project.newProject = false;
 	project.dirty = false;
-    
+	markActiveTrackForRefresh(true);
 }
 
 bool OrbishAudioProcessorEditor::openFile(const File& file) {
@@ -501,7 +506,12 @@ void OrbishAudioProcessorEditor::updateLoopVisualiser(std::shared_ptr<BufferForV
         //thumbnail.reset (processor.context->audioInputsCount, processor.context->sampleRate, numSamples);
     if (b->numSamples > 0) {
         thumbnail->setBuffer(b->buffer, b->numSamples, b->layerIndex);
-        thumbnail->setActiveLayer(processor.activeTrack->getActivePlaybackLayer()->index);
+		if (nullptr != processor.activeTrack->getActivePlaybackLayer()) {
+			thumbnail->setActiveLayer(processor.activeTrack->getActivePlaybackLayer()->index);
+		}
+		else {
+			thumbnail->setActiveLayer(0);
+		}
         thumbnail->sampleRate = processor.context->sampleRate;
         thumbnail->start();
         if(!thumbnail->isVisible()){thumbnail->setVisible(true);}
@@ -514,26 +524,7 @@ void OrbishAudioProcessorEditor::updateLoopVisualiser(std::shared_ptr<BufferForV
 
 void OrbishAudioProcessorEditor::timerCallback(){
     // update thumbnail from ringbuffer
-    std::shared_ptr<BufferForVisualisation> b;
-    if(refreshLayers){
-        thumbnail->resetVisualizationBuffers();
-        markActiveTrackForRefresh(false);
-    }
-	while (processor.context->xchange->readVisualisationBufferQueue->read_available()) {
-		processor.context->xchange->readVisualisationBufferQueue->pop(b);
-        if(nullptr != b->buffer &&
-           b->buffer->getNumChannels() <= processor.context->audioOutputsCount &&
-           b->buffer->getNumChannels() > 0
-           ){
-            updateLoopVisualiser(b);
-        }else{
-            b = std::make_shared<BufferForVisualisation>();
-            b->buffer = nullptr;
-            b->numSamples = 0;
-            updateLoopVisualiser(b);
-        }
-       // b->buffer = nullptr;
-	}
+
     
     // run ACT methods in response to flags set by notification callbacks
     updatePlayHead();
@@ -545,6 +536,7 @@ void OrbishAudioProcessorEditor::timerCallback(){
     changeLayer();
     removeLoop();
     updatePlayState();
+	refreshThumbnail();
     
     auto transportControlArea = &infoAndControlArea->controlArea.buttonControlArea.transportControlArea;
     auto modeControlArea = &infoAndControlArea->controlArea.buttonControlArea.modeAndNavigationControlArea.modeControlArea;
@@ -960,6 +952,7 @@ void OrbishAudioProcessorEditor::setUpObserverCallbacks(){
     loopRemoval = &Observer::askToRemoveLoop;
     playChanged = &Observer::askToUpdatePlayState;
     hostPositionChanged = &Observer::askToUpdateHostPosition;
+	layersRefreshed = &Observer::askToRefreshThumbnail;
 }
 
 // ============= ASK TO ACT ==============
@@ -1021,8 +1014,17 @@ void OrbishAudioProcessorEditor::askToUpdateHostPosition(int hostPos) {
     flags |= CallBackFlags::shouldUpdateHostPosition;
 };
 
+void OrbishAudioProcessorEditor::askToRefreshThumbnail() {
+	//logMessage("before setting host position");	
+	flags |= CallBackFlags::shouldRefreshThumbnail;
+};
 
 // =============== ACT ===================
+
+void OrbishAudioProcessorEditor::refreshThumbnail() {
+		doRefreshThumbnail(flags& CallBackFlags::shouldRefreshThumbnail);
+		flags &= ~CallBackFlags::shouldRefreshThumbnail;
+}
 
 void OrbishAudioProcessorEditor::updatePlayHead(){
     if(flags & CallBackFlags::shouldUpdatePlayHead){
@@ -1051,13 +1053,11 @@ void OrbishAudioProcessorEditor::changeTrack(){
     if(flags & CallBackFlags::shouldChangeTrack){
         doChangeTrack();
         flags &= ~CallBackFlags::shouldChangeTrack;
-        refreshLayers = true;
     }
 }
 
 void OrbishAudioProcessorEditor::markActiveTrackForRefresh(bool shouldRefresh){
         processor.activeTrack->refresh = shouldRefresh;
-        refreshLayers = shouldRefresh;
 }
 
 void OrbishAudioProcessorEditor::createLoop(){
@@ -1081,7 +1081,6 @@ void OrbishAudioProcessorEditor::changeLoop(){
     if(flags & CallBackFlags::shouldChangeLoop){
         doChangeLoop();
         flags &= ~CallBackFlags::shouldChangeLoop;
-        refreshLayers = true;
     }
 }
 
@@ -1109,6 +1108,28 @@ void OrbishAudioProcessorEditor::updatePlayState()
 
 //================ DO ACT ==============
 
+void OrbishAudioProcessorEditor::doRefreshThumbnail(bool refresh) {
+	std::shared_ptr<BufferForVisualisation> b;
+	if (refresh) {
+		thumbnail->resetVisualizationBuffers();
+		markActiveTrackForRefresh(false);
+	}
+	while (processor.context->xchange->readVisualisationBufferQueue->read_available()) {
+		processor.context->xchange->readVisualisationBufferQueue->pop(b);
+		if (nullptr != b->buffer &&
+			b->buffer->getNumChannels() <= processor.context->audioOutputsCount &&
+			b->buffer->getNumChannels() > 0
+			) {
+			updateLoopVisualiser(b);
+		}
+		else {
+			b = std::make_shared<BufferForVisualisation>();
+			b->buffer = nullptr;
+			b->numSamples = 0;
+			updateLoopVisualiser(b);
+		}
+	}
+}
 void OrbishAudioProcessorEditor::doUpdatePlayHead(){
 //    thumbnail->setPlayhead(playHeadPosition);
     thumbnail->reverse = getReverseState();

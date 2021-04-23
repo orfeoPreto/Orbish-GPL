@@ -10,7 +10,7 @@
 #include <JuceHeader.h>
 #include <stdio.h>
 #include <istream>
-//#define SHADERS_FROM_BINARY_DATA 0
+#define SHADERS_FROM_BINARY_DATA 1
 using namespace juce;
 
 
@@ -45,7 +45,7 @@ private:
                                                         OpenGLShaderProgram& shaderProgram,
                                                         const char* uniformName)
     {
-        if (glGetUniformLocation (shaderProgram.getProgramID(), uniformName) < 0)
+        if (openGLContext.extensions.glGetUniformLocation (shaderProgram.getProgramID(), uniformName) < 0)
             return nullptr;
         
         return new OpenGLShaderProgram::Uniform (shaderProgram, uniformName);
@@ -57,7 +57,11 @@ class Shader{
     GLuint loadShader(std::string &source, GLuint mode);
     void loadFile(const char* fn, std::string &str, GLuint);
     void removeShader();
-    String shaderPath = "/Users/Duke/Documents/GitHub/JUCE/Orbish/resources/shaders";
+    String shaderPath = (SystemStats::getOperatingSystemType() & SystemStats::MacOSX)
+		? "/Users/Duke/Documents/GitHub/JUCE/Orbish/resources/shaders"
+		: (SystemStats::getOperatingSystemType() & SystemStats::Windows)
+		      ? "C:\\Users\\quarc\\source\\repos\\orfeoPreto\\Orbish\\resources\\shaders"
+		      : "";
 public:
     Shader(const char* sname, std::shared_ptr<OpenGLContext> openGLContext);
     ~Shader();
