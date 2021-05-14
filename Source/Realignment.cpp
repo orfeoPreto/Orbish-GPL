@@ -26,19 +26,26 @@ int Realignment::getTotalOffset (){
 int Realignment::getAccumulatedOffset (){
     return accumulatedOffset;
 }
+int Realignment::getMinOffset(int offset){
+    if(offset != 0){
+        auto sign = 1;
+        sign = offset/abs(offset);
+        offset = std::min(abs(offset),block) * sign;
+    }
+    return offset;
+}
+
 void Realignment::setTotalOffset(int offset){
     totalOffset = offset;
-    auto sign = 1;
     if(offset != 0){
-        offset = std::min(abs(offset),block);
-        sign = offset/abs(offset);
+        offset = getMinOffset(offset);
         syncInProgress = true;
         fadeInProgress = true;
     }else{
         accumulatedOffset = 0;
     }
-    currentOffset = offset * sign;
-    int fadeOffset = std::min(offset, int(smplRate * .01));
+    currentOffset = offset;
+    int fadeOffset = std::min(abs(offset), int(smplRate * .01));
     remainingBuffersToSpreadFade = totalBuffersToSpreadFade = fadeOffset / block;
     if (totalBuffersToSpreadFade == 0 && fadeOffset%block > 0) {
             remainingBuffersToSpreadFade = totalBuffersToSpreadFade = 1;
@@ -92,12 +99,11 @@ void Realignment::setRealigned(bool realigned){
 void Realignment::BufferProcessed(){
     accumulatedOffset += currentOffset;
     if(--remainingBuffersToSpreadFade <= 0){
-        fadeInProgress = false;
         setRealigned(true);
     }
 
     processedBuffersToSpreadFade = totalBuffersToSpreadFade - remainingBuffersToSpreadFade;
     currentFadeLevelStart = processedBuffersToSpreadFade * fadeLevelDiff;
     currentFadeLevelEnd = (processedBuffersToSpreadFade + 1)*fadeLevelDiff;
-    currentOffset = std::min(totalOffset - accumulatedOffset, block);
+    currentOffset = getMinOffset(totalOffset - accumulatedOffset);
 }

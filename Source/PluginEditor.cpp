@@ -56,26 +56,6 @@ OrbishAudioProcessorEditor::OrbishAudioProcessorEditor (OrbishAudioProcessor& p,
 	markActiveTrackForRefresh(true);
 }
 
-//
-//void OrbishAudioProcessorEditor::newOpenGLContextCreated()
-//{
-//    for (auto * renderer : renderers)
-//        renderer->newOpenGLContextCreated();
-//}
-//
-//
-//void OrbishAudioProcessorEditor::openGLContextClosing()
-//{
-//    for (auto * renderer : renderers)
-//        renderer->openGLContextClosing();
-//}
-//
-//
-//void OrbishAudioProcessorEditor::renderOpenGL()
-//{
-//    for (auto * renderer : renderers)
-//        renderer->renderOpenGL();
-//}
 
 void OrbishAudioProcessorEditor::setupTracks(){
     addAndMakeVisible(tracksArea);
@@ -116,6 +96,8 @@ void OrbishAudioProcessorEditor::setupTransportControls(ButtonControlArea* butto
     transportControlArea->setEditor(this);
 
     recordAttachment.reset (new ButtonAttachment (valueTreeState, "record", transportControlArea->recordButton));
+    clickAttachment.reset (new ButtonAttachment (valueTreeState, "click", infoAndControlArea->infoArea.clickButton));
+
     playAttachment.reset (new ButtonAttachment (valueTreeState, "play", transportControlArea->playButton));
     stopAttachment.reset(new ButtonAttachment(valueTreeState, "stop", transportControlArea->stopButton));
     clearAttachment.reset(new ButtonAttachment(valueTreeState, "reset", transportControlArea->clearButton));
@@ -687,9 +669,6 @@ void OrbishAudioProcessorEditor::paintInfoSection(){
     String timeSig = String(processor.context->info->timeSigNumerator) + "/" + String(processor.context->info->timeSigDenominator);
     if(timeSig != infoAndControlArea->infoArea.getTimeSignature()){
         infoAndControlArea->infoArea.setTimeSignature(timeSig);
-//        infoAndControlArea->infoArea.setTimeSigNumerator(processor.context->info->timeSigNumerator);
-//        infoAndControlArea->infoArea.setTimeSigDenominator(processor.context->info->timeSigDenominator);
-
     }
     auto bpmStr = "bpm: " + String(processor.context->info->bpm, 1);
     if(bpmStr != infoAndControlArea->infoArea.getBeatsPerMinute()){
@@ -745,8 +724,8 @@ void OrbishAudioProcessorEditor::resized() {
     auto headerHeight = 30;
     headerArea.setBounds(bounds.removeFromTop(headerHeight));
     infoAndControlArea->setBounds(bounds.removeFromTop(juce::jmax(80, bounds.getHeight()/2)));
+    bounds.removeFromLeft(143);
     tracksViewport.setBounds(bounds.reduced(15));
-    
     makeTracks();
 }
 

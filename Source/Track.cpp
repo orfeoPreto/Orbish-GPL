@@ -209,12 +209,14 @@ void Track::setActive(bool newValue){
 
 void Track::parameterChanged(const String &parameterID, float newValue) {
     if(parameterID == "inputLevel"){
-        state->setProperty(parameterID, Decibels::decibelsToGain(newValue), nullptr);
+        auto p = params.getParameter("inputLevel");
+        state->setProperty(parameterID, p->convertTo0to1(newValue), nullptr);
         //  DBG("input: "+String(p->convertTo0to1(newValue)));
         return;
     }
     if(parameterID == "outputLevel"){
-        state->setProperty(parameterID, Decibels::decibelsToGain(newValue), nullptr);
+        auto p = params.getParameter("outputLevel");
+        state->setProperty(parameterID, p->convertTo0to1(newValue), nullptr);
         return;
     }
     state->setProperty(parameterID, newValue, nullptr);
@@ -590,10 +592,10 @@ void Track::PausePlaybackAfter()
 
 void Track::StartReverse()
 {
-    if (Reverse == false && *LoopDuration > 0)
-    {
-        *CurrentPlayingIndex = (*LoopDuration - 1 - *CurrentPlayingIndex);
-    }
+//    if (Reverse == false && *LoopDuration > 0)
+//    {
+//        *CurrentPlayingIndex = (*LoopDuration - 1 - *CurrentPlayingIndex);
+//    }
     Reverse = true;
     setReverseArmed(true);
     realignment->setRealigned(true);
@@ -601,10 +603,10 @@ void Track::StartReverse()
 
 void Track::StopReverse()
 {
-    if (Reverse == true && *LoopDuration > 0)
-    {
-        *CurrentPlayingIndex = (*LoopDuration - 1 - *CurrentPlayingIndex);
-    }
+//    if (Reverse == true && *LoopDuration > 0)
+//    {
+//        *CurrentPlayingIndex = (*LoopDuration - 1 - *CurrentPlayingIndex);
+//    }
     Reverse = false;
     setReverseArmed(false);
     realignment->setRealigned(true);

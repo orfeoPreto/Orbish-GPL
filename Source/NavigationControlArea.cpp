@@ -73,7 +73,6 @@ void NavigationControlArea::resized(){
     // Loop navigation
     auto loopButtonArea = bounds.removeFromLeft(bounds.getWidth() / 2).reduced(10);
     auto loopNavArea = loopButtonArea.removeFromLeft(loopButtonArea.getWidth() * 3 / 5);
-    
     loopLabel.setBounds(loopNavArea.removeFromTop(15));
     auto buttonWidth = loopNavArea.getWidth() / 3;
     previousLoopButton.setBounds(loopNavArea.removeFromLeft(buttonWidth));
@@ -85,7 +84,7 @@ void NavigationControlArea::resized(){
     // Track navigation
     auto trackButtonArea = bounds.reduced(10);
     auto trackNavArea = trackButtonArea.removeFromLeft(trackButtonArea.getWidth() * 3 / 5);
-
+    auto txt = trackLabel.getText();
     trackLabel.setBounds(trackNavArea.removeFromTop(15));
     buttonWidth = trackNavArea.getWidth() / 3;
     previousTrackButton.setBounds(trackNavArea.removeFromLeft(buttonWidth));

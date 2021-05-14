@@ -63,29 +63,61 @@ AudioProcessor(BusesProperties()
 context(new OrbishContext()),
 parameters(*this, nullptr, "OrbishState", {
     make_unique<AudioParameterFloat>("globalMix", "GlobalMix"
-                                          ,NormalisableRange<float>(-120.0f, 6.0f
-                                                                    , [](float start, float end, float gain) { return Decibels::gainToDecibels(gain * Decibels::decibelsToGain(end) , start); }
+                                          ,NormalisableRange<float>(
+                                                                    -120.0f
+                                                                    , 6.0f
+                                                                    , [](float start, float end, float gain) {
+                                                                                                                return Decibels::gainToDecibels(gain * Decibels::decibelsToGain(end) , start);
+                                                                                                             }
                                                                     , [](float start, float end, float dB) {
-        float n = Decibels::decibelsToGain(dB, start);
-        float d = Decibels::decibelsToGain(end);
-        float r = n / d;
-        return r;
-    }), 0.5f, "db")
+                                                                                                                float n = Decibels::decibelsToGain(dB, start);
+                                                                                                                float d = Decibels::decibelsToGain(end);
+                                                                                                                float r = n / d;
+                                                                                                                return r;
+                                                                                                            }
+                                                                    )
+                                         , 0.5f
+                                         , "db")
+    , make_unique<AudioParameterFloat>("clickLevel", "clickLevel"
+                                       , NormalisableRange<float>(-120.0f, 6.0f
+                                                                  , [](float start, float end, float gain) {
+                                                                                                                return Decibels::gainToDecibels(gain * Decibels::decibelsToGain(end) , start);
+        
+                                                                                                            }
+                                                                  , [](float start, float end, float dB) {
+                                                                                                                return Decibels::decibelsToGain(dB, start) / Decibels::decibelsToGain(end);
+                                                                                                        }
+                                                                  )
+                                       , 0.5f
+                                       , "db")
     , make_unique<AudioParameterFloat>("latency", "Latency"
                                             ,NormalisableRange<float>(-500.0f, 500.0f), 0, "ms")
     , make_unique<AudioParameterFloat>("inputLevel", "InputLevel"
                                             , NormalisableRange<float>(-60.0f, 6.0f
-                                                                       , [](float start, float end, float gain) { return Decibels::gainToDecibels(gain * Decibels::decibelsToGain(end) , start); }
+                                                                       , [](float start, float end, float gain) {
+                                                                                                                    return Decibels::gainToDecibels(gain * Decibels::decibelsToGain(end) , start);
+                                                                                                                }
                                                                        , [](float start, float end, float dB) {
-        float n = Decibels::decibelsToGain(dB, start);
-        float d = Decibels::decibelsToGain(end);
-        float r = n / d;
-        return r;
-    }), 0.5f, "db")
+                                                                                                                    float n = Decibels::decibelsToGain(dB, start);
+                                                                                                                    float d = Decibels::decibelsToGain(end);
+                                                                                                                    float r = n / d;
+                                                                                                                    return r;
+                                                                                                                }
+                                                                       )
+                                       , 0.5f
+                                       , "db")
     , make_unique<AudioParameterFloat>("outputLevel", "outputLevel"
                                             , NormalisableRange<float>(-60.0f, 6.0f
-                                                                       , [](float start, float end, float gain) { return Decibels::gainToDecibels(gain * Decibels::decibelsToGain(end) , start); }
-                                                                       , [](float start, float end, float dB) { return Decibels::decibelsToGain(dB, start) / Decibels::decibelsToGain(end); }), 0.5f, "db")
+                                                                       , [](float start, float end, float gain) {
+                                                                                                                    return Decibels::gainToDecibels(gain * Decibels::decibelsToGain(end) , start);
+                                                                                                                }
+                                                                       , [](float start, float end, float dB) {
+                                                                                                                    return Decibels::decibelsToGain(dB, start) / Decibels::decibelsToGain(end);
+                                                                                                            }
+                                                                       )
+                                       , 0.5f
+                                       , "db")
+    , createParamFromBool(new AudioParameterBool("click", "click", false), false)
     , createParamFromBool(new AudioParameterBool("record", "Record", false), false)
     , createParamFromBool(new AudioParameterBool("play", "Play", false), false)
     , createParamFromBool(new AudioParameterBool("stop", "Stop", false), false)
@@ -128,17 +160,22 @@ parameters(*this, nullptr, "OrbishState", {
 
     context->feedback = Decibels::decibelsToGain(float(-0.3));
     context->mix = Decibels::decibelsToGain(parameters.getParameter("globalMix")->getValue());
+    context->clickLevel = Decibels::decibelsToGain(parameters.getParameter("clickLevel")->getValue());
+
     context->xchange = new DataExchange();
     
     initGroups();
-//    auto formatMgr = make_unique<AudioFormatManager>();
-//    
-//    formatMgr->registerBasicFormats();
-//    unique_ptr<AudioFormatReader> reader(formatMgr->createReaderFor(make_unique<MemoryInputStream>( BinaryData::BellsTriangle_2_Mute_aif, BinaryData::BellsTriangle_2_Mute_aifSize, false)));
-//    context->clickBuffer = make_unique<AudioSampleBuffer>(reader->numChannels, (int)reader->lengthInSamples);
-//    unique_ptr<AudioFormatReader> reader2(formatMgr->createReaderFor(make_unique<MemoryInputStream>( BinaryData::BellsTriangle_1_Mute_aif,BinaryData::BellsTriangle_1_Mute_aifSize, false)));
-//    context->barStartClickBuffer = make_unique<AudioSampleBuffer>(reader2->numChannels, (int)reader2->lengthInSamples);
+    auto formatMgr = make_unique<AudioFormatManager>();
     
+    formatMgr->registerBasicFormats();
+    unique_ptr<AudioFormatReader> reader(formatMgr->createReaderFor(make_unique<MemoryInputStream>( BinaryData::low_dry_click_aif, BinaryData::low_dry_click_aifSize, false)));
+    context->clickBuffer = make_unique<AudioSampleBuffer>(reader->numChannels, (int)reader->lengthInSamples);
+    reader->read(context->clickBuffer.get(), 0, int(reader->lengthInSamples), 0, true, true);
+    
+    unique_ptr<AudioFormatReader> reader2(formatMgr->createReaderFor(make_unique<MemoryInputStream>( BinaryData::high_dry_click_aif,BinaryData::high_dry_click_aifSize, false)));
+    context->barStartClickBuffer = make_unique<AudioSampleBuffer>(reader2->numChannels, (int)reader2->lengthInSamples);
+    reader2->read(context->barStartClickBuffer.get(), 0, int(reader2->lengthInSamples), 0, true, true);
+
     primarySynchronizer = make_unique<HostSynchronizer>(context);
     secondarySynchronizer =  make_unique<InternalSynchronizer>(context,nullptr);
     context->allocatorThread = thread(
@@ -253,7 +290,12 @@ OrbishAudioProcessor::~OrbishAudioProcessor()
 
 void OrbishAudioProcessor::parameterChanged(const String& parameterID, float newValue) {
     if (parameterID == "globalMix") {
-        context->mix = Decibels::decibelsToGain(newValue);
+        auto p = parameters.getParameter("globalMix");
+        context->mix =  p->convertTo0to1(newValue);
+    }
+    if (parameterID == "clickLevel") {
+        auto p = parameters.getParameter("clickLevel");
+        context->clickLevel =  p->convertTo0to1(newValue);
     }
     if (parameterID == "latency") {
         auto delay = newValue * context->sampleRate * 0.001f;
@@ -275,6 +317,9 @@ void OrbishAudioProcessor::parameterChanged(const String& parameterID, float new
     }
     if (parameterID == "newTrack") {
         processNewTrack();
+    }
+    if (parameterID == "click") {
+        processClickToggle();
     }
     if (parameterID == "removeTrack") {
         processRemoveTrack(tracks.size() - 1);
@@ -454,7 +499,7 @@ void OrbishAudioProcessor::prepareToPlay(double sampleRate, int samplesPerBlock)
     context->fadeTime = int(min(float(samplesPerBlock), float(sampleRate) * .01f));
     context->sampleRate = int(sampleRate);
     //  logMessage("end prepareToPlay");
-    //  logMessage("sample block size:" + String(context->samplesPerBlock));
+    context->logMessage("sample rate set to:" + String(context->sampleRate));
     
     
 }
@@ -485,12 +530,14 @@ void OrbishAudioProcessor::init(){
     messenger = MessageManager::getInstance();
     context->init = true;
     parameters.addParameterListener("globalMix", this);
+    parameters.addParameterListener("clickLevel", this);
     parameters.addParameterListener("latency", this);
     parameters.addParameterListener("muteAll", this);
     parameters.addParameterListener("trackSelect", this);
     parameters.addParameterListener("nextTrack", this);
     parameters.addParameterListener("previousTrack", this);
     parameters.addParameterListener("newTrack", this);
+    parameters.addParameterListener("click", this);
     parameters.addParameterListener("removeTrack", this);
     parameters.addParameterListener("stopAll", this);
     parameters.addParameterListener("startAll", this);
@@ -595,6 +642,10 @@ void OrbishAudioProcessor::processNewTrack() {
     if (guiAlive) {
             (context->observer->*(context->observer->newTrack))();
     }
+}
+
+void OrbishAudioProcessor::processClickToggle() {
+    context->clickEnabled = !context->clickEnabled;
 }
 
 void OrbishAudioProcessor::processRemoveTrack(int trackNumber) {
@@ -793,10 +844,13 @@ void OrbishAudioProcessor::initBlock(AudioBuffer<float>& buffer, MidiBuffer& mid
     context->timeSigBottom = info.timeSigDenominator;
     context->timeSigTop = info.timeSigNumerator;
     context->samplesPerBeat = int(context->beatsToSamples(1.0));
+    context->samplesPerQuarter = int(context->quartersToSamples(1.0));
+
     if (context->bpm != info.bpm
         || context->timeSigTop != info.timeSigDenominator) {
-        context->bpm = int(info.bpm);
-        context->samplesPerBeat = int(context->beatsToSamples(1.0));
+        context->bpm = info.bpm;
+        context->samplesPerBeat = int(std::round(context->beatsToSamples(1.0)));
+        context->samplesPerQuarter = int(context->quartersToSamples(1.0));
         //logMessage(String("bpm: ") + String(context->bpm));
     }
     
@@ -805,7 +859,7 @@ void OrbishAudioProcessor::initBlock(AudioBuffer<float>& buffer, MidiBuffer& mid
     context->info->editOriginTime = info.editOriginTime;
     context->info->isPlaying = info.isPlaying;
     context->info->ppqPosition = info.ppqPosition;
-    context->info->timeInSamples = int64(context->beatsToSamples(float(info.ppqPosition)));
+    context->info->timeInSamples = int64(context->quartersToSamples(float(info.ppqPosition)));
     context->info->timeSigDenominator = info.timeSigDenominator;
     context->info->timeSigNumerator = info.timeSigNumerator;
     context->info->ppqPositionOfLastBarStart = info.ppqPositionOfLastBarStart;
@@ -813,52 +867,142 @@ void OrbishAudioProcessor::initBlock(AudioBuffer<float>& buffer, MidiBuffer& mid
     if(diff != 0){
         context->logMessage("buffer excess:" + String(diff));
     }
+    if (context->info->isPlaying) {
+        trackHostSamples += context->maxBlockSize;
+    }
 }
 
 void OrbishAudioProcessor::realign(){
-    int df = int(context->quartersToSamples(context->info->ppqPosition)) % (context->samplesPerBeat);
-    if (context->info->isPlaying && df < context->samplesPerBeat) {
-        //                                        logMessage(String("spb:") + String(context->samplesPerBeat) + String("\nNum: ") + String(context->timeSigTop)
-        //                                            + String("\nsamplesPerBlock: ") + String(context->samplesPerBlock)
-        //                                            + String("\nmaxBlockSize: ") + String(context->maxBlockSize)
-        //
-        //                                            + String("\timeInSamplesFromPpq: ") + String(int(quartersToSamples(context->info->ppqPosition)))
-        //                                            + String("\nfps: ") + String(context->sampleRate)
-        //                                           logMessage(String("\ndf: ") + String(df));
+    int df = int(context->quartersToSamples(context->info->ppqPosition)) % context->samplesPerQuarter;
+    if (context->info->isPlaying) {
         if (!hostHasPlayed)hostHasPlayed = true;
-        auto diffHost = context->differenceFromClosestBeatInSamples(int(context->quartersToSamples(context->info->ppqPosition)));
-        //                                        if (abs(diffHost) < context->samplesPerBlock * 0.5f) {
-        if (abs(diffHost) < context->samplesPerBlock * 0.5f) {
-            for(auto track:tracks){
+        for(auto track:tracks){
+            if (track->IsPlaying() && !track->Reverse && track->getSnapMode() != kSnapNone){
                 auto currentPosition = *track->CurrentPlayingIndex;
-                auto diffPlugin = context->differenceFromClosestBeatInSamples(currentPosition);
-                // logMessage(String("diffHost:") + String(diffHost) + String("\ndiffPlugin: ") + String(diffPlugin));
-                int diff=0;
-                if(((diffHost<0)&&(diffPlugin>0)) || ((diffPlugin<0)&&(diffHost>0))){
-                    if(abs(diffHost)+abs(diffPlugin) > context->samplesPerBeat*0.5){
-                        diff = context->samplesPerBeat - int(abs(diffHost)) - int(abs(diffPlugin));
-                    }
-                }else{
-                    diff = int(diffHost - diffPlugin);
+                double currentPosInQuarters =0;
+                double currentHostPosInQuarters=0;
+                double diffQuarters = 0;
+                switch (track->getSnapMode()) {
+                    case kSnapQuarter:
+                         currentPosInQuarters = fmod(context->samplesToQuarters(currentPosition), 4 / context->timeSigBottom);
+                         currentHostPosInQuarters = fmod(context->info->ppqPosition, 4 / context->timeSigBottom);
+                         diffQuarters = currentHostPosInQuarters - currentPosInQuarters;
+                         if (abs(diffQuarters) > (.5 * 4 / context->timeSigBottom)) {
+                            if(currentPosInQuarters < currentHostPosInQuarters){
+                                diffQuarters = currentHostPosInQuarters - (4 / context->timeSigBottom) - currentPosInQuarters ;
+                            }else{
+                                diffQuarters = (4 / context->timeSigBottom) - currentPosInQuarters + currentHostPosInQuarters;
+                            }
+                        }
+                        break;
+                    case kSnapMeasure:
+                        currentPosInQuarters = fmod(context->samplesToQuarters(currentPosition), context->quartersPerBar());
+                        currentHostPosInQuarters = fmod(context->info->ppqPosition, context->quartersPerBar());
+                        diffQuarters = currentHostPosInQuarters - currentPosInQuarters;
+                        if (abs(diffQuarters) > (context->quartersPerBar()*.5)) {
+                            if(currentPosInQuarters < currentHostPosInQuarters){
+                                diffQuarters = currentHostPosInQuarters - context->quartersPerBar() - currentPosInQuarters ;
+                            }else{
+                                diffQuarters = context->quartersPerBar() - currentPosInQuarters + currentHostPosInQuarters;
+                            }
+                        }
+                        break;
+                    default:
+                        break;
                 }
-//                if(diffHost<0)diffHost=context->samplesPerBeat + diffHost;
-//                if(diffPlugin<0)diffPlugin=context->samplesPerBeat + diffPlugin;
-//                diff = int(diffHost - diffPlugin);
-                if (abs(diff) > context->fadeTime) {
+                int diff= context->quartersToSamples(diffQuarters);
+                if (abs(diff) >= context->sampleRate / 400) {
                     if (!((diff < 0 && *track->CurrentPlayingIndex < abs(diff))
                           || (diff > 0 && *track->CurrentPlayingIndex > * track->LoopDuration - diff))) {
-                        //  if(abs(diff)<context->samplesPerBlock){
-                      //  diff = std::min(abs(diff), (context->sampleRate / 200) * (diff / abs(diff)));
-                      //  diff = std::min(diff, context->sampleRate / 200);
-                        if (!track->realignment->isSyncInProgress()){
-                            track->realignment->setTotalOffset(diff);
-                        }
-                        context->logMessage(String("realign at:") + String(context->info->ppqPosition) + String("\ndiff:")+String(diff));
-                        // }
+                            if (!track->realignment->isSyncInProgress()){
+                                track->realignment->setTotalOffset(diff);
+                            }
                     }
-                    //                                                }
                 }
-            }
+                if (diff > 80000){
+                    context->logMessage("oops");
+                }
+
+//            context->logMessage("#======================================");
+//            context->logMessage(String("#current pos in quarters:") + String(currentPosInQuarters));
+//            context->logMessage(String("#realign with host at:") + String(context->info->ppqPosition) + String("\tdiff:")+String(diff));
+//            context->logMessage(String("#current host pos in quarters:") + String(currentHostPosInQuarters));
+//
+//            context->logMessage(String("#diff in quarters:") + String(diffQuarters));
+//            context->logMessage(String("#hostSamples:") + String(context->info->timeInSamples));
+//            context->logMessage(String("#host position converted:") + String(int(context->quartersToSamples(context->info->ppqPosition))));
+//            context->logMessage(String("#host Samples tracked by p/i:") + String(trackHostSamples));
+//            context->logMessage(String("#host samples gap:") + String(trackHostSamples - context->info->timeInSamples));
+//            context->logMessage(String("#gap in quarters:") + String(context->samplesToQuarters(trackHostSamples - context->info->timeInSamples)));
+//
+//            context->logMessage(String("#plugin pos after host sync:") + String(*track->CurrentPlayingIndex));
+//            context->logMessage(String("#samples per beat:") + String(context->samplesPerBeat));
+//            context->logMessage(String("#samples per quarter:") + String(context->samplesPerQuarter));
+//            context->logMessage(String("#Loop duration:") + String(*track->LoopDuration));
+//            context->logMessage(String("#Loop duration in quarters:") + String(context->samplesToQuarters(*track->LoopDuration)));
+//            context->logMessage(String("#block in quarters:") + String(context->samplesToQuarters(context->maxBlockSize)));
+//            context->logMessage(String("#sample rate:") + String(context->sampleRate));
+//            context->logMessage(String("#samples per minute:") + String(context->samplesPerMinute));
+//            context->logMessage(String("#bpm:") + String(context->bpm));
+//            context->logMessage(String("#denominator:") + String(context->timeSigBottom));
+           }
+        }
+    }
+}
+
+void OrbishAudioProcessor::handleClick(OrbishContext* context, AudioSampleBuffer* output){
+    int targetOffset = 0, sourceOffset = 0;
+    
+    auto offsetFromClosestBeat = context->differenceFromClosestBeatInSamples(int(context->info->timeInSamples));
+    if (!context->clickEnabled
+        || !context->info->isPlaying
+        || (abs(offsetFromClosestBeat) > context->maxBlockSize
+            && !clickInProcess)) {
+        return;
+    }
+    context->logMessage("$offsetFormClosestBeat:" + String(context->samplesToBeats(offsetFromClosestBeat)));
+    context->logMessage("$offsetFormClosestBeat2:" + String(context->samplesToQuarters(offsetFromClosestBeat)));
+
+    auto hostPosInBeats = context->info->ppqPosition * (context->timeSigBottom * .25);
+    context->logMessage("$host pos in beats:" + String(hostPosInBeats));
+    context->logMessage("$host pos in quarters:" + String(context->info->ppqPosition));
+
+
+
+    AudioSampleBuffer* source;
+    if (fmod(std::round(hostPosInBeats) , context->timeSigTop) == 0) {
+        source = context->barStartClickBuffer.get();
+    }else{
+        source = context->clickBuffer.get();
+    }
+    auto b = context->maxBlockSize;
+    auto a = source->getNumSamples();
+    auto x = a % b;
+    auto y = a / b;
+    auto samplesToWrite = b;
+    // first
+    if (!clickInProcess) {
+        targetOffset = (offsetFromClosestBeat < 0)
+            ? abs(offsetFromClosestBeat)
+            : 0;
+        samplesToWrite -= targetOffset;
+        clickInProcess = true;
+        // last
+    }else if(numBuffersDoneForClick>=y){
+        if (x <= 0 || numBuffersDoneForClick > y) {
+            clickInProcess = false;
+            context->logMessage("$host pos in quarters:" + String(context->info->ppqPosition));
+            numBuffersDoneForClick = 0;
+            return;
+        }
+        samplesToWrite = x;
+    }
+    sourceOffset = numBuffersDoneForClick * b;
+    numBuffersDoneForClick++;
+
+    if(samplesToWrite > 0){
+        for (auto c=0; c < source->getNumChannels(); ++c) {
+            output->addFrom(c, targetOffset, source->getReadPointer(c, sourceOffset), samplesToWrite, context->clickLevel);
         }
     }
 }
@@ -1266,7 +1410,7 @@ void OrbishAudioProcessor::processBlock(AudioBuffer<float>& buffer, MidiBuffer& 
         if(context->skipAlign){
             context->skipAlign = false;
         }else{
-            realign();
+                realign();
         }
         Events e;
         if (!changingTrack) {
@@ -1335,6 +1479,7 @@ void OrbishAudioProcessor::processBlock(AudioBuffer<float>& buffer, MidiBuffer& 
     if (trackToRemove > 0) {
         removeTrack(trackToRemove);
     }
+
     if(context->xchange->writeMeasureBufferQueue->read_available() > 0 &&
        context->xchange->readMeasureBufferQueue->write_available() > 0){
         auto mb = context->xchange->writeMeasureBufferQueue->front();
@@ -1342,9 +1487,12 @@ void OrbishAudioProcessor::processBlock(AudioBuffer<float>& buffer, MidiBuffer& 
         mb->source = &outputMeterSource;
         context->xchange->writeMeasureBufferQueue->pop();
         context->xchange->readMeasureBufferQueue->push(mb);
-    }else{
+    }
+    else{
         outputMeterSource.measureBlock(buffer);
     }
+    handleClick(context, &buffer);
+
     //context->logMessage("Final section:" + String(endFinal - startFinal));
     //context->logMessage("Measure section:" + String(endMeasure - startMeasure));
     
@@ -1364,10 +1512,6 @@ void OrbishAudioProcessor::processBlock(AudioBuffer<float>& buffer, MidiBuffer& 
             (context->observer->*(context->observer->hostPositionChanged)) (int(context->info->timeInSamples));
         }
     
-}
-
-void OrbishAudioProcessor::handleClick(OrbishContext* context, int start, int stop){
-    context->buffer->addFrom(0, 0, context->clickBuffer->getReadPointer(0), start, stop);
 }
 
 void OrbishAudioProcessor::handleRecordBlock(int start, int stop) {
@@ -1435,7 +1579,6 @@ void OrbishAudioProcessor::handleRecordBlock(int start, int stop) {
         //  end0 = Time::getHighResolutionTicks();
         //DBG("Duration block 1: " + String(end0 - start0));
     }
-    
     // main scenario -> write the whole buffer without fade
     // in overdub/punch mode at the end of the loop apply fade in/out
     // and prepare writing to the next layer previously created
@@ -1544,9 +1687,7 @@ void OrbishAudioProcessor::handleRecordBlock(int start, int stop) {
             }
         }
         end2 = Time::getHighResolutionTicks();
-        //context->logMessage("making visBuffers: " + String(end2 - start2));
-        
-        if (true) {  //activeTrack->getRecordMode() == kRecLoopOver){
+        if (true) {
             
             for (auto i = 0;i<=*activeTrack->CurrentTop;++i) {
                 start1 = Time::getHighResolutionTicks();
@@ -1560,7 +1701,6 @@ void OrbishAudioProcessor::handleRecordBlock(int start, int stop) {
                     context->xchange->readGainModifierQueue->push(gm);
                 }
                 end1 = Time::getHighResolutionTicks();
-                //context->logMessage("apply Gain " + String(i) + ":" + String(end1 - start1));
             }
             if (*activeTrack->CurrentTop < (*activeTrack->Layers).size() - int(1)) {
                 (*activeTrack->Layers)[*activeTrack->CurrentTop]->dirty = true;
@@ -1571,7 +1711,6 @@ void OrbishAudioProcessor::handleRecordBlock(int start, int stop) {
                 start1 = Time::getHighResolutionTicks();
                 activeTrack->setActivePlaybackLayer(activeTrack->getActiveRecordingLayer());
                 auto l = activeTrack->AddLayer(true);
-               // activeTrack->setActivePlaybackLayer(l);
                 activeTrack->setActiveRecordingLayer(l);
                 end1 = Time::getHighResolutionTicks();
                 context->logMessage("2. in overlap overdub ");
@@ -1579,22 +1718,8 @@ void OrbishAudioProcessor::handleRecordBlock(int start, int stop) {
                 context->logMessage("playback layer: " + String(activeTrack->getActivePlaybackLayer()->index));
                 context->logMessage("recording layer: " + String(l->index));
                 context->logMessage("layers size: " + String(activeTrack->Layers->size()));
-
-                //} );
-                //context->logMessage("Duration inner block: " + String(end1 - start1));
             }
         }
-        //                        auto tick = Time::getHighResolutionTicks();
-        //                        DBG("hires per sec:\n");
-        //                        DBG(Time::getHighResolutionTicksPerSecond());
-        //                        DBG("start\n");
-        //                        DBG(tick);
-        //context->logMessage("Duration addLayer 2: " + String(end1 - start1));
-        // context->logMessage("Duration updateLoopBuffer 2: " + String(end2 - start2));
-        
-        //                        DBG("end\n");
-        //                        tick = Time::getHighResolutionTicks();
-        //                        DBG(tick);
         activeTrack->CurrentRecordingIndex = 0;
         start2 = Time::getHighResolutionTicks();
         
@@ -1615,12 +1740,7 @@ void OrbishAudioProcessor::handleRecordBlock(int start, int stop) {
                                                                          , tail - fadeIn);
             }
             end2 = Time::getHighResolutionTicks();
-            //context->logMessage("copy: " + String(end2 - start2));
-            //                        for(int i = 0; i<context->samplesPerBlock; ++i){
-            //                            cout << activeTrack->Layers[*activeTrack->CurrentTop].Buffer->getSample(c, i) << endl;
-            //                        }
             end0 = Time::getHighResolutionTicks();
-            //context->logMessage("Duration block 3: " + String(end0 - start0));
         }
         indexUpdate = tail;
         if (activeTrack->FirstRecordingBuffer) {
@@ -1629,7 +1749,7 @@ void OrbishAudioProcessor::handleRecordBlock(int start, int stop) {
     }
     else {
         if (activeTrack->FirstRecordingBuffer) {
-            indexUpdate = start + samplesToRead; // - activeTrack->BeginFadeOffset;
+            indexUpdate = start + samplesToRead;
             activeTrack->FirstRecordingBuffer=false;
         }
         else if (activeTrack->LastRecordingBuffer) {
@@ -1639,7 +1759,6 @@ void OrbishAudioProcessor::handleRecordBlock(int start, int stop) {
             indexUpdate = samplesToRead;
         }
     }
-    // }
     activeTrack->CurrentRecordingIndex += indexUpdate;
     if (activeTrack->CurrentRecordingIndex >= context->allocatedLength)
         // stop activeTrack->Recording if reached the end of the buffer
@@ -1648,19 +1767,11 @@ void OrbishAudioProcessor::handleRecordBlock(int start, int stop) {
         activeTrack->Recording = false;
         activeTrack->setRecordingArmed(false);
     }
-
-//    if (*activeTrack->LoopDuration > 0
-//        || (activeTrack->CurrentRecordingIndex > 0
-//        && (int(activeTrack->CurrentRecordingIndex) % context->sampleRate) < context->maxBlockSize+1)){
-//        activeTrack->UpdateLoopVisualizer(activeTrack->getActiveRecordingLayer().get());
-//    }
 }
+
 
 void OrbishAudioProcessor::handlePlaybackBlock(int start, int stop) {
     int samplesToRead = context->maxBlockSize;
-    
-    //    context->logMessage("Start: " + String(start));
-    //   context->logMessage("Stop: " + String(stop));
     for(auto track :tracks){
         // get audio only fro tracks currently playing
         if (((track->isActive() && track->IsPlaying()) || track->Playing)
@@ -1669,15 +1780,6 @@ void OrbishAudioProcessor::handlePlaybackBlock(int start, int stop) {
         {
             //context->logMessage("now playing");
             auto reSync = track->realignment;
-//            if(reSync->isSyncInProgress() && reSync->getProcessedBuffersToSpreadFade() == 0){
-//                *track->CurrentPlayingIndex = track->getAdjustedLoopPosition(*track->CurrentPlayingIndex,  reSync->getTotalOffset());
-//            }
-//            if (*track->CurrentPlayingIndex == 0) {
-                //for (int i = 0;i < *track->LoopDuration;i++) {
-                //    logMessage(String(track->Layers[0][0]->Buffer->getSample(0, i)));
-                //    logMessage(String(track->Layers[0][0]->Buffer->getSample(1, i)));
-                //}
-//            }
             int tail = min(context->maxBlockSize,max(samplesToRead + *track->CurrentPlayingIndex - *track->LoopDuration,0));
             auto activeLayer = track->getActivePlaybackLayer();
             if ((!(nullptr == activeLayer) &&
@@ -1699,20 +1801,12 @@ void OrbishAudioProcessor::handlePlaybackBlock(int start, int stop) {
                 else {
                     index = *track->LoopDuration + indexMinusDelayComp;
                 }
-
                 int currentPlayBuffer = activeLayer->index;
-//                if (track->Recording) {
-//                    // if in overdub mode decrement current play buffer as the uppermost buffer is used for recording
-//                    if (track->getRecordMode() == 0) {
-//                        currentPlayBuffer--;
-//                    }
-//                }
                 // set start to 0 if out of bounds
                 start = (start >= context->maxBlockSize) ? 0 : max(start, 0);
                 start=0;
                 if(*track->CurrentPlayingIndex == 0){
                    start = activeTrack->BeginFadeOffset;
-
                 }
                 // set stop to block size if out of bounds
                 stop = min(max(stop, context->maxBlockSize), context->maxBlockSize);
@@ -1723,7 +1817,6 @@ void OrbishAudioProcessor::handlePlaybackBlock(int start, int stop) {
                 int targetIndex = start;
                 // determine number of samples to read
                 samplesToRead = max(0,stop - start);
-                
                 //                                                context->logMessage("sourceIndex: " + String(sourceIndex));
                 //                                                context->logMessage("LoopDuration: " + String(*track->LoopDuration));
                 //                                                context->logMessage("CurrentPlayingIndex: " + String(*track->CurrentPlayingIndex));
@@ -1731,9 +1824,10 @@ void OrbishAudioProcessor::handlePlaybackBlock(int start, int stop) {
                 //                                                context->logMessage("SamplesToRead: " + String(samplesToRead));
                 //                                                context->logMessage("track: " + String(track->Index));
                 if (*track->LoopDuration > 0) {
-                    if (track->Reverse) {
-                        index = *track->LoopDuration - 1 - index;
-                        sourceIndex = max(index - stop, 0);
+                    int reverseSourceIndex=0;
+                    {
+                        int tmpIndex = *track->LoopDuration - 1 - index;
+                        reverseSourceIndex = max(tmpIndex - stop, 0);
                     }
                     String s = String();
                     for (int l = 0; currentPlayBuffer > -1 && l < currentPlayBuffer + 1; l++) {
@@ -1751,19 +1845,24 @@ void OrbishAudioProcessor::handlePlaybackBlock(int start, int stop) {
                             b->clear();
                             temp = move(b);
                         }
-                        //context->logMessage("have buffer with channels: " + String(temp->getNumChannels()));
                         end0 = Time::getHighResolutionTicks();
                         for (uint32 c = 0; c < context->audioInputsCount;++c) {
                             // crossfade for realignment
-                            int adjustedPosition = sourceIndex;
+                            int adjustedPosition = track->Reverse?reverseSourceIndex:sourceIndex;
                             if(reSync->isFadeInProgress() && !context->skipAlign){
                                 // write fade out with signal from unadjusted position
-                                fadeOut = fadeIn = min(reSync->getCurrentOffset(), context->samplesPerBlock - targetIndex);
-                                adjustedPosition = track->getAdjustedLoopPosition(sourceIndex, reSync->getTotalOffset());
+                                 fadeOut = fadeIn = min(abs(reSync->getCurrentOffset()), context->samplesPerBlock - targetIndex);
+                                int vAdjustedPosition = track->getAdjustedLoopPosition(index, reSync->getTotalOffset());
+                                if (track->Reverse) {
+                                    int tmpIndex = *track->LoopDuration - 1 - vAdjustedPosition;
+                                    adjustedPosition = max(tmpIndex - stop, 0);
+                                }else{
+                                    adjustedPosition = vAdjustedPosition;
+                                }
                                 fadeIn = max(0,min(*track->LoopDuration - adjustedPosition - 1, fadeIn));
                                 temp->addFromWithRamp(c
                                                       , targetIndex
-                                                      , (*track->Layers)[l]->Buffer->getReadPointer(c, sourceIndex)
+                                                      , (*track->Layers)[l]->Buffer->getReadPointer(c, reverseSourceIndex)
                                                       , fadeOut, 1 - reSync->getCurrentFadeLevelStart(), 1 - reSync->getCurrentFadeLevelEnd());
                                 // write fade in with signal from adjusted position
                                 temp->addFromWithRamp(c
@@ -1771,11 +1870,11 @@ void OrbishAudioProcessor::handlePlaybackBlock(int start, int stop) {
                                                       , (*track->Layers)[l]->Buffer->getReadPointer(c, adjustedPosition)
                                                       , fadeIn, reSync->getCurrentFadeLevelStart(), reSync->getCurrentFadeLevelEnd());
                                 if (c == context->audioInputsCount - 1
-                                        && reSync->getCurrentOffset() > 0
+                                        && std::abs(reSync->getCurrentOffset()) > 0
                                         && l == currentPlayBuffer) {
                                     reSync->BufferProcessed();
                                     if(reSync->isRealigned()){
-                                        sourceIndex = * track->CurrentPlayingIndex = adjustedPosition;
+                                        *track->CurrentPlayingIndex = vAdjustedPosition;
                                         tail = max(samplesToRead + *track->CurrentPlayingIndex - *track->LoopDuration,0);
                                         samplesToRead = samplesToRead-tail;
                                     }
@@ -1812,31 +1911,13 @@ void OrbishAudioProcessor::handlePlaybackBlock(int start, int stop) {
                                                           , fadeOut, 1.0f, 0.0f);
                                     tail = 0;
                                 }
-//                                if (*track->CurrentPlayingIndex == 0
-//                                    && track->EndFadeOffset > 0) {
-//                                    auto fade = min(context->maxBlockSize - targetIndex, track->EndFadeOffset);
-//                                    temp->addFrom(c
-//                                                  , targetIndex
-//                                                  , (*track->Layers)[l]->Buffer->getReadPointer(c, *track->LoopDuration - 1)
-//                                                  , fade);
-//                                }
-//                                if (*track->CurrentPlayingIndex == *track->LoopDuration - context->maxBlockSize
-//                                    && track->BeginFadeOffset > 0) {
-//                                    auto fade = min(context->maxBlockSize, track->BeginFadeOffset);
-//                                    temp->addFrom(c
-//                                                  , context->maxBlockSize - targetIndex - fade
-//                                                  , (*track->Layers)[l]->Buffer->getReadPointer(c, 0)
-//                                                  , fade);
-//                                }
 //                                context->logMessage("targetIndex: " + String(targetIndex));
 //                                context->logMessage("sourceIndex: " + String(sourceIndex));
 //                                context->logMessage("fadeIn: " + String(fadeIn));
 //                                context->logMessage("fadeOut: " + String(fadeOut));
 //                                context->logMessage("samplesToRead: " + String(samplesToRead));
 //                                context->logMessage("temp->getNumSamples(): " + String(temp->getNumSamples()));
-
                             }
-                            
                             temp->addFrom(c
                                           , targetIndex + fadeIn
                                           , (*track->Layers)[l]->Buffer->getReadPointer(c, adjustedPosition + fadeIn)
@@ -1852,7 +1933,6 @@ void OrbishAudioProcessor::handlePlaybackBlock(int start, int stop) {
                                               //, (*track->Layers)[l]->Buffer->getReadPointer(c, min(tail, context->fadeTime))
                                               , (*track->Layers)[l]->Buffer->getReadPointer(c, 0)
                                               , tail); //max(0,tail- context->fadeTime));
-//                                context->logMessage("==================================================================");
                             }
                         }
                         if(temp->getReadPointer(0)==nullptr){
@@ -1998,7 +2078,7 @@ bool OrbishAudioProcessor::loadFromValueTree(ValueTree* tree) {
     }
     activeTrack->RegisterLoop(0);
     activeTrack->UpdateLoopVisualizer();
-    ;                                    return true;
+    return true;
 }
 
 bool OrbishAudioProcessor::loadTrackFromValueTree(ValueTree* trackTree, Track* track) {

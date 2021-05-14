@@ -25,14 +25,14 @@ public:
     void paint (juce::Graphics&) override;
     void resized() override;
 
-    exu::Label loopLabel{ "Loops: " };
+    exu::Label loopLabel{ "Loops: ", "Loops: " };
     exu::Label activeLoopLabel{ "1" };
     CustomButton previousLoopButton{ "<", true, true };
     CustomButton nextLoopButton{ ">", true, true };
     CustomButton newLoopButton{ "+", true, true };
     CustomButton removeLoopButton{ "-", true, true };
 
-    exu::Label trackLabel{ "Tracks: " };
+    exu::Label trackLabel{ "Tracks: ", "Tracks: " };
     exu::Label activeTrackLabel{ "1" };
     CustomButton previousTrackButton{ "<", true, true };
     CustomButton nextTrackButton{ ">", true, true };
