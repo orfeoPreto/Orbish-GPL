@@ -12,6 +12,7 @@
 
 #include <JuceHeader.h>
 #include "exu/Label.hpp"
+#include "CustomButton.h"
 #include "OpenGLComponents.h"
 
 //==============================================================================
@@ -58,6 +59,7 @@ public:
 //    void setTimeSigNumerator(int);
 //    void setTimeSigDenominator(int);
     std::shared_ptr<OpenGLClickWitness> witness;
+    CustomButton clickButton{ "", false };
 
 private:
     exu::Label projectLabel{};

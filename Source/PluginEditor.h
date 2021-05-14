@@ -211,6 +211,8 @@ private:
     std::unique_ptr<ButtonAttachment> soloAttachment;
     std::unique_ptr<ButtonAttachment> monitorAttachment;
     std::unique_ptr<ButtonAttachment> reverseAttachment;
+    std::unique_ptr<ButtonAttachment> clickAttachment;
+
     ToggleState reverseState = Off;
     std::unique_ptr<ButtonAttachment> undoAttachment;
     std::unique_ptr<ButtonAttachment> redoAttachment;

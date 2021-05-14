@@ -8,6 +8,12 @@
 
 namespace BinaryData
 {
+    extern const char*   low_dry_click_aif;
+    const int            low_dry_click_aifSize = 19698;
+
+    extern const char*   high_dry_click_aif;
+    const int            high_dry_click_aifSize = 7290;
+
     extern const char*   circle_fs;
     const int            circle_fsSize = 474;
 
@@ -46,12 +52,6 @@ namespace BinaryData
 
     extern const char*   scrollbarhandle_png;
     const int            scrollbarhandle_pngSize = 973;
-
-    extern const char*   BellsTriangle_1_Mute_aif;
-    const int            BellsTriangle_1_Mute_aifSize = 699924;
-
-    extern const char*   BellsTriangle_2_Mute_aif;
-    const int            BellsTriangle_2_Mute_aifSize = 473364;
 
     extern const char*   sliderhandle90_png;
     const int            sliderhandle90_pngSize = 882;

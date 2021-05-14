@@ -33,7 +33,7 @@ public:
     void BufferProcessed();
     void setSampleRate(int);
     void setBlockSize(int);
-    
+    int getMinOffset(int);
 private:
     int block = 0;
     int currentOffset = 0;

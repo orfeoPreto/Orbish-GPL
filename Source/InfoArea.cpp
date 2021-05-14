@@ -30,9 +30,9 @@ InfoArea::InfoArea(){
     String s = String(ProjectInfo::projectName) + " " + String(ProjectInfo::versionString) + "\nBy " + String(ProjectInfo::companyName);
     logo.setTooltip(s);
     logo.setImage(ImageFileFormat::loadFrom(BinaryData::orbishlogowebdown_png, BinaryData::orbishlogowebdown_pngSize));
-//    name.setImage(ImageFileFormat::loadFrom(BinaryData::orbishname_png, BinaryData::orbishname_pngSize));
-//    name.setTooltip(s);
 
+    clickButton.setTooltip("Enable/disable click");
+    addAndMakeVisible(clickButton);
 }
 
 InfoArea::~InfoArea(){
@@ -72,21 +72,20 @@ void InfoArea::resized(){
     bounds.removeFromLeft(10);
     bounds.removeFromTop(80);
     projectLabel.setBounds(bounds.removeFromTop(labelHeight));
-
     trackNumberLabel.setBounds(bounds.removeFromTop(labelHeight));
     loopNumberLabel.setBounds(bounds.removeFromTop(labelHeight));
     layerNumberLabel.setBounds(bounds.removeFromTop(labelHeight));
     groupNumberLabel.setBounds(bounds.removeFromTop(labelHeight));
 
-    bounds.removeFromTop(labelHeight);
+    //bounds.removeFromTop(labelHeight);
 
     timeSigLabel.setBounds(bounds.removeFromTop(labelHeight));
     bpmLabel.setBounds(bounds.removeFromTop(labelHeight));
     
     bounds.removeFromLeft(50);
     progressLabel.setBounds(bounds.removeFromTop(labelHeight));
-    witness->setBounds(20, progressLabel.getY(), int(std::ceil(labelHeight*1.3)), int(std::ceil(labelHeight*1.3)));
-
+    witness->setBounds(20, progressLabel.getY()-5, int(std::ceil(labelHeight)), int(std::ceil(labelHeight)));
+    clickButton.setBounds(5, witness->getY(), witness->getHeight() * .7, witness->getHeight() *.7);
     auto ratio = logo.getImage().getHeight() / 50;
     logo.setBounds(10,20, logo.getImage().getWidth()/ratio,50);
     logo.setAlpha(.8f);
@@ -110,14 +109,6 @@ String InfoArea::getTimeSignature(){
 void InfoArea::setSubDivs(float subDivs){
     witness->setOffset(subDivs);
 }
-
-//void setTimeSigNumerator(int numerator){
-//    
-//}
-//
-//void setTimeSigDenominator(int denominator){
-//    
-//}
 
 void InfoArea::setBeatsPerMinute(String bpm){
     bpmLabel.setText(bpm, NotificationType::dontSendNotification);

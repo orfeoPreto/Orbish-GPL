@@ -111,6 +111,7 @@ public:
     void processGroupSelect(int);
     void processAddToGroup(int);
     void processRemoveFromGroup(int);
+    void processClickToggle();
     void handleRecordBlock(int start, int stop);
     void handlePlaybackBlock(int start, int stop);
     void addTrack(bool);
@@ -129,8 +130,11 @@ public:
 	bool loadFromValueTree(ValueTree* tree);
 	bool loadTrackFromValueTree(ValueTree* trackTree, Track* track);
 	bool loadLoopFromValueTree(ValueTree* loopTree, Loop* loop);
-    void handleClick(OrbishContext* context, int start, int stop);
+    void handleClick(OrbishContext* context, AudioSampleBuffer*);
 	void initGroups();
+    
+    bool clickInProcess = false;
+    int numBuffersDoneForClick = 0;
     OrbishContext* context;
     TrackGroup* CurrentGroup;
 	TrackGroup* SelectedGroup;
@@ -164,6 +168,8 @@ public:
     bool changingTrack = false;
     std::unique_ptr<Synchronizer> primarySynchronizer;
     std::unique_ptr<Synchronizer> secondarySynchronizer;
+    int trackHostSamples = 0;
+
     //===========^*==================================================================
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (OrbishAudioProcessor)
 };

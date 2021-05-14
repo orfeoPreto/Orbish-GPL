@@ -38,6 +38,7 @@ struct OrbishContext {
 		loopCount = 0;
 		fadeInc = 0;
 		samplesPerBeat = 0;
+        samplesPerQuarter = 0;
 		bpm = 0;
 		timeSigBottom = 1;
 		timeSigTop = 1;
@@ -49,6 +50,8 @@ struct OrbishContext {
 
 	uint32    audioInputsCount;
 	float mix = 0;
+    float clickLevel = .5;
+    bool clickEnabled = false;
 	float previousMix = 0;
 	int delayCompensation = 0;
 	uint32    audioOutputsCount;
@@ -80,7 +83,8 @@ struct OrbishContext {
 	float feedback;
 	float fadeInc;
 	int samplesPerBeat;
-	int bpm;
+    int samplesPerQuarter;
+	double bpm;
 	int timeSigBottom;
 	int timeSigTop;
 	int hey;
@@ -99,16 +103,18 @@ struct OrbishContext {
     
     inline double beatsToSamples(double position)
     {
-        return position * samplesPerMinute / bpm * timeSigBottom * .25f;
+        return position * samplesPerMinute / bpm / timeSigBottom * 4;
     }
     
     inline double samplesToQuarters(double samples)
     {
-        return samples * bpm / (samplesPerMinute);
+     auto tmp = samples * bpm / samplesPerMinute;
+     return tmp;
     }
     inline double samplesToBeats(double samples)
     {
-        return samples * bpm / samplesPerMinute * (timeSigBottom * .25);
+        auto tmp = samples * bpm / samplesPerMinute * (timeSigBottom * .25) ;
+        return tmp;
     }
     
     inline double differenceFromClosestBeatInSamples(int position){
@@ -117,6 +123,9 @@ struct OrbishContext {
             diff = diff - samplesPerBeat;
         }
         return double(diff);
+    }
+    inline double quartersPerBar(){
+        return info->timeSigNumerator / (info->timeSigDenominator * .25);
     }
     
     float samplesPerMinute = 0;
