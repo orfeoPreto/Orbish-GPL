@@ -17,6 +17,5 @@ Layer::Layer(int channels, int size){
 }
 
 Layer::~Layer(){
-    
-    
+    Buffer = nullptr;
 }

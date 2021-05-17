@@ -29,6 +29,7 @@ unique_ptr<RangedAudioParameter> OrbishAudioProcessor::createParamFromBool(Audio
                                                                        true,
                                                                        AudioProcessorParameter::genericParameter,
                                                                        true);
+    delete boolParam;
     return move(p);
 }
 
@@ -45,6 +46,7 @@ unique_ptr<RangedAudioParameter> OrbishAudioProcessor::createParamFromInt(AudioP
                                                                        true,
                                                                        AudioProcessorParameter::genericParameter,
                                                                        true);
+    delete intParam;
     return move(p);
 }
 
@@ -60,7 +62,7 @@ AudioProcessor(BusesProperties()
 #endif
                ),
 #endif
-context(new OrbishContext()),
+context(std::make_shared<OrbishContext>()),
 parameters(*this, nullptr, "OrbishState", {
     make_unique<AudioParameterFloat>("globalMix", "GlobalMix"
                                           ,NormalisableRange<float>(
@@ -154,7 +156,9 @@ parameters(*this, nullptr, "OrbishState", {
     , createParamFromBool(new AudioParameterBool("removeFromGroup", "RemoveFromGroup", false), false)
 })
 {
-    context = new OrbishContext();
+    //_CrtSetDbgFlag(_CRTDBG_LEAK_CHECK_DF);
+
+    context = std::make_shared<OrbishContext>();
     context->buffer = make_shared<AudioBuffer<float> >();
     context->inputBuffer = make_shared<AudioBuffer<float> >();
 
@@ -165,16 +169,16 @@ parameters(*this, nullptr, "OrbishState", {
     context->xchange = new DataExchange();
     
     initGroups();
-    auto formatMgr = make_unique<AudioFormatManager>();
+//    auto formatMgr = make_unique<AudioFormatManager>();
     
-    formatMgr->registerBasicFormats();
-    unique_ptr<AudioFormatReader> reader(formatMgr->createReaderFor(make_unique<MemoryInputStream>( BinaryData::low_dry_click_aif, BinaryData::low_dry_click_aifSize, false)));
-    context->clickBuffer = make_unique<AudioSampleBuffer>(reader->numChannels, (int)reader->lengthInSamples);
-    reader->read(context->clickBuffer.get(), 0, int(reader->lengthInSamples), 0, true, true);
+//    formatMgr->registerBasicFormats();
+//    unique_ptr<AudioFormatReader> reader(formatMgr->createReaderFor(make_unique<MemoryInputStream>( BinaryData::low_dry_click_aif, BinaryData::low_dry_click_aifSize, false)));
+//    context->clickBuffer = make_unique<AudioSampleBuffer>(reader->numChannels, (int)reader->lengthInSamples);
+//    reader->read(context->clickBuffer.get(), 0, int(reader->lengthInSamples), 0, true, true);
     
-    unique_ptr<AudioFormatReader> reader2(formatMgr->createReaderFor(make_unique<MemoryInputStream>( BinaryData::high_dry_click_aif,BinaryData::high_dry_click_aifSize, false)));
-    context->barStartClickBuffer = make_unique<AudioSampleBuffer>(reader2->numChannels, (int)reader2->lengthInSamples);
-    reader2->read(context->barStartClickBuffer.get(), 0, int(reader2->lengthInSamples), 0, true, true);
+//    unique_ptr<AudioFormatReader> reader2(formatMgr->createReaderFor(make_unique<MemoryInputStream>( BinaryData::high_dry_click_aif,BinaryData::high_dry_click_aifSize, false)));
+//    context->barStartClickBuffer = make_unique<AudioSampleBuffer>(reader2->numChannels, (int)reader2->lengthInSamples);
+//    reader2->read(context->barStartClickBuffer.get(), 0, int(reader2->lengthInSamples), 0, true, true);
 
     primarySynchronizer = make_unique<HostSynchronizer>(context);
     secondarySynchronizer =  make_unique<InternalSynchronizer>(context,nullptr);
@@ -272,6 +276,16 @@ parameters(*this, nullptr, "OrbishState", {
                 mb->measure();
             };
         }
+        context->xchange->layerQueue->reset();
+        context->xchange->readBufferQueue->reset();
+        context->xchange->logReadMessageQueue->reset();
+        context->xchange->logWriteMessageQueue->reset();
+        context->xchange->readGainModifierQueue->reset();
+        context->xchange->readMeasureBufferQueue->reset();
+        context->xchange->readVisualisationBufferQueue->reset();
+        context->xchange->writeGainModifierQueue->reset();
+        context->xchange->writeMeasureBufferQueue->reset();
+        context->xchange->writeVisualisationBufferQueue->reset();
     }
                                            );
     //   logMessage("end constructor");
@@ -286,6 +300,8 @@ OrbishAudioProcessor::~OrbishAudioProcessor()
     context->lockForStateUpdate(true);
     cleanup();
     context->lockForStateUpdate(false);
+    context->logger = nullptr;
+    context = nullptr;
 }
 
 void OrbishAudioProcessor::parameterChanged(const String& parameterID, float newValue) {
@@ -457,7 +473,7 @@ void OrbishAudioProcessor::prepareToPlay(double sampleRate, int samplesPerBlock)
     // Use this method as the place to do any pre-playback
     // initialisation that you need..
     if (context == nullptr) {
-        context = new OrbishContext();
+        context = std::make_shared<OrbishContext>();
     }
     if (getTotalNumOutputChannels() != context->audioOutputsCount) {
         context->audioInputsCount = getTotalNumInputChannels();
@@ -779,7 +795,7 @@ void OrbishAudioProcessor::processRemoveFromGroup(int track) {
 
 
 void OrbishAudioProcessor::processMidi(const MidiBuffer& midi) {
-    OrbishContext* ctxt = context;
+    std::shared_ptr<OrbishContext> ctxt = context;
     if (guiAlive) {
             (ctxt->observer->*(context->observer->handleMidi))(midi);
     }
@@ -919,9 +935,6 @@ void OrbishAudioProcessor::realign(){
                             }
                     }
                 }
-                if (diff > 80000){
-                    context->logMessage("oops");
-                }
 
 //            context->logMessage("#======================================");
 //            context->logMessage(String("#current pos in quarters:") + String(currentPosInQuarters));
@@ -950,7 +963,7 @@ void OrbishAudioProcessor::realign(){
     }
 }
 
-void OrbishAudioProcessor::handleClick(OrbishContext* context, AudioSampleBuffer* output){
+void OrbishAudioProcessor::handleClick(std::shared_ptr<OrbishContext> context, AudioSampleBuffer* output){
     int targetOffset = 0, sourceOffset = 0;
     
     auto offsetFromClosestBeat = context->differenceFromClosestBeatInSamples(int(context->info->timeInSamples));
@@ -1344,7 +1357,6 @@ void OrbishAudioProcessor::processBlock(AudioBuffer<float>& buffer, MidiBuffer& 
     for (auto i = context->audioInputsCount; i < context->audioOutputsCount; ++i)
         buffer.clear(i, 0, context->maxBlockSize);
     
-    // logger->logMessage("context buffer size:" + String(context->buffer->));
     // get a copy of the incoming audio to manipulate
     context->buffer->clear();
     context->inputBuffer->clear();
@@ -1355,19 +1367,6 @@ void OrbishAudioProcessor::processBlock(AudioBuffer<float>& buffer, MidiBuffer& 
         }else{
             context->inputBuffer->copyFrom(c, 0, buffer.getReadPointer(c, 0),  context->maxBlockSize);
         }
-        //        const float* pt = buffer.getReadPointer(c);
-        //        const float* pt2 = context->buffer->getReadPointer(c);
-        
-        //      context->logMessage("b\tcb:");
-        //        for (auto i=0; i<context->buffer->getNumSamples(); ++i) {
-        //            if(pt[i] != pt2[i]){
-        //                String s = "Gap at "+String(i)+": "+String(pt[i])+"\t"+String(pt2[i]);
-        //            }
-        //        }
-        //        if (buffer.getNumSamples() != context->buffer->getNumSamples()) {
-        //            context->logMessage("buffer size difference:" + String(buffer.getNumSamples()-context->buffer->getNumSamples()));
-        //        }
-        
     }
     int64 startFinal = Time::getHighResolutionTicks();
     int64 startMeasure = Time::getHighResolutionTicks();
@@ -1491,11 +1490,8 @@ void OrbishAudioProcessor::processBlock(AudioBuffer<float>& buffer, MidiBuffer& 
     else{
         outputMeterSource.measureBlock(buffer);
     }
-    handleClick(context, &buffer);
-
     //context->logMessage("Final section:" + String(endFinal - startFinal));
     //context->logMessage("Measure section:" + String(endMeasure - startMeasure));
-    
     //  logMessage("begin iock");
     int64 diff, endMark = Time::getHighResolutionTicks();
     diff = endMark - beginMark;
@@ -1511,7 +1507,8 @@ void OrbishAudioProcessor::processBlock(AudioBuffer<float>& buffer, MidiBuffer& 
         if (context->observer != nullptr) {
             (context->observer->*(context->observer->hostPositionChanged)) (int(context->info->timeInSamples));
         }
-    
+   // context->buffer.reset();
+   // context->inputBuffer.reset();
 }
 
 void OrbishAudioProcessor::handleRecordBlock(int start, int stop) {
@@ -1528,7 +1525,7 @@ void OrbishAudioProcessor::handleRecordBlock(int start, int stop) {
     start = 0;
     // stop should always == buffer size (except when output buffer size is exceeded). Post-snap samples are used for crossfade
     activeTrack->EndFadeOffset = min(stop, context->allocatedLength - activeTrack->CurrentRecordingIndex);
-    stop = min(context->samplesPerBlock, context->allocatedLength - activeTrack->CurrentRecordingIndex);
+    stop = min(context->maxBlockSize, context->allocatedLength - activeTrack->CurrentRecordingIndex);
     int samplesToRead = stop;
     int fadeIn = 0;
     int fadeOut = 0;
@@ -1537,7 +1534,7 @@ void OrbishAudioProcessor::handleRecordBlock(int start, int stop) {
     start0 = Time::getHighResolutionTicks();
     if (activeTrack->FirstRecordingBuffer) {
         if(*activeTrack->LoopDuration == 0){
-            activeTrack->BeginFadeOffset = start = (start >= context->samplesPerBlock) ? 0 : max(start, 0);
+            activeTrack->BeginFadeOffset = start = (start >= context->maxBlockSize) ? 0 : max(start, 0);
         }
         // in overdub mode create a new layer
         if ((activeTrack->getRecordMode() < 4)
@@ -1841,7 +1838,7 @@ void OrbishAudioProcessor::handlePlaybackBlock(int start, int stop) {
                             context->xchange->readBufferQueue->pop();
                         }else{
                             auto b = make_unique<AudioBuffer<float> >();
-                            b->setSize(context->audioInputsCount, context->samplesPerBlock);
+                            b->setSize(context->audioInputsCount, context->maxBlockSize);
                             b->clear();
                             temp = move(b);
                         }
@@ -1851,7 +1848,7 @@ void OrbishAudioProcessor::handlePlaybackBlock(int start, int stop) {
                             int adjustedPosition = track->Reverse?reverseSourceIndex:sourceIndex;
                             if(reSync->isFadeInProgress() && !context->skipAlign){
                                 // write fade out with signal from unadjusted position
-                                 fadeOut = fadeIn = min(abs(reSync->getCurrentOffset()), context->samplesPerBlock - targetIndex);
+                                 fadeOut = fadeIn = min(abs(reSync->getCurrentOffset()), context->maxBlockSize - targetIndex);
                                 int vAdjustedPosition = track->getAdjustedLoopPosition(index, reSync->getTotalOffset());
                                 if (track->Reverse) {
                                     int tmpIndex = *track->LoopDuration - 1 - vAdjustedPosition;
@@ -1953,6 +1950,7 @@ void OrbishAudioProcessor::handlePlaybackBlock(int start, int stop) {
                                 smoothVolume(track->PreviousOutputLevel, track->getOutputLevel(), samplesToRead+tail, temp.get(), context->buffer.get(), c);
                             }
                         }
+                        temp.reset();
                     }
                 }
             }
@@ -1993,7 +1991,6 @@ void OrbishAudioProcessor::smoothVolume(double& origin, double destination, int 
                              , source->getReadPointer(channel)
                              , samplesToRead
                              , destination);
-                                 
     }
 }
 //==============================================================================

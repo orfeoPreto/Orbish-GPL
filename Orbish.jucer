@@ -1,12 +1,13 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <JUCERPROJECT id="iqI92f" name="Orbish" projectType="audioplug" headerPath="&#10;"
-              pluginManufacturer="Exu" pluginManufacturerCode="Exu" pluginCode="Orb"
+              pluginManufacturer="Exu" pluginManufacturerCode="Exuo" pluginCode="Orbi"
               pluginFormats="buildAU,buildVST3" displaySplashScreen="1" jucerFormatVersion="1"
               aaxIdentifier="Exu" pluginChannelConfigs="{1,1},{2,2}" pluginAAXCategory="8192"
               bundleIdentifier="exu.Orbish" companyName="exu" version="0.3.2"
               postExportShellCommandWin="xcopy %%1%%\Build\VisualStudio2019\x64\Debug\VST3 &quot;C:\Program Files\Common Files\VST3&quot;"
-              companyWebsite="www.orbish-audio.com" companyEmail="info@orbish-audio.com">
+              companyWebsite="www.orbish-audio.com" companyEmail="info@orbish-audio.com"
+              pluginAUMainType="'aufx'" pluginName="Orbish" pluginDesc="Audio Looper Plugin">
   <MAINGROUP id="MOZJJ5" name="Orbish">
     <GROUP id="{40BAF4D8-7324-156C-E5E8-0098A128DC2C}" name="resources">
       <FILE id="D3s8S3" name="low_dry_click.aif" compile="0" resource="1"

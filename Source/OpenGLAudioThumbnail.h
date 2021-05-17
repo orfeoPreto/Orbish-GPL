@@ -37,6 +37,7 @@ public OpenGLComponent
 {
 public:
     OpenGLAudioThumbnail(std::atomic<float> &offset);
+    ~OpenGLAudioThumbnail();
 
 
     void renderOpenGL() override;

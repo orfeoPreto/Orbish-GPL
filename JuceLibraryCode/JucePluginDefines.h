@@ -41,7 +41,7 @@
  #define JucePlugin_Name                   "Orbish"
 #endif
 #ifndef  JucePlugin_Desc
- #define JucePlugin_Desc                   "Orbish"
+ #define JucePlugin_Desc                   "Audio Looper Plugin"
 #endif
 #ifndef  JucePlugin_Manufacturer
  #define JucePlugin_Manufacturer           "Exu"
@@ -53,10 +53,10 @@
  #define JucePlugin_ManufacturerEmail      "info@orbish-audio.com"
 #endif
 #ifndef  JucePlugin_ManufacturerCode
- #define JucePlugin_ManufacturerCode       0x45787500
+ #define JucePlugin_ManufacturerCode       0x4578756f
 #endif
 #ifndef  JucePlugin_PluginCode
- #define JucePlugin_PluginCode             0x4f726200
+ #define JucePlugin_PluginCode             0x4f726269
 #endif
 #ifndef  JucePlugin_IsSynth
  #define JucePlugin_IsSynth                0

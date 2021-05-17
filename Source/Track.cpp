@@ -13,7 +13,7 @@
 
 
 
-Track::Track(uint index, bool a, AudioProcessorValueTreeState& p, OrbishContext* &c, bool& gui) : guiAlive(gui)
+Track::Track(uint index, bool a, AudioProcessorValueTreeState& p, std::shared_ptr<OrbishContext> &c, bool& gui) : guiAlive(gui)
 , refresh(false)
 , params(p)
 , context(c){
@@ -95,6 +95,9 @@ Track::~Track() {
     
     RemoveAllLayers();
     setActive(false);
+    delete state;
+    ActiveLoop = nullptr;
+    loops.clear();
 }
 
 int Track::getNextSample(SnapMode snapMode){
@@ -201,9 +204,9 @@ void Track::setActive(bool newValue){
             params.removeParameterListener("removeLoop", this);
             params.removeParameterListener("loopSelect", this);
             params.removeParameterListener("fixed", this);
-
         }
     }
+
     active = newValue;
 }
 
@@ -306,6 +309,7 @@ void Track::RemoveTopLayer() {
     Layers->pop_back();
     if (*CurrentTop > int(Layers->size()) - 1)
         *CurrentTop = int(Layers->size()) -1;
+    
 }
 
 void Track::RemoveAllLayers() {
@@ -330,6 +334,7 @@ int Track::BounceHistory(int startCheckPoint, int endCheckPoint) {
             for (uint j = 0; j < context->audioInputsCount; j++) {
                 if (startBuffer) {
                     startBuffer->copyFrom(j, 0, *((*Layers)[i]->Buffer), j, 0, context->allocatedLength);
+                    (*Layers)[i].reset();
                 }
             }
         }
@@ -725,8 +730,10 @@ void Track::UpdateLoopVisualizer(Layer* l){
                 b->buffer = nullptr;
                 b->numSamples = 0;
             }
-            (context->observer->*(context->observer->layerChange)) ( Index,b->layerIndex);
-            context->xchange->readVisualisationBufferQueue->push(b);
+            if(guiAlive){
+                (context->observer->*(context->observer->layerChange)) ( Index,b->layerIndex);
+                context->xchange->readVisualisationBufferQueue->push(b);
+            }
         }
     }
 }
@@ -750,7 +757,10 @@ void Track::RefreshLoopVisualizer(){
         UpdateLoopVisualizer((*Layers)[i].get());
     }
 	refresh = false;
-	(context->observer->*(context->observer->layersRefreshed))();
+    
+    if(guiAlive){
+        (context->observer->*(context->observer->layersRefreshed))();
+    }
 }
 
 void Track::RemoveLoopBefore(){
@@ -794,7 +804,9 @@ void Track::SetPreviousAfter(){
         --(*CurrentTop);
     }
     setActivePlaybackLayer((*Layers)[*CurrentTop]);
-    (context->observer->*(context->observer->layerChange)) (this->Index, getActivePlaybackLayer()->index);
+    if(guiAlive){
+        (context->observer->*(context->observer->layerChange)) (this->Index, getActivePlaybackLayer()->index);
+    }
 }
 
 void Track::SetNextBefore(){
@@ -819,7 +831,9 @@ void Track::SetNextAfter(){
     }
     setActivePlaybackLayer((*Layers)[*CurrentTop]);
     getActivePlaybackLayer()->FirstLayerBuffer = true;
-    (context->observer->*(context->observer->layerChange)) (this->Index, getActivePlaybackLayer()->index);
+    if(guiAlive){
+        (context->observer->*(context->observer->layerChange)) (this->Index, getActivePlaybackLayer()->index);
+    }
 }
 //-------------------process functions---------------------
 

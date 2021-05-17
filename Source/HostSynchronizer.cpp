@@ -8,7 +8,7 @@
 
 #include "HostSynchronizer.h"
 
-HostSynchronizer::HostSynchronizer(OrbishContext* context): Synchronizer(context){
+HostSynchronizer::HostSynchronizer(std::shared_ptr<OrbishContext> context): Synchronizer(context){
     
 }
 HostSynchronizer::~HostSynchronizer(){

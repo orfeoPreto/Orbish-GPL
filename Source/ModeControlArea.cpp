@@ -45,7 +45,8 @@ ModeControlArea::ModeControlArea(){
     for (int i = 0; i < listSnapModeNames.size(); ++i){
         snapModeCombo.addItem(listSnapModeNames[i][0], i + 1);
     }
-
+    listRecModeNames.clear();
+    listSnapModeNames.clear();
     str = String("No Sync: Snap disabled, functionality goes into effect instantly\n") +
         String("Bar: Snaps to bar\n") +
         String("Beat: Snaps to the beat (bottom of time signature)");
@@ -86,9 +87,11 @@ ModeControlArea::ModeControlArea(){
 //    };
     recModeCombo.addListener(this);
     addAndMakeVisible(fixedSizeBeatsCombo);
+
 }
 
 ModeControlArea::~ModeControlArea(){
+
 }
 
 void ModeControlArea::paint (juce::Graphics& g){

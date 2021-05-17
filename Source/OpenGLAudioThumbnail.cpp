@@ -46,6 +46,9 @@ void OpenGLAudioThumbnail::setUniforms(){
     shader->uniforms->windowForLog->set (window);
     shader->uniforms->reverse->set (reverse);
 }
+OpenGLAudioThumbnail::~OpenGLAudioThumbnail(){
+    clear();    
+}
 
 void OpenGLAudioThumbnail::renderOpenGL() {
     OpenGLComponent::renderOpenGL();
@@ -131,9 +134,10 @@ void OpenGLAudioThumbnail::setBuffer(std::shared_ptr<AudioSampleBuffer> b, GLflo
     }else{
         visualizationBuffers[layerIndex] = visualizationBuffer;
     }
+    b.reset();
 }
 
 void OpenGLAudioThumbnail::clear(){
     visualizationBuffers.clear();
-    readBuffer.reset();
+    readBuffer = nullptr;
 }

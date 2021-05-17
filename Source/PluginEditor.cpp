@@ -53,7 +53,8 @@ OrbishAudioProcessorEditor::OrbishAudioProcessorEditor (OrbishAudioProcessor& p,
     setupNavigationControls(buttonControlArea);
     setupTracks();
     setSize (1300, 800);
-	markActiveTrackForRefresh(true);
+   // setScaleFactor(0.8);
+    markActiveTrackForRefresh(true);
 }
 
 

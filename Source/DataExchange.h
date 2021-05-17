@@ -9,6 +9,7 @@ class BufferForVisualisation{
 public:
 	BufferForVisualisation() {}
 	~BufferForVisualisation() {
+        buffer = nullptr;
 	}
 	std::shared_ptr<AudioBuffer<float> > buffer;
     int numSamples = 0;
@@ -19,6 +20,7 @@ class MeasureBuffer{
 public:
     MeasureBuffer() {}
     ~MeasureBuffer() {
+        buffer = nullptr;
     }
     void measure(){
          source->measureBlock(*buffer);

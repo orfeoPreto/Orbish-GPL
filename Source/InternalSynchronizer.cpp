@@ -10,7 +10,7 @@
 
 #include "InternalSynchronizer.h"
 
-InternalSynchronizer::InternalSynchronizer(OrbishContext* context, int* pos): Synchronizer(context),currentPos(pos){
+InternalSynchronizer::InternalSynchronizer(std::shared_ptr<OrbishContext> context, int* pos): Synchronizer(context),currentPos(pos){
 }
 InternalSynchronizer::~InternalSynchronizer(){
     

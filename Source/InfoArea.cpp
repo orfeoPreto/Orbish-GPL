@@ -31,8 +31,8 @@ InfoArea::InfoArea(){
     logo.setTooltip(s);
     logo.setImage(ImageFileFormat::loadFrom(BinaryData::orbishlogowebdown_png, BinaryData::orbishlogowebdown_pngSize));
 
-    clickButton.setTooltip("Enable/disable click");
-    addAndMakeVisible(clickButton);
+  //  clickButton.setTooltip("Enable/disable click");
+//    addAndMakeVisible(clickButton);
 }
 
 InfoArea::~InfoArea(){
@@ -85,7 +85,7 @@ void InfoArea::resized(){
     bounds.removeFromLeft(50);
     progressLabel.setBounds(bounds.removeFromTop(labelHeight));
     witness->setBounds(20, progressLabel.getY()-5, int(std::ceil(labelHeight)), int(std::ceil(labelHeight)));
-    clickButton.setBounds(5, witness->getY(), witness->getHeight() * .7, witness->getHeight() *.7);
+//    clickButton.setBounds(5, witness->getY(), witness->getHeight() * .7, witness->getHeight() *.7);
     auto ratio = logo.getImage().getHeight() / 50;
     logo.setBounds(10,20, logo.getImage().getWidth()/ratio,50);
     logo.setAlpha(.8f);

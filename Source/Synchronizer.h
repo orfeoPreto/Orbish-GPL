@@ -15,14 +15,14 @@
 class Synchronizer{
 public:
     Synchronizer(){}
-    Synchronizer(OrbishContext* context){
+    Synchronizer(std::shared_ptr<OrbishContext> context){
         this->context = context;
     }
     virtual ~Synchronizer(){}
     
     virtual int getNextSample(SnapMode)=0;
     
-    OrbishContext* context;
+    std::shared_ptr<OrbishContext> context;
 
 };
 

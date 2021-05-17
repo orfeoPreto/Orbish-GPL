@@ -13,7 +13,7 @@
 
 class HostSynchronizer: public Synchronizer{
 public:
-    HostSynchronizer(OrbishContext*);
+    HostSynchronizer(std::shared_ptr<OrbishContext>);
     ~HostSynchronizer() override;
     
     int getNextSample(SnapMode) override;

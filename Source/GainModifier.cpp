@@ -9,7 +9,9 @@
 
 
 GainModifier::GainModifier(){}
-GainModifier::~GainModifier(){}
+GainModifier::~GainModifier(){
+    buffer = nullptr;
+}
 
 void GainModifier::applyGain(){
     if(startIndex + numberOfSamples > buffer->getNumSamples())return;

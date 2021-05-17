@@ -27,7 +27,7 @@ class Track :public AudioProcessorValueTreeState::Listener, public Synchronizer{
 public:
 
 
-	Track(uint, bool, AudioProcessorValueTreeState& params, OrbishContext*& c, bool& gui);
+	Track(uint, bool, AudioProcessorValueTreeState& params, std::shared_ptr<OrbishContext>& c, bool& gui);
 
 	~Track() override;
     int getNextSample(SnapMode) override;
@@ -224,7 +224,7 @@ public:
 private:
 	AudioProcessorValueTreeState& params;
     bool active = false;
-    OrbishContext* &context;
+    std::shared_ptr<OrbishContext> &context;
     bool firstPass = true;
     std::unique_ptr<Synchronizer> primarySynchronizer;
     std::unique_ptr<Synchronizer> secondarySynchronizer;

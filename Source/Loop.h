@@ -30,19 +30,12 @@ public:
 	double Progress = 0;
 
     
-	void AddLayer(bool incrementTop, OrbishContext* context) {
+	void AddLayer(bool incrementTop, std::shared_ptr<OrbishContext> context) {
 		LayersReady = false;
 		if (!context->xchange->layerQueue->empty()) {
 			long start1 = 0, end1 = 0, start2 = 0, end2 = 0;
 			start1 = Time::getHighResolutionTicks();
 			std::shared_ptr<Layer> l = nullptr;
-//			do {
-//				if (l != nullptr) {
-//					delete l->Buffer;
-//					delete  l;
-//				}
-//				l = context->layerQueue->front();
-//            } while (l != nullptr && l->Buffer->getNumChannels() == 0);
             l = context->xchange->layerQueue->front();
             l->index = int(Layers->size());
 			Layers->push_back(l);

@@ -20,7 +20,7 @@ public:
     Layer(int, int);
     ~Layer();
 
-    std::shared_ptr<AudioBuffer<float> > Buffer{};
+    std::shared_ptr<AudioBuffer<float> > Buffer;
     int Checkpoint = -1;
     bool dirty = false;
     int index = 0;

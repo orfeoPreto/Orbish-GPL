@@ -13,7 +13,7 @@
 
 class InternalSynchronizer: public Synchronizer{
 public:
-    InternalSynchronizer(OrbishContext*, int*);
+    InternalSynchronizer(std::shared_ptr<OrbishContext>, int*);
     ~InternalSynchronizer() override;
     
     int getNextSample(SnapMode) override;

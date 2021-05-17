@@ -130,12 +130,12 @@ public:
 	bool loadFromValueTree(ValueTree* tree);
 	bool loadTrackFromValueTree(ValueTree* trackTree, Track* track);
 	bool loadLoopFromValueTree(ValueTree* loopTree, Loop* loop);
-    void handleClick(OrbishContext* context, AudioSampleBuffer*);
+    void handleClick(std::shared_ptr<OrbishContext> context, AudioSampleBuffer*);
 	void initGroups();
     
     bool clickInProcess = false;
     int numBuffersDoneForClick = 0;
-    OrbishContext* context;
+    std::shared_ptr<OrbishContext> context;
     TrackGroup* CurrentGroup;
 	TrackGroup* SelectedGroup;
     //std::unique_ptr<RubberBand::RubberBandStretcher> stretcher;
@@ -163,6 +163,7 @@ public:
     bool hostHasPlayed = false;
     GlobalAction globalAction = kGlobalNone;
 	bool keepRunning = true;
+    bool queuesEmpty = false;
     bool aTrackIsSoloed = false;
     double previousMixLevel = -1;
     bool changingTrack = false;
