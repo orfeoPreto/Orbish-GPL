@@ -26,23 +26,24 @@ void OrbishLevelMeter::resized(){
     const juce::Rectangle<float> bounds = getLocalBounds().toFloat();
     meterDisplay->setBounds(bounds.getX(), bounds.getY(), bounds.getWidth(), bounds.getHeight());
 }
-void OrbishLevelMeter::timerCallback ()
+void OrbishLevelMeter::timerCallback()
 {
-    auto newRMS = source->getRMSLevel (0);
-    auto newRMS2 = source->getRMSLevel(1);
-
-    int64 stamp = Time::getApproximateMillisecondCounter();
-    if (stamp - lastRmsUpdate > source->getMaxHoldMS() || newRMS < rms) {
-        if(stamp - lastRmsUpdate <= source->getMaxHoldMS()){
-            lastRmsUpdate = stamp;
-        }
-        lastRmsUpdate = stamp;
-        rms = source->getRMSLevel (0);
-    }
-    if (stamp - lastRmsUpdate2 > source->getMaxHoldMS() || newRMS2 < rms2) {
-        lastRmsUpdate2 = stamp;
-        rms2 = source->getRMSLevel (1);
-    }
+	auto newRMS = source->getRMSLevel(0);
 
 
+	int64 stamp = Time::getApproximateMillisecondCounter();
+	if (stamp - lastRmsUpdate > source->getMaxHoldMS() || newRMS < rms) {
+		if (stamp - lastRmsUpdate <= source->getMaxHoldMS()) {
+			lastRmsUpdate = stamp;
+		}
+		lastRmsUpdate = stamp;
+		rms = source->getRMSLevel(0);
+	}
+	if (source->getNumChannels() > 1){
+		auto newRMS2 = source->getRMSLevel(1);
+		if (stamp - lastRmsUpdate2 > source->getMaxHoldMS() || newRMS2 < rms2) {
+			lastRmsUpdate2 = stamp;
+			rms2 = source->getRMSLevel(1);
+		}
+	}
 }
