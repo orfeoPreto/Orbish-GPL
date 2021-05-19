@@ -36,7 +36,7 @@ OrbishAudioProcessorEditor::OrbishAudioProcessorEditor (OrbishAudioProcessor& p,
     headerArea.setEditor(this);
     addAndMakeVisible(headerArea);
     addAndMakeVisible(*infoAndControlArea);
-    setResizable(true, false);
+    setResizable(true, true);
     // Setup project header
 	project = Project();
 	setProjectName(project.name);
