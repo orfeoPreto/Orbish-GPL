@@ -210,9 +210,10 @@ void TrackComponent::resized(){
     trackNumberLabel.setBounds(margin , margin, buttonSize + 5, buttonSize);
 
     highlighter.setBounds(margin*2 + buttonSize , int(1.5f*margin), int(buttonSize * .8f) , int(buttonSize *.8f));
-	groupLabel.setBounds(int(margin + 3.0f) * (margin + buttonSize), margin, buttonSize * 2, buttonSize);
     trackNameLabel.setBounds(int(2.5f * (margin + buttonSize)), margin, 100, buttonSize);
-    int startHorizontalLoop = trackNameLabel.getX() + trackNameLabel.getWidth() - buttonSize;
+        groupLabel.setBounds(trackNameLabel.getX() + trackNameLabel.getWidth() + buttonSize, margin, buttonSize * 2, buttonSize);
+
+    int startHorizontalLoop = groupLabel.getX() + groupLabel.getWidth() + buttonSize;
 
     auto bounds = getLocalBounds().reduced(2*margin);
 
@@ -238,7 +239,9 @@ void TrackComponent::resized(){
 
 void TrackComponent::paint(Graphics& g){
     auto r = getLocalBounds();
-
+    trackNameLabel.touch();
+    trackNumberLabel.touch();
+    groupLabel.touch();
     g.setColour(findColour(backgroundColourId));
     g.fillRect(r);
     if(active){

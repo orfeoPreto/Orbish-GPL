@@ -28,6 +28,7 @@ public:
 
     void paint (juce::Graphics&) override;
     void resized() override;
+//    void setLookAndFeel (LookAndFeel* const newLookAndFeel);
 
     TransportControlArea transportControlArea{};
     ModeAndNavigationControlArea modeAndNavigationControlArea{};

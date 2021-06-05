@@ -14,9 +14,8 @@
 
 //==============================================================================
 OutputControlArea::OutputControlArea(){
-
     addAndMakeVisible(outputMeter);
-
+    
     // output slider
     outputLevelLabel.setText("Output", NotificationType::dontSendNotification);
     outputLevelLabel.setJustificationType(Justification::centred);
@@ -78,6 +77,8 @@ void OutputControlArea::resized(){
 void OutputControlArea::setEditor(OrbishAudioProcessorEditor* pluginEditor){
     editor = pluginEditor;
    outputMeter.setMeterSource(editor->getProcessor()->getOutputMeterSource());
+    outputMeter.setOpenGLContext(editor->getOpenGLContext());
+    outputMeter.meterDisplay->setTopLevelComponent(editor);
 
 }
 

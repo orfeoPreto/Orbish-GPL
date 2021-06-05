@@ -24,15 +24,23 @@ vertices{
 ,offset(offset)
 {
     shader = nullptr;
+    setOpaque(true);
+    bgColour = Colour{0xff262626};
+//    bgColour = getLookAndFeel().findColour (ResizableWindow::backgroundColourId);
 }
 
-void OpenGLComponent::setOpenGLContext(std::shared_ptr<OpenGLContext> openGLContext){
-//    this->openGLContext = std::make_shared<OpenGLContext>();
-
+void OpenGLComponent::setOpenGLContext(std::shared_ptr<OpenGLContext> openGLContext, bool owner){
     this->openGLContext = openGLContext;
-    this->openGLContext->setOpenGLVersionRequired(OpenGLContext::OpenGLVersion::openGL3_2);
-    this->openGLContext->setRenderer(this);
-    this->openGLContext->attachTo(*this);
+    if (owner) {
+        this->openGLContext->setOpenGLVersionRequired(OpenGLContext::OpenGLVersion::openGL3_2);
+        this->openGLContext->setRenderer(this);
+        this->openGLContext->attachTo(*this);
+    }
+    topLevelComponent = getTopLevelComponent();
+}
+
+void OpenGLComponent::setTopLevelComponent(Component* comp){
+    topLevelComponent = comp;
 }
 
 void OpenGLComponent::start()
@@ -68,6 +76,9 @@ void OpenGLComponent::resized()
 
 void OpenGLComponent::updateScale(){
     const float renderingScale = (float) openGLContext->getRenderingScale();
+    x = roundToInt(renderingScale * x);
+    y = roundToInt(renderingScale * y);
+
     width = roundToInt(renderingScale * getWidth());
     height = roundToInt(renderingScale * getHeight());
 }
@@ -77,7 +88,9 @@ void OpenGLComponent::newOpenGLContextCreated() {
     updateScale();
 	openGLContext->extensions.glGenBuffers(1, &vbo);
 	openGLContext->extensions.glGenBuffers(1, &ebo);
-    
+
+//    glDisable(GL_TEXTURE_2D);
+
 }
 
 void OpenGLComponent::renderOpenGL() {
@@ -89,18 +102,23 @@ void OpenGLComponent::renderOpenGL() {
         frameRate = counter;
         counter = 0;
     }
+    juce::Point<int> pointOnTopLevel = getPointFromTopLevel(topLevelComponent, juce::Point<int>{-localX,-localY});
+    x = pointOnTopLevel.getX() * -1;
+    y = topLevelComponent->getHeight() + (pointOnTopLevel.getY()) - getHeight();
     updateScale();
-    glViewport(x, y, width, height);
+    glViewport(x,y, width, height);
+    juce::OpenGLHelpers::enableScissorTest (Rectangle<int>{x,y,width,height});
     glHint(GL_LINE_SMOOTH_HINT, 4);
     glEnable (GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
     glEnable(GL_MULTISAMPLE);
-    //set background colour
+
     if(clearViewport){
-        OpenGLHelpers::clear(getLookAndFeel().findColour (ResizableWindow::backgroundColourId));
+        OpenGLHelpers::clear(bgColour);
     }else{
         clearViewport = true;
     }
+    glDisable (GL_SCISSOR_TEST);
     {
         shader->use();
         try {
@@ -110,7 +128,7 @@ void OpenGLComponent::renderOpenGL() {
         }
     }
     {
-        glDisable(GL_DEPTH_TEST);
+    glDisable(GL_DEPTH_TEST);
 		openGLContext->extensions.glBindBuffer (GL_ARRAY_BUFFER, vbo);
 		openGLContext->extensions.glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STREAM_DRAW);
 		openGLContext->extensions.glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ebo);
@@ -123,6 +141,10 @@ void OpenGLComponent::renderOpenGL() {
     }
 }
 
+int OpenGLComponent::getFrameRate(){
+    return frameRate;
+}
+
 void OpenGLComponent::openGLContextClosing() {
     shader.reset();
 }
@@ -131,6 +153,7 @@ void OpenGLComponent::openGLContextClosing() {
 void OpenGLComponent::setUniforms(){
     shader->uniforms->resolution->set ((GLfloat) width, (GLfloat) height);
     shader->uniforms->offset->set ((GLfloat) offset);
+    shader->uniforms->origin->set ((GLfloat) x, (GLfloat) y);
 }
 
 void OpenGLComponent::setOffset(float &position){

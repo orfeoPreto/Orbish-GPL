@@ -62,7 +62,11 @@ void NavigationControlArea::paint (juce::Graphics& g){
     auto bounds = getLocalBounds();
     auto loopButtonArea = bounds.removeFromLeft(bounds.getWidth() / 2).reduced(5);
     auto trackButtonArea = bounds.reduced(5);
-
+//    projectLabel.setColour(Label::textColourId, findColour(TextButton::ColourIds::textColourOnId));
+    trackLabel.touch();
+    loopLabel.touch();
+    activeLoopLabel.touch();
+    activeTrackLabel.touch();
     g.drawRoundedRectangle(loopButtonArea.toFloat(), 4.0f, 0.5f);
     g.drawRoundedRectangle(trackButtonArea.toFloat(), 4.0f, 0.5f);
 }
@@ -84,7 +88,7 @@ void NavigationControlArea::resized(){
     // Track navigation
     auto trackButtonArea = bounds.reduced(10);
     auto trackNavArea = trackButtonArea.removeFromLeft(trackButtonArea.getWidth() * 3 / 5);
-    auto txt = trackLabel.getText();
+    trackLabel.setText("Track", NotificationType::sendNotification);
     trackLabel.setBounds(trackNavArea.removeFromTop(15));
     buttonWidth = trackNavArea.getWidth() / 3;
     previousTrackButton.setBounds(trackNavArea.removeFromLeft(buttonWidth));

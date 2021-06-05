@@ -9,6 +9,7 @@
 #ifndef __Orbish_H_INCLUDED
 #define __Orbish_H_INCLUDED
 #define LAYERS_VISIBLE  5
+//#define DEBUG_LOG  1
 
 #include <vector>
 #include <string>
@@ -62,4 +63,8 @@ enum SnapMode
     kSnapQuarter
 };
 
+inline bool doublesEqual(double dFirstVal, double dSecondVal)
+{
+    return std::abs(dFirstVal - dSecondVal) < std::numeric_limits<double>::epsilon();
+}
 #endif

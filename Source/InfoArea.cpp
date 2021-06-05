@@ -30,6 +30,8 @@ InfoArea::InfoArea(){
     String s = String(ProjectInfo::projectName) + " " + String(ProjectInfo::versionString) + "\nBy " + String(ProjectInfo::companyName);
     logo.setTooltip(s);
     logo.setImage(ImageFileFormat::loadFrom(BinaryData::orbishlogowebdown_png, BinaryData::orbishlogowebdown_pngSize));
+    setOpaque(true);
+
 
   //  clickButton.setTooltip("Enable/disable click");
 //    addAndMakeVisible(clickButton);
@@ -40,7 +42,9 @@ InfoArea::~InfoArea(){
 
 void InfoArea::setOpenGLContext(std::shared_ptr<OpenGLContext> ctxt){
     openGLContext = ctxt;
-    witness->setOpenGLContext(openGLContext);
+    witness->setOpenGLContext(openGLContext, false);
+    witness->setTopLevelComponent(getTopLevelComponent());
+    witness->setLookAndFeel(&getLookAndFeel());
     addAndMakeVisible(*witness);
     witness->start();
 }
@@ -48,7 +52,6 @@ void InfoArea::setOpenGLContext(std::shared_ptr<OpenGLContext> ctxt){
 void InfoArea::setWitness(std::shared_ptr<OpenGLClickWitness> witness){
     this->witness = witness;
 }
-
 
 void InfoArea::paint (juce::Graphics& g){
     g.fillAll (getLookAndFeel().findColour (juce::ResizableWindow::backgroundColourId));   // clear the background
@@ -90,6 +93,8 @@ void InfoArea::resized(){
     logo.setBounds(10,20, logo.getImage().getWidth()/ratio,50);
     logo.setAlpha(.8f);
 }
+
+
 
 void InfoArea::setProjectName(String name){
     projectLabel.setText(name, NotificationType::dontSendNotification);

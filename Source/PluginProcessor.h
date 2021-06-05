@@ -58,7 +58,17 @@ public:
     //==============================================================================
     std::unique_ptr<RangedAudioParameter> createParamFromBool(AudioParameterBool* boolParam, bool defaultValue);
     std::unique_ptr<RangedAudioParameter> createParamFromInt(AudioParameterInt* intParam, int defaultValue);
-
+    std::unique_ptr<AudioParameterFloat> createDecibelsParameter (
+                                                                                   String,
+                                                                                   String,
+                                                                                   String,
+                                                                                   float,
+                                                                                   float,
+                                                                                   float,
+                                                                                   float,
+                                                                                   std::function<String (float)>,
+                                                                                   std::function<float (const String& )>
+                                                             );
     void prepareToPlay (double sampleRate, int samplesPerBlock) override;
     void releaseResources() override;
     void parameterChanged(const String &parameterID, float newValue) override;

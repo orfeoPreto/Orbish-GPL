@@ -41,7 +41,7 @@ public:
     OpenGLComponent(std::atomic<float> &offset);
     ~OpenGLComponent() override;
 
-    void setOpenGLContext(std::shared_ptr<OpenGLContext> openGLContext);
+    void setOpenGLContext(std::shared_ptr<OpenGLContext> openGLContext, bool owner);
     void paint (juce::Graphics&) override;
     void resized() override;
     void renderOpenGL() override;
@@ -57,9 +57,12 @@ public:
     virtual void setUniforms();
     String shaderName;
     std::unique_ptr<Shader> shader;
-
-protected:
+    juce::Rectangle<int> getComponentClippingBoundsRelativeToGLRenderingTarget (juce::Component* targetComponent);
+    int getFrameRate();
+    void setTopLevelComponent(Component*);
     
+protected:
+    Component* topLevelComponent;
     GLuint vbo, vao, ebo, fbo;
     unsigned int texture;
     int counter = 0;
@@ -70,9 +73,10 @@ protected:
     GLuint indices[6];
     int runs = 0;
     GLfloat* subImage;
-    int width=0, height=0, x=0, y=0;
+    int width=0, height=0, x=0, y=0, localX=0, localY=0;
     std::atomic<float> &offset;
     bool clearViewport = true;
+    Colour bgColour;
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (OpenGLComponent);
 
 };

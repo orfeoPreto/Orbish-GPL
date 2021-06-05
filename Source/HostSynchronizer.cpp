@@ -40,5 +40,5 @@ int HostSynchronizer::getNextSample(SnapMode snapMode){
       double expectedSamplePosition = Synchronizer::context->beatsToSamples(expectedPos);
       // nextSample is the expected sample position starting from the start of the current buffer
       int nextSample = int(floor(expectedSamplePosition + .5)) - int(Synchronizer::context->beatsToSamples(currentPos));
-    return nextSample;
+        return nextSample;
 }

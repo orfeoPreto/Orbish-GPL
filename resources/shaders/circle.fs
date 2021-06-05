@@ -1,13 +1,17 @@
 uniform vec2 resolution;
 uniform float offset;
+uniform vec2  origin;
 
 float circleShape(vec2 position, float radius){
     return step(radius, length(position - vec2(0.5)));
 }
 
 void main(){
-    vec2 position = gl_FragCoord.xy / resolution;
+    vec2 pixelLocal = gl_FragCoord.xy - origin;
+
+    vec2 position = pixelLocal.xy / resolution;
     vec3 colour = vec3(0.9921875, 0.8398438, 0.0585938);
+
     float rest = fract(offset);
     rest = pow(rest,3);
     float circle =1.0;

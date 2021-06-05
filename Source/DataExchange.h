@@ -41,8 +41,8 @@ public:
         readBufferQueue = new boost::lockfree::spsc_queue<std::shared_ptr<AudioBuffer<float> >, boost::lockfree::capacity<200> >;
         writeGainModifierQueue = new boost::lockfree::spsc_queue<std::shared_ptr<GainModifier>, boost::lockfree::capacity<200> >;
         readGainModifierQueue = new boost::lockfree::spsc_queue<std::shared_ptr<GainModifier>, boost::lockfree::capacity<200> >;
-        writeMeasureBufferQueue = new boost::lockfree::spsc_queue<std::shared_ptr<MeasureBuffer>, boost::lockfree::capacity<10> >;
-        readMeasureBufferQueue = new boost::lockfree::spsc_queue<std::shared_ptr<MeasureBuffer>, boost::lockfree::capacity<10> >;
+        writeMeasureBufferQueue = new boost::lockfree::spsc_queue<std::shared_ptr<MeasureBuffer>, boost::lockfree::capacity<50> >;
+        readMeasureBufferQueue = new boost::lockfree::spsc_queue<std::shared_ptr<MeasureBuffer>, boost::lockfree::capacity<50> >;
         layerQueue = new boost::lockfree::spsc_queue<std::shared_ptr<Layer>, boost::lockfree::capacity<3> >;
 	}
 	~DataExchange() {
@@ -58,9 +58,9 @@ public:
 
     boost::lockfree::spsc_queue<std::shared_ptr<AudioBuffer<float> >, boost::lockfree::capacity<200> >* readBufferQueue;
     
-    boost::lockfree::spsc_queue<std::shared_ptr<MeasureBuffer>, boost::lockfree::capacity<10> >* writeMeasureBufferQueue;
+    boost::lockfree::spsc_queue<std::shared_ptr<MeasureBuffer>, boost::lockfree::capacity<50> >* writeMeasureBufferQueue;
 
-    boost::lockfree::spsc_queue<std::shared_ptr<MeasureBuffer>, boost::lockfree::capacity<10> >* readMeasureBufferQueue;
+    boost::lockfree::spsc_queue<std::shared_ptr<MeasureBuffer>, boost::lockfree::capacity<50> >* readMeasureBufferQueue;
     
     boost::lockfree::spsc_queue<std::shared_ptr<GainModifier>, boost::lockfree::capacity<200> >* writeGainModifierQueue;
     boost::lockfree::spsc_queue<std::shared_ptr<GainModifier>, boost::lockfree::capacity<200> >* readGainModifierQueue;

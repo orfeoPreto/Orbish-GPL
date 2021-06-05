@@ -18,6 +18,8 @@ ButtonControlArea::ButtonControlArea(){
     addAndMakeVisible(globalControlArea);
     addAndMakeVisible(outputControlArea);
     addAndMakeVisible(inputControlArea);
+//    setOpaque(true);
+    
 }
 
 ButtonControlArea::~ButtonControlArea(){
@@ -27,9 +29,9 @@ void ButtonControlArea::paint (juce::Graphics& g){
     auto bounds = transportControlArea.getBoundsInParent();
     bounds.enlargeIfAdjacent(modeAndNavigationControlArea.getBoundsInParent());
     bounds.enlargeIfAdjacent(globalControlArea.getBoundsInParent());
-
     g.setColour(Colours::black);
     g.drawRoundedRectangle(bounds.reduced(5).toFloat(), 4.0f, 1.0f);
+//    g.setColour(findColour(juce::ResizableWindow::backgroundColourId));
 }
 
 void ButtonControlArea::resized(){
@@ -48,3 +50,10 @@ void ButtonControlArea::resized(){
 
     grid.performLayout(bounds);
 }
+
+//void ButtonControlArea::setLookAndFeel (LookAndFeel* const newLookAndFeel){
+////    Component::setLookAndFeel(newLookAndFeel);
+//    modeAndNavigationControlArea.navigationControlArea.setLookAndFeel(newLookAndFeel);
+//    outputControlArea.outputMeter.setLookAndFeel(newLookAndFeel);
+//    inputControlArea.inputMeter.setLookAndFeel(newLookAndFeel);
+//}

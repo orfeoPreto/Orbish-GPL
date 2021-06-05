@@ -24,12 +24,14 @@ public:
     void paint(Graphics&);
     void resized();
     void timerCallback ();
-private:
+    void setOpenGLContext(std::shared_ptr<OpenGLContext> ctxt);
     std::unique_ptr<OpenGLAudioMeter> meterDisplay;
+
+private:
     std::atomic<float> rms, rms2;
     int64 lastRmsUpdate = 0;
     int64 lastRmsUpdate2 = 0;
-
+    std::shared_ptr<OpenGLContext> openGLContext;
 };
 
 #endif /* OrbishLevelMeter_hpp */

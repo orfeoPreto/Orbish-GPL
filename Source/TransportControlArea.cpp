@@ -21,7 +21,7 @@ TransportControlArea::TransportControlArea(){
     recordButton.setTooltip("Start/Stop recording on the active track");
     recordButton.setIcon(ImageFileFormat::loadFrom(BinaryData::recordicon_png, BinaryData::recordicon_pngSize));
     addAndMakeVisible(recordButton);
-    
+//    setOpaque(true);
     playButton.addListener(this);
     playButton.setTooltip("Play/Pause the recorded material on the active track or group");
     playButton.setIcon(ImageFileFormat::loadFrom(BinaryData::playicon_png, BinaryData::playicon_pngSize));

@@ -18,26 +18,23 @@ OpenGLComponent(offset),
 offset2(offset2)
 {
     shaderName = "meterBar";
+    bgColour = juce::Colour(0xff707070);
+    //getLookAndFeel().findColour(FFAU::LevelMeter::lmMeterBackgroundColour);
 }
 
 void OpenGLAudioMeter::renderOpenGL() {
+    channelNumber = 1;
     for (channelNumber = 0; channelNumber<2; ++channelNumber) {
-        if (channelNumber>0) {
-            clearViewport = false;
-        }
         OpenGLComponent::renderOpenGL();
     }
 }
 
 void OpenGLAudioMeter::updateScale(){
-    const float renderingScale = (float) openGLContext->getRenderingScale();
-    width = roundToInt(renderingScale * getWidth()  * 0.4);
-    height = roundToInt(renderingScale * getHeight());
-    if (channelNumber == 1){
-        x = roundToInt(renderingScale * getWidth()  * 0.6);
-    }else if (channelNumber == 0){
-        x = 0;
-    }
+    OpenGLComponent::updateScale();
+    width = roundToInt(width * 0.4);
+        if (channelNumber == 0){
+            x += width * 1.4;
+        }
 }
 
 void OpenGLAudioMeter::setUniforms(){
@@ -47,4 +44,5 @@ void OpenGLAudioMeter::setUniforms(){
     }else if (channelNumber == 0){
         shader->uniforms->offset->set ((GLfloat) offset);
     }
+    shader->uniforms->origin->set ((GLfloat) x, (GLfloat) y);
 }

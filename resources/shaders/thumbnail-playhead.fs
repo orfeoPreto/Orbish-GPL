@@ -5,9 +5,13 @@ uniform float windowForLog;
 uniform vec2 resolution;
 uniform float offset;
 uniform bool reverse;
+uniform vec2  origin;
+
 
 void main()
 {
+    vec2 pixelLocal = gl_FragCoord.xy - origin;
+
     float ratio = totalScope / resolution.x;
     float position;
     float flip = (reverse)?1:-1;
@@ -20,7 +24,7 @@ void main()
         }
         position = tmp / ratio / resolution.x;
     }
-    float newX = gl_FragCoord.x / resolution.x;
+    float newX = pixelLocal.x / resolution.x;
 
     float diff = position - newX;
     float intensity = 0;

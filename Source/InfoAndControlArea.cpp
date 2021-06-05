@@ -16,6 +16,8 @@
 InfoAndControlArea::InfoAndControlArea(){
     addAndMakeVisible(infoArea);
     addAndMakeVisible(controlArea);
+//    setOpaque(true);
+
 }
 
 InfoAndControlArea::~InfoAndControlArea(){
@@ -29,3 +31,11 @@ void InfoAndControlArea::resized(){
     infoArea.setBounds(bounds.removeFromLeft(150));
     controlArea.setBounds(bounds);
 }
+
+//void InfoAndControlArea::setLookAndFeel (LookAndFeel* const newLookAndFeel){
+//    Component::setLookAndFeel(nullptr);
+//    Component::setLookAndFeel(newLookAndFeel);
+//    infoArea.setLookAndFeel(nullptr);
+//    infoArea.setLookAndFeel(newLookAndFeel);
+//    controlArea.setLookAndFeel(newLookAndFeel);
+//}

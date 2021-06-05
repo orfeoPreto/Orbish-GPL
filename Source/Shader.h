@@ -10,7 +10,7 @@
 #include <JuceHeader.h>
 #include <stdio.h>
 #include <istream>
-#define SHADERS_FROM_BINARY_DATA 1
+#define SHADERS_FROM_BINARY_DATA 0
 using namespace juce;
 
 
@@ -28,6 +28,7 @@ struct Uniforms
         tex.reset (createUniform (openGLContext, shaderProgram, "tex"));
         windowForLog.reset (createUniform(openGLContext, shaderProgram, "windowForLog"));
         reverse.reset (createUniform(openGLContext, shaderProgram, "reverse"));
+        origin.reset (createUniform(openGLContext, shaderProgram, "origin"));
     }
     ~Uniforms(){
         totalScope.reset();
@@ -37,8 +38,9 @@ struct Uniforms
         tex.reset();
         windowForLog.reset();
         reverse.reset();
+        origin.reset();
     }
-    std::unique_ptr<OpenGLShaderProgram::Uniform> totalScope, offset, resolution, audioSampleData, tex, windowForLog, reverse;
+    std::unique_ptr<OpenGLShaderProgram::Uniform> totalScope, offset, resolution, audioSampleData, tex, windowForLog, reverse, origin;
     
 private:
     static OpenGLShaderProgram::Uniform* createUniform (OpenGLContext& openGLContext,
@@ -58,7 +60,7 @@ class Shader{
     void loadFile(const char* fn, std::string &str, GLuint);
     void removeShader();
     String shaderPath = (SystemStats::getOperatingSystemType() & SystemStats::MacOSX)
-		? "/Users/Duke/Documents/GitHub/JUCE/Orbish/resources/shaders"
+		? "/Users/dukequarcoo/GitHub/exu/Orbish/resources/shaders"
 		: (SystemStats::getOperatingSystemType() & SystemStats::Windows)
 		      ? "C:\\Users\\quarc\\source\\repos\\orfeoPreto\\Orbish\\resources\\shaders"
 		      : "";
@@ -70,6 +72,7 @@ public:
     std::shared_ptr<OpenGLContext> openGLContext;
     std::unique_ptr<OpenGLShaderProgram> shaderProgram;
     std::unique_ptr<Uniforms> uniforms;
+    JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (Shader);
 
 };
 

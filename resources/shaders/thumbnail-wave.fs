@@ -3,6 +3,8 @@
 uniform float  totalScope;
 uniform float windowForLog;
 uniform vec2  resolution;
+uniform vec2  origin;
+
 uniform float audioSampleData[1000];
 
 void getAmplitudeForXPos (in float xPos,  out float audioAmplitude)
@@ -17,9 +19,10 @@ void getAmplitudeForXPos (in float xPos,  out float audioAmplitude)
 
 void main()
 {
-    float y = gl_FragCoord.y / resolution.y;
+    vec2 pixelLocal = gl_FragCoord.xy - origin;
+    float y = pixelLocal.y / resolution.y;
     float amplitude = 0.0;
-    getAmplitudeForXPos (gl_FragCoord.x, amplitude);
+    getAmplitudeForXPos (pixelLocal.x, amplitude);
 
     amplitude = 0.5 - amplitude / 2.0;
     float r = abs (0.01 / (amplitude-y));

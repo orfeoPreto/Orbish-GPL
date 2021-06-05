@@ -31,6 +31,9 @@
 //==============================================================================
 /**
 */
+
+
+
 struct Project {
 	String name = "Untitled";
 	bool newProject = true;
@@ -73,7 +76,7 @@ class OrbishAudioProcessorEditor : public AudioProcessorEditor,
 	public SettingsPage::Listener,
 	private Timer,
 	public DragAndDropContainer
-//    ,public OpenGLRenderer
+    ,public OpenGLRenderer
 
 
 {
@@ -85,6 +88,7 @@ public:
     void paint (Graphics&) override;
     void resized() override;
     void toggleRecord();
+//    void setLookAndFeel (LookAndFeel* const newLookAndFeel);
     void toggleStop();
     void toggleClear();
     void toggleReverse();
@@ -163,11 +167,12 @@ public:
     void setupTracks();
     void setupWitness();
     void markActiveTrackForRefresh(bool);
-
-//    void renderOpenGL() override;
-//    
-//    void newOpenGLContextCreated() override;
-//    void openGLContextClosing() override;
+    void renderOpenGL() override;
+    
+    void newOpenGLContextCreated() override;
+    void openGLContextClosing() override;
+    std::shared_ptr<OpenGLContext> getOpenGLContext();
+    
 private:
     std::atomic<uint> flags;
     MidiBuffer processedMidi;
@@ -257,7 +262,8 @@ private:
     int trackToRemove = -1;
     int trackToChange = -1;
     int updatedTrackNumber = -1;
-    std::vector<OpenGLRenderer *> renderers;
+    std::vector<std::shared_ptr<OpenGLComponentReference>> references;
+    std::mutex renderingTargetsLock;
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (OrbishAudioProcessorEditor)
 };

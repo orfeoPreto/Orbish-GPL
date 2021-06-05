@@ -16,12 +16,15 @@
 ThumbnailArea::ThumbnailArea(){
     inputDisplay.setColours(Colours::darkgrey, Colours::indianred);
     startTimer(20);
+    setOpaque(true);
+    setAlpha(0);
 }
 
 ThumbnailArea::~ThumbnailArea(){
 }
 
 void ThumbnailArea::paint (juce::Graphics& g){
+    g.setOpacity(0);
 }
 
 void ThumbnailArea::resized(){
@@ -31,6 +34,8 @@ void ThumbnailArea::resized(){
                          ,getWidth()
                          ,getHeight());
 }
+
+
 
 void ThumbnailArea::setFileLoaded(bool loaded){
     fileLoaded = loaded;

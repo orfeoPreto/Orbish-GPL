@@ -15,13 +15,13 @@ namespace BinaryData
     const int            high_dry_click_aifSize = 7290;
 
     extern const char*   circle_fs;
-    const int            circle_fsSize = 474;
+    const int            circle_fsSize = 520;
 
     extern const char*   circle_vs;
     const int            circle_vsSize = 82;
 
     extern const char*   meterBar_fs;
-    const int            meterBar_fsSize = 293;
+    const int            meterBar_fsSize = 361;
 
     extern const char*   meterBar_vs;
     const int            meterBar_vsSize = 82;
@@ -33,13 +33,13 @@ namespace BinaryData
     const int            render_vsSize = 242;
 
     extern const char*   thumbnailplayhead_fs;
-    const int            thumbnailplayhead_fsSize = 913;
+    const int            thumbnailplayhead_fsSize = 983;
 
     extern const char*   thumbnailplayhead_vs;
     const int            thumbnailplayhead_vsSize = 82;
 
     extern const char*   thumbnailwave_fs;
-    const int            thumbnailwave_fsSize = 1453;
+    const int            thumbnailwave_fsSize = 1520;
 
     extern const char*   thumbnailwave_vs;
     const int            thumbnailwave_vsSize = 82;

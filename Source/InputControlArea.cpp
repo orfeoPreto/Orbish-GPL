@@ -31,7 +31,6 @@ InputControlArea::InputControlArea(){
     inputLevelSlider.setTooltip("Adjust the level of the input signal for the active track");
    // inputLevelSlider.textFromValueFunction = [this](double val) {return String(val, 1); };
     addAndMakeVisible(inputLevelSlider);
-
     addAndMakeVisible(inputMeter);
 }
 
@@ -58,7 +57,8 @@ void InputControlArea::resized(){
 void InputControlArea::setEditor(OrbishAudioProcessorEditor* pluginEditor){
     editor = pluginEditor;
     inputMeter.setMeterSource(editor->getProcessor()->getInputMeterSource());
-    
+    inputMeter.setOpenGLContext(editor->getOpenGLContext());
+    inputMeter.meterDisplay->setTopLevelComponent(editor);
 }
 
 void InputControlArea::sliderValueChanged(Slider* slider){

@@ -7,10 +7,10 @@
 
   ==============================================================================
 */
-
-#include <JuceHeader.h>
 #include "OpenGLAudioThumbnail.h"
 #include "Orbish.h"
+#include <JuceHeader.h>
+
 
 //==============================================================================
 
@@ -23,6 +23,10 @@ OpenGLAudioThumbnail::OpenGLAudioThumbnail (std::atomic<float> &offset):
 
     shaderThumbnailWave = nullptr;
     readBuffer = std::make_unique<AudioSampleBuffer>(2,0);
+    bgColour = juce::Colour{0xff000011};
+
+//    bgColour = Colours::black;
+    //toFront(true);
 }
 
 int OpenGLAudioThumbnail:: getTotalLength(){
@@ -46,12 +50,14 @@ void OpenGLAudioThumbnail::setUniforms(){
     shader->uniforms->windowForLog->set (window);
     shader->uniforms->reverse->set (reverse);
 }
+
 OpenGLAudioThumbnail::~OpenGLAudioThumbnail(){
     clear();    
 }
 
 void OpenGLAudioThumbnail::renderOpenGL() {
     OpenGLComponent::renderOpenGL();
+    
     try {
         for(int i=std::max(0, int(layerNumber)-LAYERS_VISIBLE); layerNumber<=visualizationBuffers.size() && i<layerNumber;++i){
             {
@@ -64,6 +70,8 @@ void OpenGLAudioThumbnail::renderOpenGL() {
                 // set up the uniforms for use in shader
                 shaderThumbnailWave->uniforms->resolution->set ((GLfloat) width, (GLfloat) height);
                 shaderThumbnailWave->uniforms->audioSampleData->set (vb, BUFFER_READ_SIZE);
+                shaderThumbnailWave->uniforms->origin->set ((GLfloat) x, (GLfloat) y);
+
                 float threshold = std::min(float(LAYERS_VISIBLE),float(layerNumber));
                 if(threshold==0)threshold=LAYERS_VISIBLE;
                 float normalize = threshold / float(LAYERS_VISIBLE);
@@ -134,7 +142,6 @@ void OpenGLAudioThumbnail::setBuffer(std::shared_ptr<AudioSampleBuffer> b, GLflo
     }else{
         visualizationBuffers[layerIndex] = visualizationBuffer;
     }
-    b.reset();
 }
 
 void OpenGLAudioThumbnail::clear(){

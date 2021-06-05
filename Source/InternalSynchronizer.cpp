@@ -21,7 +21,9 @@ int InternalSynchronizer::getNextSample(SnapMode snapMode){
       // expected position is next down beat (except if buffer is exactly on beat
       if (snapMode == kSnapMeasure)
       {
+#if DEBUG_LOG
           context->logMessage(String(*currentPos));
+#endif
          int diff = *currentPos % (Synchronizer::context->samplesPerBeat  * Synchronizer::context->timeSigTop);
           expectedPos = *currentPos - diff;
           while (expectedPos < *currentPos)

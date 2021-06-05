@@ -82,6 +82,11 @@ Track::Track(uint index, bool a, AudioProcessorValueTreeState& p, std::shared_pt
     setSoloArmed(false);
     setMonitoring(true);
     setAutoTrigger(false);
+    snap = state->getProperty("snap");
+    recMode = state->getProperty("mode");
+    input = state->getProperty("inputLevel");
+    output = state->getProperty("outputLevel");
+
     AddLoop();
     RegisterLoop(loops.size()-1);
     realignment = new Realignment(context->samplesPerBlock, context->sampleRate);
@@ -211,33 +216,43 @@ void Track::setActive(bool newValue){
 }
 
 void Track::parameterChanged(const String &parameterID, float newValue) {
+    state->setProperty(parameterID, newValue, nullptr);
     if(parameterID == "inputLevel"){
         auto p = params.getParameter("inputLevel");
         state->setProperty(parameterID, p->convertTo0to1(newValue), nullptr);
         //  DBG("input: "+String(p->convertTo0to1(newValue)));
+        input = state->getProperty("inputLevel");
         return;
     }
     if(parameterID == "outputLevel"){
         auto p = params.getParameter("outputLevel");
         state->setProperty(parameterID, p->convertTo0to1(newValue), nullptr);
+        output = state->getProperty("outputLevel");
         return;
     }
-    state->setProperty(parameterID, newValue, nullptr);
-    
     if(parameterID == "record"){
         processRecordingChange();
+        recordingArmed = state->getProperty("record");
     }else if(parameterID == "play"){
         processPlayChange();
+        playArmed = state->getProperty("play");
     }else if(parameterID == "stop"){
         processStopChange();
+        stopArmed = state->getProperty("stop");
+    }else if(parameterID == "monitor"){
+        monitoring = state->getProperty("monitor");
     }else if(parameterID == "reverse"){
         processReverseChange();
+        reverseArmed = state->getProperty("reverse");
     }else if(parameterID == "trigger"){
         processTriggerModeChange();
+        trigger = state->getProperty("trigger");
     }else if(parameterID == "mute"){
         processMuteChange();
+        muteArmed = state->getProperty("mute");
     }else if(parameterID == "solo"){
         processSoloChange();
+        soloArmed = state->getProperty("solo");
     }else if(parameterID == "undo"){
         processPreviousChange();
     }else if(parameterID == "redo"){
@@ -246,6 +261,8 @@ void Track::parameterChanged(const String &parameterID, float newValue) {
         processResetChange();
     }else if (parameterID == "mode") {
         processRecModeChange();
+    }else if (parameterID == "snap") {
+        processSnapModeChange();
     }else if (parameterID == "bounce") {
         processBounceChange();
     }else if(parameterID == "nextLoop"){
@@ -263,6 +280,8 @@ void Track::parameterChanged(const String &parameterID, float newValue) {
     }
         
 }
+
+
 
 void Track::RegisterLoop(int loopIdx){
     if(loopIdx >= 0 && loopIdx < loops.size()){
@@ -898,6 +917,11 @@ void Track::processRecModeChange() {
     }else{
         loopToBeExtended = false;
     }
+    recMode = state->getProperty("mode");
+}
+
+void Track::processSnapModeChange() {
+    snap = state->getProperty("snap");
 }
 
 void Track::processPreviousChange() {
@@ -967,8 +991,9 @@ void Track::setMuteArmed(bool newValue){
         }
     }
     state->setProperty("mute", newValue, nullptr);
-    
+    muteArmed = state->getProperty("mute");
 }
+
 void Track::setSoloArmed(bool newValue){
     if(isActive()){
         auto p = params.getParameter("solo");
@@ -977,7 +1002,7 @@ void Track::setSoloArmed(bool newValue){
         }
     }
     state->setProperty("solo", newValue, nullptr);
-    
+    soloArmed = state->getProperty("solo");
 }
 void Track::setStopArmed(bool newValue){
     if(isActive()){
@@ -987,7 +1012,9 @@ void Track::setStopArmed(bool newValue){
         }
     }
     state->setProperty("stop", newValue, nullptr);
+    stopArmed = state->getProperty("stop");
 }
+
 void Track::setInputLevel(float newValue){
     if(isActive()){
         auto p = params.getParameter("inputLevel");
@@ -996,7 +1023,9 @@ void Track::setInputLevel(float newValue){
         }
     }
     state->setProperty("inputLevel", newValue, nullptr);
+    input = state->getProperty("inputLevel");
 }
+
 void Track::setOutputLevel(float newValue){
     if(isActive()){
         auto p = params.getParameter("outputLevel");
@@ -1005,7 +1034,9 @@ void Track::setOutputLevel(float newValue){
         }
     }
     state->setProperty("outputLevel", newValue, nullptr);
+    output = state->getProperty("outputLevel");
 }
+
 void Track::setReverseArmed(bool newValue){
     if(isActive()){
         auto p = params.getParameter("reverse");
@@ -1014,7 +1045,9 @@ void Track::setReverseArmed(bool newValue){
         }
     }
     state->setProperty("reverse", newValue, nullptr);
+    reverseArmed = state->getProperty("reverse");
 }
+
 void Track::setPlayArmed(bool newValue){
     if(isActive()){
         auto p = params.getParameter("play");
@@ -1023,7 +1056,9 @@ void Track::setPlayArmed(bool newValue){
         }
     }
     state->setProperty("play", newValue, nullptr);
+    playArmed = state->getProperty("play");
 }
+
 void Track::setMonitoring(bool newValue){
     if(isActive()){
         auto p = params.getParameter("monitor");
@@ -1031,8 +1066,9 @@ void Track::setMonitoring(bool newValue){
             p->setValueNotifyingHost(p->convertTo0to1(float(newValue)));
         }
     }
-    state->setProperty("monitoring", newValue, nullptr);
+    monitoring = state->getProperty("monitor");
 }
+
 void Track::setRecordingArmed(bool newValue){
     if(isActive()){
         auto* p = params.getParameter("record");
@@ -1041,7 +1077,9 @@ void Track::setRecordingArmed(bool newValue){
         }
     }
     state->setProperty("record", newValue, nullptr);
+    recordingArmed = state->getProperty("record");
 }
+
 void Track::setAutoTrigger(bool newValue){
     if(isActive()){
         auto p = params.getParameter("trigger");
@@ -1050,6 +1088,7 @@ void Track::setAutoTrigger(bool newValue){
         }
     }
     state->setProperty("trigger", newValue, nullptr);
+    trigger = state->getProperty("trigger");
 }
 
 std::shared_ptr<Layer> Track::getActivePlaybackLayer(){
@@ -1058,13 +1097,7 @@ std::shared_ptr<Layer> Track::getActivePlaybackLayer(){
         if(*CurrentTop>=0){
             setActivePlaybackLayer((*Layers)[*CurrentTop]);
         }    }
-//    if(!ActiveLoop->activePlaybackLayer->dirty){
-//        auto idx = getLimit();
-//        while( idx >0 && !ActiveLoop->Layers->at(*CurrentTop)->dirty){
-//            idx=std::max(idx-1, 0);
-//        }
-//        setActivePlaybackLayer((*Layers)[idx]);
-//    }
+
     return ActiveLoop->activePlaybackLayer;
 }
 void Track::setActivePlaybackLayer(std::shared_ptr<Layer> l){
@@ -1080,16 +1113,16 @@ void Track::setActiveRecordingLayer(std::shared_ptr<Layer> l){
 
 
 
-bool Track::isMuteArmed() {  return state->getProperty("mute"); }
-bool Track::isSoloArmed() {  return state->getProperty("solo"); }
-bool Track::isStopArmed() {  return state->getProperty("stop"); }
-float Track::getInputLevel() {  return state->getProperty("inputLevel"); }
-float Track::getOutputLevel() {  return state->getProperty("outputLevel"); }
-bool Track::isReverseArmed() {  return state->getProperty("reverse"); }
-bool Track::isPlayArmed() {  return state->getProperty("play"); }
-bool Track::isMonitoring() {  return state->getProperty("monitor"); }
-bool Track::isRecordingArmed() {  return state->getProperty("record"); }
-bool Track::isAutoTrigger() {  return state->getProperty("trigger"); }
-SnapMode Track::getSnapMode() {  return SnapMode( int(state->getProperty("snap"))); }
-RecordMode Track::getRecordMode() {  return RecordMode( int(state->getProperty("mode"))); }
+bool Track::isMuteArmed() {  return muteArmed; }
+bool Track::isSoloArmed() {  return soloArmed; }
+bool Track::isStopArmed() {  return stopArmed; }
+float Track::getInputLevel() {  return input; }
+float Track::getOutputLevel() {  return output; }
+bool Track::isReverseArmed() {  return reverseArmed; }
+bool Track::isPlayArmed() {  return playArmed; }
+bool Track::isMonitoring() {  return monitoring; }
+bool Track::isRecordingArmed() {  return recordingArmed; }
+bool Track::isAutoTrigger() {  return trigger; }
+SnapMode Track::getSnapMode() {  return SnapMode(snap); }
+RecordMode Track::getRecordMode() {  return RecordMode(recMode); }
 

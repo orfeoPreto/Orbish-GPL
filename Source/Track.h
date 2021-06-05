@@ -184,10 +184,12 @@ public:
     void processNextChange();
     void processTriggerModeChange();
 	void processRecModeChange();
+    void processSnapModeChange();
 	void processBounceChange();
     void processLoopChange(int);
     void processNewLoop();
     void processRemoveLoop();
+    void updateCachedVar(String);
 
     std::shared_ptr<Layer> getActivePlaybackLayer();
     void setActivePlaybackLayer(std::shared_ptr<Layer>);
@@ -229,4 +231,7 @@ private:
     std::unique_ptr<Synchronizer> primarySynchronizer;
     std::unique_ptr<Synchronizer> secondarySynchronizer;
     int getLimit();
+    bool muteArmed, soloArmed, stopArmed, reverseArmed, recordingArmed, playArmed, monitoring, trigger;
+    float input, output;
+    int snap, recMode;
 };

@@ -14,7 +14,9 @@
 //==============================================================================
 ThumbnailAndGroupArea::ThumbnailAndGroupArea(){
     addAndMakeVisible(thumbnailArea);
-    addAndMakeVisible(groupControlArea);
+   // addAndMakeVisible(groupControlArea);
+    setOpaque(true);
+   // setAlpha(0.99);
 }
 
 ThumbnailAndGroupArea::~ThumbnailAndGroupArea(){
@@ -25,12 +27,16 @@ void ThumbnailAndGroupArea::paint (juce::Graphics& g){
     g.fillAll (getLookAndFeel().findColour (juce::ResizableWindow::backgroundColourId));   // clear the background
 
     g.setColour (juce::Colours::black);
-    g.drawRect (getLocalBounds(), 1);   // draw an outline around the component
+    g.drawRect (getLocalBounds().reduced(5), 1);   // draw an outline around the component
+   // g.drawRoundedRectangle(getLocalBounds().reduced(5).toFloat(), 4.0f, 1.0f);
+
 }
 
 void ThumbnailAndGroupArea::resized(){
     auto bounds = getLocalBounds();
 
-    groupControlArea.setBounds(bounds.removeFromRight(juce::jmin((bounds.getWidth() / 4), 160)));
-    thumbnailArea.setBounds(bounds);
+    //groupControlArea.setBounds(bounds.removeFromRight(juce::jmin((bounds.getWidth() / 4), 160)));
+    
+    thumbnailArea.setBounds(bounds.reduced(7));
 }
+

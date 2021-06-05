@@ -396,14 +396,18 @@ const char* high_dry_click_aif = (const char*) temp_binary_data_1;
 static const unsigned char temp_binary_data_2[] =
 "uniform vec2 resolution;\n"
 "uniform float offset;\n"
+"uniform vec2  origin;\n"
 "\n"
 "float circleShape(vec2 position, float radius){\n"
 "    return step(radius, length(position - vec2(0.5)));\n"
 "}\n"
 "\n"
 "void main(){\n"
-"    vec2 position = gl_FragCoord.xy / resolution;\n"
-"    vec3 colour = vec3(0.9921875, 0.8398438, 0.0585938);\n"
+"    vec2 pixelLocal = gl_FragCoord.xy - origin;\n"
+"\n"
+"    vec2 position = pixelLocal.xy / resolution;\n"
+"    vec3 colour = vec3(1, 1, 1);\n"
+"\n"
 "    float rest = fract(offset);\n"
 "    rest = pow(rest,3);\n"
 "    float circle =1.0;\n"
@@ -431,10 +435,12 @@ const char* circle_vs = (const char*) temp_binary_data_3;
 static const unsigned char temp_binary_data_4[] =
 "uniform vec2 resolution;\n"
 "uniform float offset;\n"
+"uniform vec2  origin;\n"
 "\n"
 "\n"
 "void main(){\n"
-"    vec2 position = gl_FragCoord.xy / resolution;\n"
+"    vec2 pixelLocal = gl_FragCoord.xy - origin;\n"
+"    vec2 position = pixelLocal.xy / resolution;\n"
 "    vec3 colour = vec3(pow(position.y,0.5), 1-min(1,pow(position.y,4)), 0.0585938);\n"
 "    float intensity = (offset - position.y)<0?0:1;\n"
 "    gl_FragColor = vec4(colour, intensity);\n"
@@ -488,9 +494,13 @@ static const unsigned char temp_binary_data_8[] =
 "uniform vec2 resolution;\n"
 "uniform float offset;\n"
 "uniform bool reverse;\n"
+"uniform vec2  origin;\n"
+"\n"
 "\n"
 "void main()\n"
 "{\n"
+"    vec2 pixelLocal = gl_FragCoord.xy - origin;\n"
+"\n"
 "    float ratio = totalScope / resolution.x;\n"
 "    float position;\n"
 "    float flip = (reverse)?1:-1;\n"
@@ -503,7 +513,7 @@ static const unsigned char temp_binary_data_8[] =
 "        }\n"
 "        position = tmp / ratio / resolution.x;\n"
 "    }\n"
-"    float newX = gl_FragCoord.x / resolution.x;\n"
+"    float newX = pixelLocal.x / resolution.x;\n"
 "\n"
 "    float diff = position - newX;\n"
 "    float intensity = 0;\n"
@@ -539,6 +549,8 @@ static const unsigned char temp_binary_data_10[] =
 "uniform float  totalScope;\n"
 "uniform float windowForLog;\n"
 "uniform vec2  resolution;\n"
+"uniform vec2  origin;\n"
+"\n"
 "uniform float audioSampleData[1000];\n"
 "\n"
 "void getAmplitudeForXPos (in float xPos,  out float audioAmplitude)\n"
@@ -553,9 +565,10 @@ static const unsigned char temp_binary_data_10[] =
 "\n"
 "void main()\n"
 "{\n"
-"    float y = gl_FragCoord.y / resolution.y;\n"
+"    vec2 pixelLocal = gl_FragCoord.xy - origin;\n"
+"    float y = pixelLocal.y / resolution.y;\n"
 "    float amplitude = 0.0;\n"
-"    getAmplitudeForXPos (gl_FragCoord.x, amplitude);\n"
+"    getAmplitudeForXPos (pixelLocal.x, amplitude);\n"
 "\n"
 "    amplitude = 0.5 - amplitude / 2.0;\n"
 "    float r = abs (0.01 / (amplitude-y));\n"
@@ -6402,15 +6415,15 @@ const char* getNamedResource (const char* resourceNameUTF8, int& numBytes)
     {
         case 0x96bd22c8:  numBytes = 19698; return low_dry_click_aif;
         case 0x2f993c96:  numBytes = 7290; return high_dry_click_aif;
-        case 0x2f69c29c:  numBytes = 474; return circle_fs;
+        case 0x2f69c29c:  numBytes = 520; return circle_fs;
         case 0x2f69c48c:  numBytes = 82; return circle_vs;
-        case 0xf5e52562:  numBytes = 293; return meterBar_fs;
+        case 0xf5e52562:  numBytes = 361; return meterBar_fs;
         case 0xf5e52752:  numBytes = 82; return meterBar_vs;
         case 0x6da6c016:  numBytes = 171; return render_fs;
         case 0x6da6c206:  numBytes = 242; return render_vs;
-        case 0xf931ad6c:  numBytes = 913; return thumbnailplayhead_fs;
+        case 0xf931ad6c:  numBytes = 983; return thumbnailplayhead_fs;
         case 0xf931af5c:  numBytes = 82; return thumbnailplayhead_vs;
-        case 0xe1c6dd67:  numBytes = 1453; return thumbnailwave_fs;
+        case 0xe1c6dd67:  numBytes = 1520; return thumbnailwave_fs;
         case 0xe1c6df57:  numBytes = 82; return thumbnailwave_vs;
         case 0x8fd6f8b4:  numBytes = 3045; return orbishname_png;
         case 0x1816f3fe:  numBytes = 4707; return logo_orbish_x_small_png;

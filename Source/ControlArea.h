@@ -25,9 +25,11 @@ public:
 
     void paint (juce::Graphics&) override;
     void resized() override;
+//    void setLookAndFeel (LookAndFeel* const newLookAndFeel);
 
     ButtonControlArea buttonControlArea{};
     ThumbnailAndGroupArea thumbnailAndGroupArea{};
+    GroupControlArea groupControlArea{};
 
 private:
 

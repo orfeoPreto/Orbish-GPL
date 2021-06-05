@@ -60,7 +60,7 @@ void Shader::loadFile(const char* fn, std::string &str, GLuint mode){
         default:
             break;
     }
-#ifdef SHADERS_FROM_BINARY_DATA
+#if SHADERS_FROM_BINARY_DATA
     auto s = String(fullName);
     s = s.removeCharacters("-");
     fullName = s.toStdString();
