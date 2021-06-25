@@ -8,10 +8,10 @@
 
 #include "LoopComponent.h"
 
-LoopComponent::LoopComponent():ProgressBar(bidon), progress(bidon){}
-LoopComponent::LoopComponent(double& p, int idx) : ProgressBar(p), progress(p){
+LoopComponent::LoopComponent(): progress(bidon){}
+LoopComponent::LoopComponent(std::atomic<float>& p, int idx) :  progress(p){
     index = idx;
-    setPercentageDisplay(false);
+//    setPercentageDisplay(false);
 }
 
 LoopComponent::~LoopComponent(){}
@@ -47,7 +47,7 @@ bool LoopComponent::shouldDrawDragImageWhenOver() {
 int LoopComponent::getIndex(){
     return index;
 }
-double& LoopComponent::getProgress(){
+std::atomic<float>& LoopComponent::getProgress(){
     return progress;
 }
 

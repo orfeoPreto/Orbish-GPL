@@ -14,7 +14,6 @@
 #include "OpenGLComponent.h"
 
 
-#define BUFFER_READ_SIZE 1000
 #define DRAW_ELEMENTS                    1
 #define DRAW_COLOUR                   2
 #define DRAW_ELEMENTS_COLOUR             3
@@ -25,10 +24,9 @@ using namespace juce;
 /*
 */
 
-enum WhatToDraw{
-    kElements = 1,
-    kColour,
-    kElementsColour
+enum WaveDisplayType{
+    kFlat = 1,
+    kLayered
 };
 
 class OpenGLAudioThumbnail  :
@@ -36,36 +34,40 @@ public OpenGLComponent
 
 {
 public:
-    OpenGLAudioThumbnail(std::atomic<float> &offset);
+    OpenGLAudioThumbnail(std::atomic<float> &offset, bool fraction);
     ~OpenGLAudioThumbnail();
 
 
     void renderOpenGL() override;
     void openGLContextClosing() override;
     void setTotalAudioLength(int);
-    int getTotalLength();
+    int getTotalLength() override;
     void setAudio();
     void initVisualizationBuffer();
     void setActiveLayer(GLuint);
     void resetVisualizationBuffers();
-    // OpenGL Variables
-    int sampleRate = 0;
-    bool reverse = true;
-    String shader2Name;
     void setUniforms() override;
     void newOpenGLContextCreated() override;
     void clear();
     void setBuffer(std::shared_ptr<AudioSampleBuffer>, GLfloat, int);
+    void setDisplayType(WaveDisplayType);
+    void init() override;
+    void setReverse(bool);
+    bool getReverse();
+    WaveDisplayType getDisplayType();
+    // OpenGL Variables
+    int sampleRate = 0;
+    String shader2Name;
 private:
-    
+    bool reverse = true;
     int frameRate = 0;
     std::unique_ptr<Shader> shaderThumbnailWave;
-    GLfloat visualizationBuffer [BUFFER_READ_SIZE];
+    GLfloat flattenedVisualizationBuffer [BUFFER_READ_SIZE];
     std::vector<GLfloat*> visualizationBuffers;
     GLfloat totalAudioLength=0;
     GLuint layerNumber =0;
+    WaveDisplayType display;
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (OpenGLAudioThumbnail);
     std::shared_ptr<AudioBuffer<GLfloat> > readBuffer;
-
 };

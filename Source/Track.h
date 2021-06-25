@@ -68,7 +68,7 @@ public:
 	std::vector<RunAfterBlock> RunAfters;
 	int* CurrentTop = nullptr;
     bool& guiAlive;
-	double* Progress;
+	std::atomic<float>* Progress;
     Realignment* realignment;
     
 	std::shared_ptr<Layer> AddLayer(bool incrementTop);

@@ -7,7 +7,7 @@
 
 #include "Shader.h"
 
-Shader::Shader(const char* sname, std::shared_ptr<OpenGLContext> openGLContext){
+Shader::Shader(const char* sname, OpenGLContext* openGLContext){
     this->openGLContext = openGLContext;
     std::string source, str;
     loadFile(sname, source, GL_VERTEX_SHADER);
@@ -27,6 +27,7 @@ GLuint Shader::loadShader(std::string &source, GLuint mode){
     if(shaderProgram == nullptr){
         shaderProgram = std::make_unique<OpenGLShaderProgram> (*openGLContext);
     }
+
     switch(mode){
         case GL_VERTEX_SHADER:
             // Sets up pipeline of shaders and compiles the program

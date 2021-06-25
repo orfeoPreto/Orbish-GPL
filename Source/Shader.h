@@ -65,11 +65,11 @@ class Shader{
 		      ? "C:\\Users\\quarc\\source\\repos\\orfeoPreto\\Orbish\\resources\\shaders"
 		      : "";
 public:
-    Shader(const char* sname, std::shared_ptr<OpenGLContext> openGLContext);
+    Shader(const char* sname,OpenGLContext* openGLContext);
     ~Shader();
     void use();
     unsigned int getProgramId();
-    std::shared_ptr<OpenGLContext> openGLContext;
+    OpenGLContext* openGLContext;
     std::unique_ptr<OpenGLShaderProgram> shaderProgram;
     std::unique_ptr<Uniforms> uniforms;
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (Shader);

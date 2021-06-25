@@ -12,6 +12,7 @@
 #include <stdio.h>
 #include "JuceHeader.h"
 #include <iostream>
+#include "Orbish.h"
 
 class Layer
 {
@@ -26,6 +27,7 @@ public:
     int index = 0;
     bool FirstLayerBuffer = false;
     bool LastLayerBuffer = false;
+    float visualizationBuffer[BUFFER_READ_SIZE];
 };
 
 #endif /* Layer_hpp */

@@ -27,7 +27,8 @@
 #include "InfoAndControlArea.h"
 #include "TrackArea.h"
 #include "OpenGLComponents.h"
-
+#include "ImageViewPort.h"
+#include <algorithm>
 //==============================================================================
 /**
 */
@@ -160,7 +161,7 @@ public:
     void logMessage(String);
     void setupGlobalButtons();
     void setupGroupingButtons();
-    void setupThumbnail();
+    std::unique_ptr<OpenGLAudioThumbnail> setupThumbnail();
     void setupModeControls(ButtonControlArea*);
     void setupTransportControls(ButtonControlArea*);
     void setupNavigationControls(ButtonControlArea*);
@@ -172,6 +173,7 @@ public:
     void newOpenGLContextCreated() override;
     void openGLContextClosing() override;
     std::shared_ptr<OpenGLContext> getOpenGLContext();
+    
     
 private:
     std::atomic<uint> flags;
@@ -203,7 +205,7 @@ private:
     std::unique_ptr<AudioProcessorValueTreeState::ComboBoxAttachment> snapModeAttachment;
     std::unique_ptr<AudioProcessorValueTreeState::ComboBoxAttachment> fixedSizeAttachment;
     Component trackArea {};
-    Viewport  tracksViewport{};
+    ImageViewport  tracksViewport{};
     FFAU::LevelMeterSource outputMeterSource;
     bool start = true;
     bool thumbnailDirty = true;
@@ -264,7 +266,7 @@ private:
     int updatedTrackNumber = -1;
     std::vector<std::shared_ptr<OpenGLComponentReference>> references;
     std::mutex renderingTargetsLock;
-
+    ReadWriteLock lock{};
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (OrbishAudioProcessorEditor)
 };
 

@@ -9,6 +9,8 @@
 #ifndef __Orbish_H_INCLUDED
 #define __Orbish_H_INCLUDED
 #define LAYERS_VISIBLE  5
+#define BUFFER_READ_SIZE 1000
+
 //#define DEBUG_LOG  1
 
 #include <vector>
@@ -63,6 +65,9 @@ enum SnapMode
     kSnapQuarter
 };
 
+// determines if 2 doubles are equal
+//taking into account that there might be a difference that is smaller than machine epsilon
+// (the smallest difference representable by a double)
 inline bool doublesEqual(double dFirstVal, double dSecondVal)
 {
     return std::abs(dFirstVal - dSecondVal) < std::numeric_limits<double>::epsilon();

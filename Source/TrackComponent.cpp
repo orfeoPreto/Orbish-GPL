@@ -14,7 +14,7 @@ TrackComponent::TrackComponent():Component()
 }
 
 
-TrackComponent::TrackComponent(int index, std::vector<double*> progress, bool& layout, Track* track) :Component("Track " + String(index + 1)),
+TrackComponent::TrackComponent(int index, std::vector<std::atomic<float>*> progress, bool& layout, Track* track) :Component("Track " + String(index + 1)),
                                             horizontalLayout(layout),
                                             buttonSize(15),
                                             margin(3)
@@ -25,14 +25,18 @@ TrackComponent::TrackComponent(int index, std::vector<double*> progress, bool& l
     for(int i=0;i<progress.size() && (nullptr != progress[i]);++i){
         auto loop = new LoopComponent(*progress[i], i);
         String str = "Loop " + String(i+1) + " in track " + String(index + 1);
-        loop->setTooltip(str);
         Loops.add(loop);
     }
+    setOpaque(false);
+    setAlpha(0.5);
+    
+    thumbnail = std::make_unique<OpenGLAudioThumbnail>(Loops.getFirst()->getProgress(), true);
+    thumbnail->setLookAndFeel(&getLookAndFeel());
+    thumbnail->setTopLevelComponent(this);
+    thumbnail->setDisplayType(WaveDisplayType::kFlat);
+    addAndMakeVisible(thumbnail.get());
 
-    tempProgressBar = new ProgressBar(Loops.getFirst()->getProgress());
-    tempProgressBar->setPercentageDisplay(false);
-    Loops.getFirst()->ProgressBar::copyAllExplicitColoursTo(*tempProgressBar);
-    addChildComponent(tempProgressBar);
+//    addAndMakeVisible(thumbnailContainer);
 
     addAndMakeVisible(witness);
 
@@ -66,11 +70,6 @@ TrackComponent::~TrackComponent(){
 void TrackComponent::setActiveLoop(int loopIdx){
     activeLoop =  loopIdx;
     if(Loops.size() < loopIdx+1)return;
-    delete tempProgressBar;
-    tempProgressBar = new ProgressBar(Loops[loopIdx]->getProgress());
-    tempProgressBar->setPercentageDisplay(false);
-    addChildComponent(tempProgressBar);
-
     updateLoopColours();
     resized();
 }
@@ -82,11 +81,10 @@ void TrackComponent::removeLoop(){
     Loops.removeLast();
     resized();
 }
-void TrackComponent::addLoop(double& p){
+void TrackComponent::addLoop(std::atomic<float>& p){
     LoopComponent* newLoop = new LoopComponent(p, Loops.size());
     String str = "Loop " + String(newLoop->getIndex() + 1) + " in track " +
     String(index + 1);
-    newLoop->setTooltip(str);
     Loops.add(newLoop);
     resized();
 }
@@ -182,7 +180,6 @@ void TrackComponent::updateLoopColours(){
             if (activeLoop == l->getIndex()) {
                 l->setColour(juce::ProgressBar::foregroundColourId, juce::Colour(0xfffddc11));
                 l->setColour(juce::ProgressBar::backgroundColourId, juce::Colour(0xff707070));
-                l->ProgressBar::copyAllExplicitColoursTo(*tempProgressBar);
             }
             else {
                 l->setColour(juce::ProgressBar::foregroundColourId, juce::Colour(0xfff2e499));
@@ -193,7 +190,6 @@ void TrackComponent::updateLoopColours(){
             if (activeLoop == l->getIndex()) {
                 l->setColour(juce::ProgressBar::foregroundColourId, juce::Colour(0xffc1a402));
                 l->setColour(juce::ProgressBar::backgroundColourId, juce::Colour(0xff42403a));
-                l->ProgressBar::copyAllExplicitColoursTo(*tempProgressBar);
             }
             else {
 
@@ -207,10 +203,10 @@ void TrackComponent::updateLoopColours(){
 
 void TrackComponent::resized(){
     repaint();
-    trackNumberLabel.setBounds(margin , margin, buttonSize + 5, buttonSize);
+    trackNumberLabel.setBounds(margin , margin, buttonSize + 10, buttonSize);
 
-    highlighter.setBounds(margin*2 + buttonSize , int(1.5f*margin), int(buttonSize * .8f) , int(buttonSize *.8f));
-    trackNameLabel.setBounds(int(2.5f * (margin + buttonSize)), margin, 100, buttonSize);
+    highlighter.setBounds(trackNumberLabel.getX() + trackNumberLabel.getWidth() + margin , int(1.5f*margin), int(buttonSize * .8f) , int(buttonSize *.8f));
+    trackNameLabel.setBounds(highlighter.getX() + highlighter.getWidth() + margin, margin, 100, buttonSize);
         groupLabel.setBounds(trackNameLabel.getX() + trackNameLabel.getWidth() + buttonSize, margin, buttonSize * 2, buttonSize);
 
     int startHorizontalLoop = groupLabel.getX() + groupLabel.getWidth() + buttonSize;
@@ -227,7 +223,7 @@ void TrackComponent::resized(){
         }
     } else {
         for (auto l : Loops) {
-            tempProgressBar->setBounds(bounds.getX(), bounds.getY() + loopHeight, bounds.getWidth(), loopHeight);
+//            tempProgressBar->setBounds(bounds.getX(), bounds.getY() + loopHeight, bounds.getWidth(), loopHeight);
             l->setBounds(startHorizontalLoop, margin, 55, buttonSize);
             startHorizontalLoop += margin + 55;
         }
@@ -235,6 +231,8 @@ void TrackComponent::resized(){
             tempProgressBar->setVisible(true);
         }
     }
+    thumbnailContainer.setBounds(bounds.getX(), bounds.getY() + loopHeight, bounds.getWidth(), loopHeight);
+    thumbnail->setBounds(thumbnailContainer.getX(), thumbnailContainer.getY(), thumbnailContainer.getWidth(), thumbnailContainer.getHeight());
 }
 
 void TrackComponent::paint(Graphics& g){
@@ -336,7 +334,8 @@ void TrackComponent::paint(Graphics& g){
     for (auto l: Loops) {
       addAndMakeVisible(l);
     }
-
+//    auto rect = thumbnail->getBounds();
+//    g.fillRect(rect);
 }
 
 void TrackComponent::parentSizeChanged() {

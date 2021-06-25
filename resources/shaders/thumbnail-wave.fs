@@ -30,18 +30,22 @@ void main()
     float normalizedY = y - 0.5;
     float normalizedAmplitude = amplitude - 0.5;
     float intensity = 0;
-    
-    float coeff = 0;
+    float coeff  =0;
     if(abs(normalizedY) <= abs(normalizedAmplitude+0.001)){
-        float tmp = abs(normalizedY/normalizedAmplitude+0.001);
-        coeff = windowForLog *.1;
-        intensity = pow(tmp,.3/(coeff + 0.0001));
-        /*
-//        float tmp2 = windowForLog;
-//        float broadScope = tmp * pow(10,tmp2);
-//        float logResult = log(broadScope)/ log(10);
-//        intensity = (logResult + tmp2) / tmp2 * 2;
-         */
+        if (windowForLog < 0) {
+            intensity = 1;
+            coeff = 0.5;
+        }else{
+            float tmp = abs(normalizedY/normalizedAmplitude+0.001);
+            coeff = windowForLog *.1;
+            intensity = pow(tmp,.3/(coeff + 0.0001));
+            /*
+    //        float tmp2 = windowForLog;
+    //        float broadScope = tmp * pow(10,tmp2);
+    //        float logResult = log(broadScope)/ log(10);
+    //        intensity = (logResult + tmp2) / tmp2 * 2;
+             */
+        }
     }else{
         intensity = 0;
     }

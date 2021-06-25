@@ -8,6 +8,9 @@
 
 namespace BinaryData
 {
+    extern const char*   viewport_background_png;
+    const int            viewport_background_pngSize = 737935;
+
     extern const char*   low_dry_click_aif;
     const int            low_dry_click_aifSize = 19698;
 
@@ -15,7 +18,7 @@ namespace BinaryData
     const int            high_dry_click_aifSize = 7290;
 
     extern const char*   circle_fs;
-    const int            circle_fsSize = 520;
+    const int            circle_fsSize = 544;
 
     extern const char*   circle_vs;
     const int            circle_vsSize = 82;
@@ -141,7 +144,7 @@ namespace BinaryData
     const int            squarebuttonbase_pngSize = 2503;
 
     // Number of elements in the namedResourceList and originalFileNames arrays.
-    const int namedResourceListSize = 44;
+    const int namedResourceListSize = 45;
 
     // Points to the start of a list of resource names.
     extern const char* namedResourceList[];

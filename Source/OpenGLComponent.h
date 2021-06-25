@@ -13,6 +13,7 @@
 #include <JuceHeader.h>
 #include "Shader.h"
 #include "math.h"
+#include "Orbish.h"
 
 
 using namespace juce;
@@ -38,7 +39,7 @@ class OpenGLComponent  :
 
 {
 public:
-    OpenGLComponent(std::atomic<float> &offset);
+    OpenGLComponent(std::atomic<float> &offset, bool fraction=false);
     ~OpenGLComponent() override;
 
     void setOpenGLContext(std::shared_ptr<OpenGLContext> openGLContext, bool owner);
@@ -60,7 +61,9 @@ public:
     juce::Rectangle<int> getComponentClippingBoundsRelativeToGLRenderingTarget (juce::Component* targetComponent);
     int getFrameRate();
     void setTopLevelComponent(Component*);
-    
+    virtual int getTotalLength();
+    virtual void init();
+    bool isInitialized();
 protected:
     Component* topLevelComponent;
     GLuint vbo, vao, ebo, fbo;
@@ -77,6 +80,9 @@ protected:
     std::atomic<float> &offset;
     bool clearViewport = true;
     Colour bgColour;
+    bool fractionOfTotal = false;
+    bool initialized = false;
+    bool ownsContext = false;
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (OpenGLComponent);
 
 };

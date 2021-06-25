@@ -15,13 +15,13 @@
 
 class LoopComponent:
 public DragAndDropTarget,
-public ProgressBar{
+public Component{
 
     public:
-        double bidon = 0;
+    std::atomic<float> bidon{0};
 
         LoopComponent();
-        LoopComponent(double& p, int idx);
+        LoopComponent(std::atomic<float>& p, int idx);
     
         ~LoopComponent();
 
@@ -35,12 +35,12 @@ public ProgressBar{
 	void itemDropped(const SourceDetails& dragSourceDetails);
     bool shouldDrawDragImageWhenOver();
     int getIndex();
-    double& getProgress();
+    std::atomic<float>& getProgress();
 
     void mouseDrag();
 
     private:
-        double& progress;
+        std::atomic<float>& progress;
         int buttonSize;
         int margin;
         bool active = false;

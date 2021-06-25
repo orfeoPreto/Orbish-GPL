@@ -10,7 +10,8 @@
 class Loop
 {
 public:
-    Loop(int index){
+    Loop(int index):
+    Progress(0){
         Index = index;
         Layers = std::make_shared<std::vector<std::shared_ptr<Layer> > >();
         Layers->reserve(100);
@@ -27,7 +28,7 @@ public:
 
     int CurrentTop = -1;
 
-	double Progress = 0;
+	std::atomic<float> Progress;
 
     
 	void AddLayer(bool incrementTop, std::shared_ptr<OrbishContext> context) {

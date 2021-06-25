@@ -10,6 +10,8 @@
               pluginAUMainType="'aufx'" pluginName="Orbish" pluginDesc="Audio Looper Plugin">
   <MAINGROUP id="MOZJJ5" name="Orbish">
     <GROUP id="{40BAF4D8-7324-156C-E5E8-0098A128DC2C}" name="resources">
+      <FILE id="W0cvOt" name="viewport_background.png" compile="0" resource="1"
+            file="resources/viewport_background.png"/>
       <FILE id="D3s8S3" name="low_dry_click.aif" compile="0" resource="1"
             file="resources/Bases/low_dry_click.aif"/>
       <FILE id="aIsMVP" name="high_dry_click.aif" compile="0" resource="1"
@@ -133,6 +135,9 @@
               file="Source/PluginProcessor.h"/>
       </GROUP>
       <GROUP id="{B1708198-2297-7033-0C5C-79B08021FDA1}" name="ApplicationView">
+        <FILE id="TC5Zjp" name="ImageViewPort.cpp" compile="1" resource="0"
+              file="Source/ImageViewPort.cpp"/>
+        <FILE id="oRwshT" name="ImageViewPort.h" compile="0" resource="0" file="Source/ImageViewPort.h"/>
         <FILE id="N0lOPc" name="OrbishLevelMeter.h" compile="0" resource="0"
               file="Source/OrbishLevelMeter.h"/>
         <FILE id="g9Vf3i" name="OrbishLevelMeter.cpp" compile="1" resource="0"

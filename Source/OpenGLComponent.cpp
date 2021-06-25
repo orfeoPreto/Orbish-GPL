@@ -13,7 +13,7 @@
 //==============================================================================
 
 
-OpenGLComponent::OpenGLComponent (std::atomic<float>& offset):
+OpenGLComponent::OpenGLComponent (std::atomic<float>& offset, bool fraction):
 vertices{
     1.0f,   1.0f,  0.0f,  // Top Right
     1.0f,  -1.0f,  0.0f,  // Bottom Right
@@ -23,15 +23,17 @@ vertices{
 , indices {  0, 1, 3, 1, 2, 3 }
 ,offset(offset)
 {
+    fractionOfTotal = fraction;
     shader = nullptr;
     setOpaque(true);
+    setAlpha(255);
     bgColour = Colour{0xff262626};
 //    bgColour = getLookAndFeel().findColour (ResizableWindow::backgroundColourId);
 }
 
 void OpenGLComponent::setOpenGLContext(std::shared_ptr<OpenGLContext> openGLContext, bool owner){
     this->openGLContext = openGLContext;
-    if (owner) {
+    if ((ownsContext = owner)) {
         this->openGLContext->setOpenGLVersionRequired(OpenGLContext::OpenGLVersion::openGL3_2);
         this->openGLContext->setRenderer(this);
         this->openGLContext->attachTo(*this);
@@ -56,8 +58,10 @@ void OpenGLComponent::stop()
 
 OpenGLComponent::~OpenGLComponent()
 {
-    openGLContext->setContinuousRepainting(false);
-    openGLContext->detach();
+    if(ownsContext){
+        openGLContext->setContinuousRepainting(false);
+        openGLContext->detach();
+    }
 }
 
 void OpenGLComponent::paint (juce::Graphics& g)
@@ -83,18 +87,25 @@ void OpenGLComponent::updateScale(){
     height = roundToInt(renderingScale * getHeight());
 }
 
+void OpenGLComponent::init() {
+    if(!initialized){
+
+        shader = std::make_unique<Shader>(shaderName.toStdString().c_str(), openGLContext.get());
+        updateScale();
+        openGLContext->extensions.glGenBuffers(1, &vbo);
+        openGLContext->extensions.glGenBuffers(1, &ebo);
+        initialized = true;
+    }
+}
+
 void OpenGLComponent::newOpenGLContextCreated() {
-    shader = std::make_unique<Shader>(shaderName.toStdString().c_str(), openGLContext);
-    updateScale();
-	openGLContext->extensions.glGenBuffers(1, &vbo);
-	openGLContext->extensions.glGenBuffers(1, &ebo);
-
-//    glDisable(GL_TEXTURE_2D);
-
+        init();
 }
 
 void OpenGLComponent::renderOpenGL() {
     jassert (OpenGLHelpers::isContextActive());
+//    auto grbl = std::make_unique<OpenGLShaderProgram> (*openGLContext);
+
     counter++;
     stamp = Time::getApproximateMillisecondCounter();
     if (stamp - startStamp > 1000) {
@@ -108,10 +119,19 @@ void OpenGLComponent::renderOpenGL() {
     updateScale();
     glViewport(x,y, width, height);
     juce::OpenGLHelpers::enableScissorTest (Rectangle<int>{x,y,width,height});
-    glHint(GL_LINE_SMOOTH_HINT, 4);
+//    grbl = std::make_unique<OpenGLShaderProgram> (*openGLContext);
+
+    glHint(GL_LINE_SMOOTH_HINT, GL_NICEST);
+//    grbl = std::make_unique<OpenGLShaderProgram> (*openGLContext);
+
     glEnable (GL_BLEND);
+//    grbl = std::make_unique<OpenGLShaderProgram> (*openGLContext);
+
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+//    grbl = std::make_unique<OpenGLShaderProgram> (*openGLContext);
+
     glEnable(GL_MULTISAMPLE);
+//    grbl = std::make_unique<OpenGLShaderProgram> (*openGLContext);
 
     if(clearViewport){
         OpenGLHelpers::clear(bgColour);
@@ -127,6 +147,8 @@ void OpenGLComponent::renderOpenGL() {
             std::cout << "Exception occured:" << e << "\n";
         }
     }
+//     grbl = std::make_unique<OpenGLShaderProgram> (*openGLContext);
+
     {
     glDisable(GL_DEPTH_TEST);
 		openGLContext->extensions.glBindBuffer (GL_ARRAY_BUFFER, vbo);
@@ -139,6 +161,8 @@ void OpenGLComponent::renderOpenGL() {
 		openGLContext->extensions.glBindBuffer(GL_ARRAY_BUFFER, 0);
 		openGLContext->extensions.glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
     }
+//     grbl = std::make_unique<OpenGLShaderProgram> (*openGLContext);
+
 }
 
 int OpenGLComponent::getFrameRate(){
@@ -149,13 +173,21 @@ void OpenGLComponent::openGLContextClosing() {
     shader.reset();
 }
 
+int OpenGLComponent:: getTotalLength(){
+    return width;
+}
 
 void OpenGLComponent::setUniforms(){
     shader->uniforms->resolution->set ((GLfloat) width, (GLfloat) height);
-    shader->uniforms->offset->set ((GLfloat) offset);
+    shader->uniforms->offset->set ((GLfloat) fractionOfTotal? (float)offset * getTotalLength(): (float)offset);
     shader->uniforms->origin->set ((GLfloat) x, (GLfloat) y);
 }
 
 void OpenGLComponent::setOffset(float &position){
     offset = position;
 }
+
+bool OpenGLComponent::isInitialized(){
+    return initialized;
+}
+

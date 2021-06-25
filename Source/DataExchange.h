@@ -14,6 +14,8 @@ public:
 	std::shared_ptr<AudioBuffer<float> > buffer;
     int numSamples = 0;
     int layerIndex = -1;
+    int trackIndex = -1;
+    int loopIndex = -1;
 };
 
 class MeasureBuffer{

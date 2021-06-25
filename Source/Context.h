@@ -75,7 +75,7 @@ struct OrbishContext {
 	Observer* observer;
 	int trackCount;
 	int loopCount;
-	Array<double*> progress{};
+	Array<std::atomic<float>*> progress{};
 	std::mutex mtx;
 	int maxUndoHistory = -1;
 	AudioPlayHead::CurrentPositionInfo* info;

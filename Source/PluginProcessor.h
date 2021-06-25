@@ -180,6 +180,7 @@ public:
     std::unique_ptr<Synchronizer> primarySynchronizer;
     std::unique_ptr<Synchronizer> secondarySynchronizer;
     int trackHostSamples = 0;
+    std::atomic<bool> refreshAll;
 
     //===========^*==================================================================
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (OrbishAudioProcessor)

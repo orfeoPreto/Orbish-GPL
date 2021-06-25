@@ -16,6 +16,9 @@
 #include "Blinker.hpp"
 #include "../exu/Label.hpp"
 #include "Track.h"
+#include "OpenGLComponents.h"
+#include "OpenGLComponentContainer.h"
+
 
 class TrackComponent:
         public Component,
@@ -26,7 +29,7 @@ class TrackComponent:
 public:
     
     TrackComponent();
-    TrackComponent(int index, std::vector<double*> progress, bool& layout, Track* track);
+    TrackComponent(int index, std::vector<std::atomic<float>*> progress, bool& layout, Track* track);
     
     ~TrackComponent();
     enum ColourIds
@@ -68,7 +71,7 @@ public:
     void setActiveLoop(int);
     int getActiveLoop();
     void removeLoop();
-    void addLoop(double&);
+    void addLoop(std::atomic<float>&);
     bool horizontalLayout = false;
     bool armed = false;
     OwnedArray<LoopComponent> Loops;
@@ -77,6 +80,7 @@ public:
     void setAudioTrack(Track*);
     void setGroup(String group, Colour colour);
     String getGroup();
+    std::unique_ptr<OpenGLAudioThumbnail> thumbnail{nullptr};
 
 private:
     void updateLoopColours();
@@ -103,5 +107,6 @@ private:
 	exu::Label groupLabel;
     int activeLoop =0;
     ProgressBar* tempProgressBar = nullptr;
+    OpenGLComponentContainer thumbnailContainer;
 };
 #endif

@@ -17,9 +17,11 @@ struct OpenGLComponentReference{
     OpenGLComponentReference (OpenGLComponent* oc){
         asRenderer = dynamic_cast<OpenGLRenderer *>(oc);
         asComponent = dynamic_cast<Component *>(oc);
+        asOpenGLComponent = dynamic_cast<OpenGLComponent *>(oc);
     }
     OpenGLRenderer* asRenderer;
     Component* asComponent;
+    OpenGLComponent* asOpenGLComponent;
 };
 
 static inline std::shared_ptr<OpenGLContext> makeOpenGLContext(bool enablePaint, bool shouldContinuouslyRepaint, int swapInterval=0){
