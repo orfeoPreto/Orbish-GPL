@@ -50,7 +50,7 @@ public:
     void openGLContextClosing() override;
     void start();
     void stop();
-    void setOffset(float &);
+    void setOffset(std::reference_wrapper<std::atomic<float>>);
     GLuint createTexture(GLint, GLint, bool isDepth=false);
     virtual void updateScale();
     // OpenGL Variables
@@ -59,25 +59,23 @@ public:
     String shaderName;
     std::unique_ptr<Shader> shader;
     juce::Rectangle<int> getComponentClippingBoundsRelativeToGLRenderingTarget (juce::Component* targetComponent);
-    int getFrameRate();
-    void setTopLevelComponent(Component*);
+//    int getFrameRate();
+//    void setTopLevelComponent(Component*);
     virtual int getTotalLength();
     virtual void init();
     bool isInitialized();
+
 protected:
-    Component* topLevelComponent;
+//    Component* topLevelComponent;
     GLuint vbo, vao, ebo, fbo;
     unsigned int texture;
-    int counter = 0;
-    int frameRate = 0;
-    int64 stamp=0, startStamp=0;
     std::unique_ptr<Uniforms> uniforms;
     GLfloat vertices[12];
     GLuint indices[6];
     int runs = 0;
     GLfloat* subImage;
     int width=0, height=0, x=0, y=0, localX=0, localY=0;
-    std::atomic<float> &offset;
+    std::reference_wrapper<std::atomic<float>> offset;
     bool clearViewport = true;
     Colour bgColour;
     bool fractionOfTotal = false;

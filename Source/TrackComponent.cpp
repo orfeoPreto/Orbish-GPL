@@ -21,23 +21,24 @@ TrackComponent::TrackComponent(int index, std::vector<std::atomic<float>*> progr
 {
     this->index = index;
     setAudioTrack(track);
-	loopHeight = margin + buttonSize;
-    for(int i=0;i<progress.size() && (nullptr != progress[i]);++i){
-        auto loop = new LoopComponent(*progress[i], i);
-        String str = "Loop " + String(i+1) + " in track " + String(index + 1);
-        Loops.add(loop);
-    }
     setOpaque(false);
     setAlpha(0.5);
     
-    thumbnail = std::make_unique<OpenGLAudioThumbnail>(Loops.getFirst()->getProgress(), true);
-    thumbnail->setLookAndFeel(&getLookAndFeel());
-    thumbnail->setTopLevelComponent(this);
-    thumbnail->setDisplayType(WaveDisplayType::kFlat);
-    addAndMakeVisible(thumbnail.get());
+
+    loopHeight = margin + buttonSize;
 
 //    addAndMakeVisible(thumbnailContainer);
-
+    thumbnail = std::make_unique<OpenGLAudioThumbnail>(*progress[activeLoop], true);
+    thumbnail->setLookAndFeel(&getLookAndFeel());
+//    thumbnail->setTopLevelComponent(this);
+    thumbnail->setDisplayType(WaveDisplayType::kFlat);
+    addAndMakeVisible(thumbnail.get());
+    for(int i=0;i<progress.size() && (nullptr != progress[i]);++i){
+        addLoop(*progress[i]);
+    }
+//    for(auto l:Loops){
+//        l->thumbnail->setTopLevelComponent(thumbnail->getTopLevelComponent());
+//    }
     addAndMakeVisible(witness);
 
     trackNameLabel.setText(this->getName(), NotificationType::sendNotification);
@@ -67,12 +68,21 @@ TrackComponent::~TrackComponent(){
     
 }
 
+void TrackComponent::setOpenGLContext(std::shared_ptr<OpenGLContext> context, bool owner){
+    for(auto l: Loops){
+        l->thumbnail->setOpenGLContext(context, owner);
+    }
+    thumbnail->setOpenGLContext(context, owner);
+}
+
+
 void TrackComponent::setActiveLoop(int loopIdx){
     activeLoop =  loopIdx;
     if(Loops.size() < loopIdx+1)return;
     updateLoopColours();
     resized();
 }
+
 int TrackComponent::getActiveLoop(){
     return activeLoop;
 }
@@ -81,11 +91,24 @@ void TrackComponent::removeLoop(){
     Loops.removeLast();
     resized();
 }
+
+//void TrackComponent::setTopLevelComponent(Component* top){
+//    thumbnail->setTopLevelComponent(top);
+//    for(auto l:Loops){
+//        l->thumbnail->setTopLevelComponent(top);
+//    }
+//}
+
 void TrackComponent::addLoop(std::atomic<float>& p){
     LoopComponent* newLoop = new LoopComponent(p, Loops.size());
     String str = "Loop " + String(newLoop->getIndex() + 1) + " in track " +
     String(index + 1);
     Loops.add(newLoop);
+    String id = "Loop" + String(newLoop->getIndex());
+    newLoop->thumbnail->setComponentID(id);
+    newLoop->thumbnail->setOpenGLContext(thumbnail->openGLContext, false);
+//    newLoop->thumbnail->setTopLevelComponent(thumbnail->getTopLevelComponent());
+    addAndMakeVisible(newLoop);
     resized();
 }
 
@@ -216,23 +239,22 @@ void TrackComponent::resized(){
     if(!horizontalLayout){
         for(auto loop: Loops){
             int index = loop->getIndex();
+            loop->setMargin(margin*0.2);
             loop->setBounds(bounds.getX(), bounds.getY()+ loopHeight+(index * (loopHeight)), bounds.getWidth(), loopHeight-margin) ;
+            loop->setVisible(true);
         }
-        if(tempProgressBar != nullptr){
-            tempProgressBar->setVisible(false);
-        }
+        thumbnail->setVisible(false);
     } else {
-        for (auto l : Loops) {
-//            tempProgressBar->setBounds(bounds.getX(), bounds.getY() + loopHeight, bounds.getWidth(), loopHeight);
-            l->setBounds(startHorizontalLoop, margin, 55, buttonSize);
+        for (auto loop : Loops) {
+            loop->setMargin(margin*0.2);
+            loop->setBounds(startHorizontalLoop, margin, 55, buttonSize);
             startHorizontalLoop += margin + 55;
         }
-        if (tempProgressBar != nullptr) {
-            tempProgressBar->setVisible(true);
-        }
+        thumbnailContainer.setBounds(bounds.getX(), bounds.getY() + loopHeight, bounds.getWidth(), loopHeight);
+        thumbnail->setBounds(thumbnailContainer.getX(), thumbnailContainer.getY(), thumbnailContainer.getWidth(), thumbnailContainer.getHeight());
+        thumbnail->setVisible(true);
+
     }
-    thumbnailContainer.setBounds(bounds.getX(), bounds.getY() + loopHeight, bounds.getWidth(), loopHeight);
-    thumbnail->setBounds(thumbnailContainer.getX(), thumbnailContainer.getY(), thumbnailContainer.getWidth(), thumbnailContainer.getHeight());
 }
 
 void TrackComponent::paint(Graphics& g){
@@ -332,7 +354,7 @@ void TrackComponent::paint(Graphics& g){
     witness.setStrokeThickness (2.0f);
     
     for (auto l: Loops) {
-      addAndMakeVisible(l);
+        l->setColour(backgroundColourId, Colours::green);
     }
 //    auto rect = thumbnail->getBounds();
 //    g.fillRect(rect);

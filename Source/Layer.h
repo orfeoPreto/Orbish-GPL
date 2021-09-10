@@ -21,6 +21,7 @@ public:
     Layer(int, int);
     ~Layer();
 
+    void makeVisualizationBuffer(int);
     std::shared_ptr<AudioBuffer<float> > Buffer;
     int Checkpoint = -1;
     bool dirty = false;

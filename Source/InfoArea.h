@@ -54,7 +54,7 @@ public:
     void updateBeatWitness(double alpha);
     void setGroupColour(Colour);
     void setOpenGLContext(std::shared_ptr<OpenGLContext> ctxt);
-    void setSubDivs(float subDivs);
+    void setSubDivs(std::atomic<float> &subDivs);
     void setWitness(std::shared_ptr<OpenGLClickWitness> witness);
 //    void setTimeSigNumerator(int);
 //    void setTimeSigDenominator(int);

@@ -221,6 +221,7 @@ parameters(*this, nullptr, "OrbishState", {
             context->logger = make_shared<FileLogger>(file, "Hi");
         }
         while (keepRunning) {
+                this_thread::sleep_for(chrono::milliseconds(1));
             if (context->audioInputsCount > 0) {
                 if(context->xchange->resetBuffers.get()){
                     context->xchange->layerQueue->reset();
@@ -235,37 +236,33 @@ parameters(*this, nullptr, "OrbishState", {
                     }
                     context->xchange->layerQueue->push(l);
                 }
-                if (context->xchange->writeVisualisationBufferQueue->write_available() > 0) {
-                    auto b = make_shared<BufferForVisualisation>();
-                    b->buffer = nullptr;
-                    context->xchange->writeVisualisationBufferQueue->push(b);
-                }
-                else {
-                    this_thread::sleep_for(chrono::milliseconds(1));
-                }
             }
-            for (auto track : tracks) {
-                if (track != nullptr && *track->LoopDuration > 0) {
-                    if (track->doBounce) {
-                        track->BounceAllHistory();
-                        track->doBounce = false;
+//            for (auto track : tracks) {
+                if (activeTrack!= nullptr && *activeTrack->LoopDuration > 0) {
+                    if (activeTrack->doBounce) {
+                        activeTrack->BounceAllHistory();
+                        activeTrack->doBounce = false;
                     }
-                    for (auto layer:*track->Layers){
+                    for (auto layer:*activeTrack->Layers){
                         if (layer->dirty)break;
                         auto length = 0;
-                        if (track->loopToBeExtended && layer->Buffer->getNumSamples() < context->allocatedLength) {
+                        if (activeTrack->loopToBeExtended && layer->Buffer->getNumSamples() < context->allocatedLength) {
                             length = context->allocatedLength;
                         }
-                        else if (layer->Buffer->getNumSamples() > ((*track->LoopDuration) + context->samplesPerBlock)
-                                 && !(track->getRecordMode() > 0 && track->getRecordMode() < 5)) {
-                            length = (*track->LoopDuration) + context->samplesPerBlock;
+                        else if (layer->Buffer->getNumSamples() > ((*activeTrack->LoopDuration) + context->samplesPerBlock)
+                                 && !(activeTrack->getRecordMode() > 0 && activeTrack->getRecordMode() < 5)) {
+                            length = (*activeTrack->LoopDuration) + context->samplesPerBlock;
                         }
                         if (length > 0) {
                             layer->Buffer->setSize(context->audioOutputsCount, length, true, true, false);
                         }
                     }
-                    track->loopToBeExtended = false;
+                    activeTrack->loopToBeExtended = false;
                 }
+            if (nullptr != trackToAdd) {
+//                tracks.add(trackToAdd);
+                trackToAdd = nullptr;
+                context->trackCount = tracks.size();
             }
             if(context->loggingActive){
                 int64 stamp = Time::getApproximateMillisecondCounter();
@@ -307,16 +304,16 @@ parameters(*this, nullptr, "OrbishState", {
                 mb->measure();
             };
         }
-        context->xchange->layerQueue->reset();
-        context->xchange->readBufferQueue->reset();
-        context->xchange->logReadMessageQueue->reset();
-        context->xchange->logWriteMessageQueue->reset();
-        context->xchange->readGainModifierQueue->reset();
-        context->xchange->readMeasureBufferQueue->reset();
-        context->xchange->readVisualisationBufferQueue->reset();
-        context->xchange->writeGainModifierQueue->reset();
-        context->xchange->writeMeasureBufferQueue->reset();
-        context->xchange->writeVisualisationBufferQueue->reset();
+//        context->xchange->layerQueue->reset();
+//        context->xchange->readBufferQueue->reset();
+//        context->xchange->logReadMessageQueue->reset();
+//        context->xchange->logWriteMessageQueue->reset();
+//        context->xchange->readGainModifierQueue->reset();
+//        context->xchange->readMeasureBufferQueue->reset();
+//        context->xchange->readVisualisationBufferQueue->reset();
+//        context->xchange->writeGainModifierQueue->reset();
+//        context->xchange->writeMeasureBufferQueue->reset();
+//        context->xchange->writeVisualisationBufferQueue->reset();
     }
                                            );
     //   logMessage("end constructor");
@@ -481,10 +478,9 @@ void OrbishAudioProcessor::askLoopChange(int loopNumber) {
 
 void OrbishAudioProcessor::addTrack(bool active) {
     auto track = new Track(tracks.size(), active, parameters, context, guiAlive);
+    context->progress.add(track->Progress);
+//    trackToAdd.store(track);
     tracks.add(track);
-    context->trackCount = tracks.size();
-    context->progress.add(tracks[tracks.size() - 1]->Progress);
-    
 }
 
 void OrbishAudioProcessor::cleanup() {
@@ -705,6 +701,9 @@ void OrbishAudioProcessor::processRemoveTrack(int trackNumber) {
             tracks[trackNumber]->StopPlaybackBefore();
         }
         trackToRemove = trackNumber;
+        if (guiAlive) {
+            (context->observer->*(context->observer->trackRemoval)) (trackNumber);
+        }
     }
 }
 
@@ -873,9 +872,6 @@ void OrbishAudioProcessor::removeTrack(int& removeTrackIndex) {
             --tracks[i]->Index;
         }
         --context->trackCount;
-        if (guiAlive) {
-            (context->observer->*(context->observer->trackRemoval)) (removeTrackIndex);
-        }
     }
     trackToRemove = -1;
 }
@@ -1434,9 +1430,9 @@ void OrbishAudioProcessor::processBlock(AudioBuffer<float>& buffer, MidiBuffer& 
 #if DEBUG_LOG
     int64 endMeasure = Time::getHighResolutionTicks();
 #endif
-    if(activeTrack->refresh){
-        activeTrack->RefreshLoopVisualizer();
-    }
+//    if(activeTrack->refresh){
+//        activeTrack->RefreshLoopVisualizer();
+//    }
     // no action if host doesn't play
     if (!context->info->isPlaying) {
         //        stopPlayback();
@@ -1753,17 +1749,19 @@ void OrbishAudioProcessor::handleRecordBlock(int start, int stop) {
         start0 = Time::getHighResolutionTicks();
         start2 = Time::getHighResolutionTicks();
 #endif
-        if(guiAlive){
-            if (context->xchange->writeVisualisationBufferQueue->read_available() && context->xchange->readVisualisationBufferQueue->write_available()) {
-                shared_ptr<BufferForVisualisation> b;
-                context->xchange->writeVisualisationBufferQueue->pop(b);
-                b->numSamples = *activeTrack->LoopDuration;
-                b->buffer = activeTrack->getActiveRecordingLayer()->Buffer;
-                b->layerIndex = activeTrack->getActiveRecordingLayer()->index;
-                (context->observer->*(context->observer->layerChange)) ( activeTrack->Index,b->layerIndex);
-                context->xchange->readVisualisationBufferQueue->push(b);
-            }
-        }
+        activeTrack->updateVisualizationBuffers();
+
+//        if(guiAlive){
+//            if (context->xchange->writeVisualisationBufferQueue->read_available() && context->xchange->readVisualisationBufferQueue->write_available()) {
+//                shared_ptr<BufferForVisualisation> b;
+//                context->xchange->writeVisualisationBufferQueue->pop(b);
+//                b->numSamples = *activeTrack->LoopDuration;
+//                b->buffer = activeTrack->getActiveRecordingLayer()->Buffer;
+//                b->layerIndex = activeTrack->getActiveRecordingLayer()->index;
+//                (context->observer->*(context->observer->layerChange)) ( activeTrack->Index,b->layerIndex);
+//                context->xchange->readVisualisationBufferQueue->push(b);
+//            }
+//        }
 #if DEBUG_LOG
         end2 = Time::getHighResolutionTicks();
 #endif
@@ -2172,7 +2170,7 @@ bool OrbishAudioProcessor::loadFromValueTree(ValueTree* tree) {
         (context->observer->*(context->observer->updatePlayPosition)) (0, activeTrack->Reverse);
     }
     activeTrack->RegisterLoop(0);
-    activeTrack->UpdateLoopVisualizer();
+//    activeTrack->UpdateLoopVisualizer();
     return true;
 }
 

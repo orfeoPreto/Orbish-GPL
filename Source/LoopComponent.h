@@ -11,6 +11,7 @@
 
 #include <stdio.h>
 #include "JuceHeader.h"
+#include "OpenGLComponents.h"
 
 
 class LoopComponent:
@@ -28,6 +29,8 @@ public Component{
         static void test();
     void setActive(bool a);
     bool isActive();
+    void resized() override;
+    void paint(Graphics&) override;
 	bool isInterestedInDragSource(const SourceDetails& dragSourceDetails);
 	void itemDragEnter(const SourceDetails& dragSourceDetails);
 	void itemDragMove(const SourceDetails& dragSourceDetails);
@@ -36,6 +39,8 @@ public Component{
     bool shouldDrawDragImageWhenOver();
     int getIndex();
     std::atomic<float>& getProgress();
+    std::unique_ptr<OpenGLAudioThumbnail> thumbnail{nullptr};
+    void setMargin(int);
 
     void mouseDrag();
 

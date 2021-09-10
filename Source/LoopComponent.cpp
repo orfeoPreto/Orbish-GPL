@@ -12,6 +12,15 @@ LoopComponent::LoopComponent(): progress(bidon){}
 LoopComponent::LoopComponent(std::atomic<float>& p, int idx) :  progress(p){
     index = idx;
 //    setPercentageDisplay(false);
+    thumbnail = std::make_unique<OpenGLAudioThumbnail>(p, true);
+    thumbnail->setLookAndFeel(&getLookAndFeel());
+//    thumbnail->setTopLevelComponent(this);
+    thumbnail->setDisplayType(WaveDisplayType::kFlat);
+    addAndMakeVisible(thumbnail.get());
+    setOpaque(false);
+    setAlpha(0.5);
+    auto bounds = getLocalBounds().reduced(2*margin);
+    thumbnail->setBounds(bounds.getX() + getX(), bounds.getY(), bounds.getWidth(), bounds.getHeight());
 }
 
 LoopComponent::~LoopComponent(){}
@@ -55,3 +64,16 @@ void LoopComponent::mouseDrag() {
     
 }
 
+void LoopComponent::resized(){
+    auto bounds = getLocalBounds().reduced(2*margin);
+    thumbnail->setBounds(bounds.getX(), bounds.getY(), bounds.getWidth(), bounds.getHeight());
+
+}
+
+void LoopComponent::paint(Graphics& g){
+    g.setColour(Colours::red);
+    g.drawRect(getLocalBounds());
+}
+void LoopComponent::setMargin(int marg){
+    margin = marg;
+}

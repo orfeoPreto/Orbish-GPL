@@ -71,32 +71,35 @@ OpenGLAudioThumbnail::~OpenGLAudioThumbnail(){
 }
 
 void OpenGLAudioThumbnail::renderOpenGL() {
+    if (nullptr == sourceLoop) {
+        return;
+    }
     OpenGLComponent::renderOpenGL();
     try {
 //        auto grbl = std::make_unique<OpenGLShaderProgram> (*openGLContext);
-
+        if(nullptr == sourceLoop)return;
         if (getDisplayType() == kFlat) {
             shaderThumbnailWave->use();
             // set up the uniforms for use in shader
             shaderThumbnailWave->uniforms->resolution->set ((GLfloat) width, (GLfloat) height);
-            shaderThumbnailWave->uniforms->audioSampleData->set (flattenedVisualizationBuffer, BUFFER_READ_SIZE);
+            shaderThumbnailWave->uniforms->audioSampleData->set (sourceLoop->flattenedVisualizationBuffer, BUFFER_READ_SIZE);
             shaderThumbnailWave->uniforms->origin->set ((GLfloat) x, (GLfloat) y);
             shaderThumbnailWave->uniforms->windowForLog->set (GLfloat(-1));
             {
                 openGLContext->extensions.glBindBuffer (GL_ARRAY_BUFFER, vbo);
-                openGLContext->extensions.glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STREAM_DRAW);
+                openGLContext->extensions.glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
                 openGLContext->extensions.glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ebo);
-                openGLContext->extensions.glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STREAM_DRAW);
+                openGLContext->extensions.glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
                 openGLContext->extensions.glVertexAttribPointer(0, 3, GL_FLOAT,GL_FALSE, sizeof(GLfloat) * 3, (GLvoid*)0);
                 openGLContext->extensions.glEnableVertexAttribArray(0);
                 glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
             }
         }else{
-            for(int i=std::max(0, int(layerNumber)-LAYERS_VISIBLE); layerNumber<=visualizationBuffers.size() && i<layerNumber;++i){
+            for(int i=std::max(0, int(layerNumber)-LAYERS_VISIBLE); layerNumber<=sourceLoop->Layers->size() && i<layerNumber;++i){
                 {
                     GLfloat vb[BUFFER_READ_SIZE];
                     for (auto j=0; j<BUFFER_READ_SIZE; ++j) {
-                        vb[j] = visualizationBuffers.at(i)[j];
+                        vb[j] = sourceLoop->Layers->at(i)->visualizationBuffer[j];
                     }
                     //render waveform
                     shaderThumbnailWave->use();
@@ -117,9 +120,9 @@ void OpenGLAudioThumbnail::renderOpenGL() {
                 }
                 {
                     openGLContext->extensions.glBindBuffer (GL_ARRAY_BUFFER, vbo);
-                    openGLContext->extensions.glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STREAM_DRAW);
+                    openGLContext->extensions.glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
                     openGLContext->extensions.glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ebo);
-                    openGLContext->extensions.glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STREAM_DRAW);
+                    openGLContext->extensions.glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
                     openGLContext->extensions.glVertexAttribPointer(0, 3, GL_FLOAT,GL_FALSE, sizeof(GLfloat) * 3, (GLvoid*)0);
                     openGLContext->extensions.glEnableVertexAttribArray(0);
                     glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
@@ -179,12 +182,12 @@ void OpenGLAudioThumbnail::initVisualizationBuffer(){
 
 void OpenGLAudioThumbnail::setActiveLayer(GLuint layer){
     layerNumber = layer+1;
-    if(getDisplayType() == kFlat){
-        FloatVectorOperations::clear(flattenedVisualizationBuffer, BUFFER_READ_SIZE);
-        for(auto i=0;i<visualizationBuffers.size() && i<layerNumber;++i){
-            FloatVectorOperations::add(flattenedVisualizationBuffer, visualizationBuffers[i], BUFFER_READ_SIZE);
-        }
-    }
+//    if(getDisplayType() == kFlat){
+//        FloatVectorOperations::clear(flattenedVisualizationBuffer, BUFFER_READ_SIZE);
+//        for(auto i=0;i<visualizationBuffers.size() && i<layerNumber;++i){
+//            FloatVectorOperations::add(flattenedVisualizationBuffer, visualizationBuffers[i], BUFFER_READ_SIZE);
+//        }
+//    }
 }
 
 void OpenGLAudioThumbnail::setBuffer(std::shared_ptr<AudioSampleBuffer> b, GLfloat length, int layerIndex){
@@ -227,3 +230,9 @@ void OpenGLAudioThumbnail::setDisplayType(WaveDisplayType displayType){
 WaveDisplayType OpenGLAudioThumbnail::getDisplayType(){
     return display;
 }
+
+void OpenGLAudioThumbnail::setSourceLoop(Loop* src){
+    sourceLoop = src;
+    setTotalAudioLength(src->LoopDuration);
+}
+

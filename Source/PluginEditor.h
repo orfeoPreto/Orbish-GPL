@@ -29,6 +29,10 @@
 #include "OpenGLComponents.h"
 #include "ImageViewPort.h"
 #include <algorithm>
+#include <mutex>
+#include <chrono>
+
+
 //==============================================================================
 /**
 */
@@ -173,9 +177,11 @@ public:
     void newOpenGLContextCreated() override;
     void openGLContextClosing() override;
     std::shared_ptr<OpenGLContext> getOpenGLContext();
-    
+    void removeReference(OpenGLComponent*);
+
     
 private:
+    std::mutex rendererVectorMutex;
     std::atomic<uint> flags;
     MidiBuffer processedMidi;
     std::shared_ptr<OpenGLContext> openGLContext;
@@ -251,7 +257,9 @@ private:
     std::unique_ptr<SliderAttachment> outputLevelAttachment;
     std::unique_ptr<SliderAttachment> globalMixAttachment;
     exu::Label midiInfoLabel;
-
+    int counter = 0;
+    int64 stamp=0, startStamp=0;
+    int frameRate = 0;
     AudioProcessorValueTreeState& valueTreeState;
     OwnedArray<TrackComponent> tracks;
     bool tracksDirty = false;

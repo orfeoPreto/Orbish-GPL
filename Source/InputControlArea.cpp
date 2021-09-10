@@ -58,7 +58,7 @@ void InputControlArea::setEditor(OrbishAudioProcessorEditor* pluginEditor){
     editor = pluginEditor;
     inputMeter.setMeterSource(editor->getProcessor()->getInputMeterSource());
     inputMeter.setOpenGLContext(editor->getOpenGLContext());
-    inputMeter.meterDisplay->setTopLevelComponent(editor);
+//    inputMeter.meterDisplay->setTopLevelComponent(editor);
 }
 
 void InputControlArea::sliderValueChanged(Slider* slider){

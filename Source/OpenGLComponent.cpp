@@ -38,12 +38,12 @@ void OpenGLComponent::setOpenGLContext(std::shared_ptr<OpenGLContext> openGLCont
         this->openGLContext->setRenderer(this);
         this->openGLContext->attachTo(*this);
     }
-    topLevelComponent = getTopLevelComponent();
+//    topLevelComponent = getTopLevelComponent();
 }
 
-void OpenGLComponent::setTopLevelComponent(Component* comp){
-    topLevelComponent = comp;
-}
+//void OpenGLComponent::setTopLevelComponent(Component* comp){
+//    topLevelComponent = comp;
+//}
 
 void OpenGLComponent::start()
 {
@@ -106,16 +106,10 @@ void OpenGLComponent::renderOpenGL() {
     jassert (OpenGLHelpers::isContextActive());
 //    auto grbl = std::make_unique<OpenGLShaderProgram> (*openGLContext);
 
-    counter++;
-    stamp = Time::getApproximateMillisecondCounter();
-    if (stamp - startStamp > 1000) {
-        startStamp = stamp;
-        frameRate = counter;
-        counter = 0;
-    }
-    juce::Point<int> pointOnTopLevel = getPointFromTopLevel(topLevelComponent, juce::Point<int>{-localX,-localY});
+
+    juce::Point<int> pointOnTopLevel = getPointFromTopLevel(getTopLevelComponent(), juce::Point<int>{-localX,-localY});
     x = pointOnTopLevel.getX() * -1;
-    y = topLevelComponent->getHeight() + (pointOnTopLevel.getY()) - getHeight();
+    y = getTopLevelComponent()->getHeight() + (pointOnTopLevel.getY()) - getHeight();
     updateScale();
     glViewport(x,y, width, height);
     juce::OpenGLHelpers::enableScissorTest (Rectangle<int>{x,y,width,height});
@@ -165,9 +159,9 @@ void OpenGLComponent::renderOpenGL() {
 
 }
 
-int OpenGLComponent::getFrameRate(){
-    return frameRate;
-}
+//int OpenGLComponent::getFrameRate(){
+//    return frameRate;
+//}
 
 void OpenGLComponent::openGLContextClosing() {
     shader.reset();
@@ -179,11 +173,11 @@ int OpenGLComponent:: getTotalLength(){
 
 void OpenGLComponent::setUniforms(){
     shader->uniforms->resolution->set ((GLfloat) width, (GLfloat) height);
-    shader->uniforms->offset->set ((GLfloat) fractionOfTotal? (float)offset * getTotalLength(): (float)offset);
+    shader->uniforms->offset->set ((GLfloat) fractionOfTotal? (float)offset.get() * getTotalLength(): (float)offset.get());
     shader->uniforms->origin->set ((GLfloat) x, (GLfloat) y);
 }
 
-void OpenGLComponent::setOffset(float &position){
+void OpenGLComponent::setOffset(std::reference_wrapper<std::atomic<float>> position){
     offset = position;
 }
 

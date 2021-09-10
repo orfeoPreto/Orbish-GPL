@@ -78,7 +78,7 @@ void OutputControlArea::setEditor(OrbishAudioProcessorEditor* pluginEditor){
     editor = pluginEditor;
    outputMeter.setMeterSource(editor->getProcessor()->getOutputMeterSource());
     outputMeter.setOpenGLContext(editor->getOpenGLContext());
-    outputMeter.meterDisplay->setTopLevelComponent(editor);
+//    outputMeter.meterDisplay->setTopLevelComponent(editor);
 
 }
 

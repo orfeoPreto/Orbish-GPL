@@ -12,6 +12,7 @@
 
 #include <JuceHeader.h>
 #include "OpenGLComponent.h"
+#include "Loop.h"
 
 
 #define DRAW_ELEMENTS                    1
@@ -54,6 +55,8 @@ public:
     void init() override;
     void setReverse(bool);
     bool getReverse();
+    void setSourceLoop(Loop*);
+    
     WaveDisplayType getDisplayType();
     // OpenGL Variables
     int sampleRate = 0;
@@ -66,6 +69,7 @@ private:
     std::vector<GLfloat*> visualizationBuffers;
     GLfloat totalAudioLength=0;
     GLuint layerNumber =0;
+    Loop* sourceLoop = nullptr;
     WaveDisplayType display;
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (OpenGLAudioThumbnail);

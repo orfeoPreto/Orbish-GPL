@@ -4,7 +4,7 @@
               pluginManufacturer="Exu" pluginManufacturerCode="Exuo" pluginCode="Orbi"
               pluginFormats="buildAU,buildVST3" displaySplashScreen="1" jucerFormatVersion="1"
               aaxIdentifier="Exu" pluginChannelConfigs="{1,1},{2,2}" pluginAAXCategory="8192"
-              bundleIdentifier="exu.Orbish" companyName="exu" version="0.3.2"
+              bundleIdentifier="exu.Orbish" companyName="exu" version="0.4.0"
               postExportShellCommandWin="xcopy %%1%%\Build\VisualStudio2019\x64\Debug\VST3 &quot;C:\Program Files\Common Files\VST3&quot;"
               companyWebsite="www.orbish-audio.com" companyEmail="info@orbish-audio.com"
               pluginAUMainType="'aufx'" pluginName="Orbish" pluginDesc="Audio Looper Plugin">
@@ -98,6 +98,7 @@
       <FILE id="cKLJmU" name="Orbish.h" compile="0" resource="0" file="Source/Orbish.h"/>
       <GROUP id="{238DCF0C-CFA2-8E48-08B0-913B08613283}" name="AudioEngine">
         <GROUP id="{1E581F61-D6DB-D4ED-41CB-C415B46C330B}" name="Tracks">
+          <FILE id="uJTy6a" name="Loop.cpp" compile="1" resource="0" file="Source/Loop.cpp"/>
           <FILE id="GfCFf7" name="Layer.h" compile="0" resource="0" file="Source/Layer.h"/>
           <FILE id="tSWIsz" name="Layer.cpp" compile="1" resource="0" file="Source/Layer.cpp"/>
           <FILE id="OlqLIs" name="TrackGroup.h" compile="0" resource="0" file="Source/TrackGroup.h"/>
@@ -145,6 +146,10 @@
         <GROUP id="{994A3D94-15B8-2467-0AF2-65277DE4E54A}" name="OpenGLComponents">
           <FILE id="illGiD" name="OpenGLAudioMeter.cpp" compile="1" resource="0"
                 file="Source/OpenGLAudioMeter.cpp"/>
+          <FILE id="kDOmYl" name="OpenGLComponentContainer.cpp" compile="1" resource="0"
+                file="Source/OpenGLComponentContainer.cpp"/>
+          <FILE id="mCY5Ak" name="OpenGLComponentContainer.h" compile="0" resource="0"
+                file="Source/OpenGLComponentContainer.h"/>
           <FILE id="yZpxtd" name="OpenGLAudioMeter.h" compile="0" resource="0"
                 file="Source/OpenGLAudioMeter.h"/>
           <FILE id="tsSrBR" name="OpenGLAudioThumbnail.cpp" compile="1" resource="0"

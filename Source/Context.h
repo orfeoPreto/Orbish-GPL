@@ -95,7 +95,6 @@ struct OrbishContext {
     int64 timestamp = 0;
     float maxDelta = 0.1;
     bool skipAlign = false;
-
     inline double quartersToSamples(double position)
     {
         return position * samplesPerMinute / bpm;

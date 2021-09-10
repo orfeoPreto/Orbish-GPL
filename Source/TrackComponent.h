@@ -80,7 +80,11 @@ public:
     void setAudioTrack(Track*);
     void setGroup(String group, Colour colour);
     String getGroup();
+    void setOpenGLContext(std::shared_ptr<OpenGLContext> context, bool owner);
+    void setTopLevelComponent(Component* top) ;
+
     std::unique_ptr<OpenGLAudioThumbnail> thumbnail{nullptr};
+            
 
 private:
     void updateLoopColours();
@@ -106,7 +110,6 @@ private:
     exu::Label trackNameLabel;
 	exu::Label groupLabel;
     int activeLoop =0;
-    ProgressBar* tempProgressBar = nullptr;
     OpenGLComponentContainer thumbnailContainer;
 };
 #endif

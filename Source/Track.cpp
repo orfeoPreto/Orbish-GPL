@@ -390,7 +390,8 @@ void Track::BounceAllHistory() {
     auto l = (*Layers)[0];
     setActivePlaybackLayer(l);
     setActiveRecordingLayer(l);
-    UpdateLoopVisualizer();
+    updateVisualizationBuffers();
+//    UpdateLoopVisualizer();
 }
 
 int Track::getAdjustedLoopPosition(int currentIndex, int adjustment){
@@ -418,6 +419,11 @@ void Track::StartResetBefore(){
     RunAfters.push_back(&Track::StartResetAfter);
 }
 
+void Track::updateVisualizationBuffers(){
+    ActiveLoop->activeRecordingLayer->makeVisualizationBuffer(*LoopDuration);
+    ActiveLoop->updateFlattenedVisualizationBuffer();
+}
+
 void Track::StartResetAfter(){
     *LoopDuration = 0;
     CurrentRecordingIndex = 0;
@@ -426,6 +432,7 @@ void Track::StartResetAfter(){
     Recording = false;
     Muted = false;
     *Progress = 0;
+    ActiveLoop->clearFlattenedVisualizationBuffer();
     if (guiAlive && isActive()) {
         (context->observer->*(context->observer->updatePlayPosition)) (0, Reverse);
     }
@@ -516,6 +523,7 @@ void Track::StopRecordingAfter()
         }
         *LoopDuration = recordedCount;
         *CurrentPlayingIndex = 0;
+        updateVisualizationBuffers();
 //        if (InternalSynchronizer* s = dynamic_cast<InternalSynchronizer*>(primarySynchronizer.get())){
 //            s->setCurrentPosition(CurrentPlayingIndex);
 //        }
@@ -532,9 +540,9 @@ void Track::StopRecordingAfter()
         
     }
    // }
-    if(isActive()){
-        UpdateLoopVisualizer();
-    }
+//    if(isActive()){
+//        UpdateLoopVisualizer();
+//    }
     setStopArmed(false);
     LastRecordingBuffer = false;
     Triggered = false;
@@ -567,7 +575,7 @@ void Track::StartPlaybackAfter()
         if(!(getRecordMode() == 1
            && Layers->size() == 1
              && !Layers->at(0)->dirty)){
-        UpdateLoopVisualizer();
+//        UpdateLoopVisualizer();
         }
     }
     playStateChanged();
@@ -728,7 +736,7 @@ void Track::ChangeLoopAfter(){
         (context->observer->*(context->observer->updatePlayPosition)) (0, Reverse);
         (context->observer->*(context->observer->loopChange)) (this->Index, nextLoop);
     }
-    UpdateLoopVisualizer();
+//    UpdateLoopVisualizer();
     realignment->setRealigned(true);
     context->skipAlign = true;
     refresh = true;
@@ -783,22 +791,23 @@ void Track::RefreshLoopVisualizer(){
 }
 
 void Track::RemoveLoopBefore(){
+    if(guiAlive){
+        (context->observer->*(context->observer->loopRemoval)) ();
+    }
     if(loops.size() > 1){
         if (ActiveLoop->Index == uint(loops.size() -1)){
             ChangeLoopBefore(ActiveLoop->Index -1);
-            RunAfters.push_back(&Track::RemoveLoopAfter);
-        }else{
-            RemoveLoopAfter();
         }
+            RunAfters.push_back(&Track::RemoveLoopAfter);
+//        }else{
+//            RemoveLoopAfter();
+//        }
     }
 }
 
 
 void Track::RemoveLoopAfter(){
     RemoveLoop();
-    if(guiAlive){
-        (context->observer->*(context->observer->loopRemoval)) ();
-    }
     realignment->setRealigned(true);
 }
 
@@ -817,15 +826,15 @@ void Track::SetPreviousAfter(){
     if (*CurrentTop > 0) {
         if(context->maxUndoHistory > -1 && context->maxUndoHistory < Layers->size()){
             if (*CurrentTop < Layers->size() - uint(context->maxUndoHistory)) {
+                if(guiAlive){
+                    (context->observer->*(context->observer->layerChange)) (this->Index, getActivePlaybackLayer()->index);
+                }
                 RemoveTopLayer();
             }
         }
         --(*CurrentTop);
     }
     setActivePlaybackLayer((*Layers)[*CurrentTop]);
-    if(guiAlive){
-        (context->observer->*(context->observer->layerChange)) (this->Index, getActivePlaybackLayer()->index);
-    }
 }
 
 void Track::SetNextBefore(){
@@ -1096,7 +1105,8 @@ std::shared_ptr<Layer> Track::getActivePlaybackLayer(){
         *CurrentTop = getLimit();
         if(*CurrentTop>=0){
             setActivePlaybackLayer((*Layers)[*CurrentTop]);
-        }    }
+        }
+    }
 
     return ActiveLoop->activePlaybackLayer;
 }
@@ -1125,4 +1135,30 @@ bool Track::isRecordingArmed() {  return recordingArmed; }
 bool Track::isAutoTrigger() {  return trigger; }
 SnapMode Track::getSnapMode() {  return SnapMode(snap); }
 RecordMode Track::getRecordMode() {  return RecordMode(recMode); }
-
+//
+//void Track::updateVisualizationBuffers(){
+//    if(layerIndex < 0)return;
+//    setTotalAudioLength(length);
+//    readBuffer = b;
+//    GLfloat * visualizationBuffer;
+//    auto size = getTotalLength();
+//
+//
+//    visualizationBuffer = new GLfloat [BUFFER_READ_SIZE];
+//    FloatVectorOperations::clear(visualizationBuffer, BUFFER_READ_SIZE);
+//
+//    for (auto i=0; i<BUFFER_READ_SIZE; ++i) {
+//        visualizationBuffer[i] =  readBuffer->getSample(0, float(i)/float(BUFFER_READ_SIZE) * size);
+//    }
+//    if (layerIndex >= visualizationBuffers.size()) {
+//        visualizationBuffers.push_back(visualizationBuffer);
+//    }else{
+//        visualizationBuffers[layerIndex] = visualizationBuffer;
+//    }
+//    if(getDisplayType() == kFlat){
+//        FloatVectorOperations::clear(flattenedVisualizationBuffer, BUFFER_READ_SIZE);
+//        for(auto i=0;i<visualizationBuffers.size() && i<layerNumber;++i){
+//            FloatVectorOperations::add(flattenedVisualizationBuffer, visualizationBuffers[i], BUFFER_READ_SIZE);
+//        }
+//    }
+//}

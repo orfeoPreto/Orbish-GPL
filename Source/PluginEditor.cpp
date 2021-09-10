@@ -136,8 +136,9 @@ std::unique_ptr<OpenGLAudioThumbnail> OrbishAudioProcessorEditor::setupThumbnail
     auto tn = std::make_unique<OpenGLAudioThumbnail>(playHeadPosition, false);
     tn->setOpenGLContext(openGLContext, false);
     tn->setLookAndFeel(&getLookAndFeel());
-    tn->setTopLevelComponent(this);
+//    tn->setTopLevelComponent(this);
     tn->setDisplayType(WaveDisplayType::kLayered);
+    tn->setName("main");
     return tn;
 }
 
@@ -201,30 +202,72 @@ void OrbishAudioProcessorEditor::newOpenGLContextCreated()
 
 void OrbishAudioProcessorEditor::openGLContextClosing()
 {
+
     for (auto reference : references)
         reference->asRenderer->openGLContextClosing();
 }
 
 void OrbishAudioProcessorEditor::renderOpenGL()
 {
+
+
+    counter++;
+    stamp = Time::getApproximateMillisecondCounter();
+    if (stamp - startStamp > 1000) {
+        startStamp = stamp;
+        frameRate = counter;
+        counter = 0;
+    }
+    
 //    auto grbl = std::make_unique<OpenGLShaderProgram> (*openGLContext);
     lock.enterRead();
     for (auto reference : references){
+        if(nullptr == reference)continue;
         if(reference->asComponent->isVisible()){
 //            auto grbl = std::make_unique<OpenGLShaderProgram> (*openGLContext);
-
+            if (reference->asOpenGLComponent->shaderName == "thumbnail-playhead"
+                && reference->asComponent->getName() != "main"){
+                auto widgetPosition = reference->asComponent->getPosition();
+                auto widgetPosRelativeToViewport = reference->asComponent->getPointFromTopLevel(&tracksViewport,widgetPosition);
+                if(flags & CallBackFlags::shouldRemoveLoop
+                    || flags & CallBackFlags::shouldRemoveTrack
+                    || tracksViewport.getWidth() < widgetPosRelativeToViewport.getX()
+                    || tracksViewport.getHeight() < widgetPosRelativeToViewport.getY()
+                   || 0 < widgetPosRelativeToViewport.getX() - reference->asComponent->getWidth()
+                   || 0 < widgetPosRelativeToViewport.getY() - reference->asComponent->getHeight()
+                   ){
+                    continue;
+                }
+            }
             if (!reference->asOpenGLComponent->isInitialized()) {
                 reference->asOpenGLComponent->init();
             }
 //             grbl = std::make_unique<OpenGLShaderProgram> (*openGLContext);
-
-            reference->asRenderer->renderOpenGL();
+//            if(reference->asComponent->getComponentID() == "Loop1"){
+//                DBG(reference->asOpenGLComponent->getTotalLength());
+//            }
+                reference->asRenderer->renderOpenGL();
 //             grbl = std::make_unique<OpenGLShaderProgram> (*openGLContext);
 
         }
 
     }
     lock.exitRead();
+    auto afterStamp = Time::getApproximateMillisecondCounter();
+    if (afterStamp-stamp < 33) {
+        DBG("time in render:" + String(afterStamp-stamp));
+        std::this_thread::sleep_for(std::chrono::milliseconds(33 - (afterStamp-stamp)));
+    }
+}
+
+void OrbishAudioProcessorEditor::removeReference(OpenGLComponent* r){
+    for(auto i=0;i<references.size();i++){
+        if(r == (references)[i]->asComponent){
+            lock.enterWrite();
+            references.std::vector<std::shared_ptr<OpenGLComponentReference> >::erase(references.std::vector<std::shared_ptr<OpenGLComponentReference> >::begin() + i);
+            lock.exitWrite();
+        }
+    }
 }
 
 void OrbishAudioProcessorEditor::showSettingsPage() {
@@ -530,20 +573,26 @@ void OrbishAudioProcessorEditor::changeListenerCallback (ChangeBroadcaster* ){
 
 
 void OrbishAudioProcessorEditor::updateLoopVisualiser(std::shared_ptr<BufferForVisualisation> b){
-        //thumbnail.reset (processor.context->audioInputsCount, processor.context->sampleRate, numSamples);
-    if (b->numSamples > 0) {
-        thumbnail->setBuffer(b->buffer, b->numSamples, b->layerIndex);
-        tracks[activeTrack]->thumbnail->setBuffer(b->buffer,b->numSamples, b->layerIndex);
-		if (nullptr != processor.activeTrack->getActivePlaybackLayer()) {
-			thumbnail->setActiveLayer(processor.activeTrack->getActivePlaybackLayer()->index);
-            tracks[activeTrack]->thumbnail->setActiveLayer(processor.activeTrack->getActivePlaybackLayer()->index);
-		}
-		else {
-			thumbnail->setActiveLayer(0);
-            tracks[activeTrack]->thumbnail->setActiveLayer(0);
-		}
-        thumbnail->sampleRate = processor.context->sampleRate;
-        tracks[activeTrack]->thumbnail->sampleRate = processor.context->sampleRate;
+        thumbnail->setSourceLoop(processor.activeTrack->ActiveLoop);
+    auto t = tracks[activeTrack];
+        t->thumbnail->setSourceLoop(processor.activeTrack->ActiveLoop);
+    if(t->Loops.size()>0 && t->getActiveLoop() < t->Loops.size()){
+        t->Loops[t->getActiveLoop()]->thumbnail->setSourceLoop(processor.activeTrack->ActiveLoop);
+    }
+
+    if (nullptr != processor.activeTrack->getActivePlaybackLayer()) {
+        thumbnail->setActiveLayer(processor.activeTrack->getActivePlaybackLayer()->index);
+//        tracks[activeTrack]->thumbnail->setActiveLayer(processor.activeTrack->getActivePlaybackLayer()->index);
+//        tracks[activeTrack]->Loops[activeLoop]->thumbnail->setActiveLayer(processor.activeTrack->getActivePlaybackLayer()->index);
+    }
+    else {
+        thumbnail->setActiveLayer(0);
+//        tracks[activeTrack]->thumbnail->setActiveLayer(0);
+    }
+    thumbnail->sampleRate = processor.context->sampleRate;
+    t->thumbnail->sampleRate = processor.context->sampleRate;
+    if(t->Loops.size()>0 && t->getActiveLoop() < t->Loops.size()){
+        t->Loops[activeLoop]->thumbnail->sampleRate = processor.context->sampleRate;
     }
 }
 
@@ -559,7 +608,7 @@ void OrbishAudioProcessorEditor::timerCallback(){
     removeLoop();
     updatePlayState();
 	refreshThumbnail();
-    
+    DBG(frameRate);
     auto transportControlArea = &infoAndControlArea->controlArea.buttonControlArea.transportControlArea;
     auto modeControlArea = &infoAndControlArea->controlArea.buttonControlArea.modeAndNavigationControlArea.modeControlArea;
 	if (processor.activeTrack->Recording || processor.activeTrack->Playing) {
@@ -768,7 +817,8 @@ int OrbishAudioProcessorEditor::getTrackRowHeight(int rowIdx) {
 	for (auto i = tmpRowIdx * nbrTracksInARow;(i < tracks.size()) && (i < tmpRowIdx * nbrTracksInARow + nbrTracksInARow);++i) {
 		maxNbrLoops = std::max(tracks[i]->Loops.size(), maxNbrLoops);
 	}
-	return (rowIdx>0)?maxNbrLoops * tracks[0]->loopHeight + tracks[tmpRowIdx * nbrTracksInARow]->getY() + tracks[0]->loopHeight :0;
+    auto idx = std::min(tmpRowIdx * nbrTracksInARow, tracks.size()-1);
+	return (rowIdx>0)?maxNbrLoops * tracks[0]->loopHeight + tracks[idx]->getY() + tracks[0]->loopHeight :0;
 }
 
 void OrbishAudioProcessorEditor::setTracksDirty(){
@@ -1086,14 +1136,14 @@ void OrbishAudioProcessorEditor::changeLoop(){
 void OrbishAudioProcessorEditor::changeLayer(){
     if(flags & CallBackFlags::shouldChangeLayer){
         doChangeLayer();
-        flags = flags & (~CallBackFlags::shouldChangeLayer);
+        flags &= ~CallBackFlags::shouldChangeLayer;
     }
 }
 
 void OrbishAudioProcessorEditor::removeLoop() {
     if(flags & CallBackFlags::shouldRemoveLoop){
         doRemoveLoop();
-        flags = flags & (~CallBackFlags::shouldRemoveLoop);
+        flags &= (~CallBackFlags::shouldRemoveLoop);
     }
 }
 
@@ -1101,7 +1151,7 @@ void OrbishAudioProcessorEditor::updatePlayState()
 {
     if(flags & CallBackFlags::shouldUpdatePlayState){
         doUpdatePlayState();
-        flags = flags & (~CallBackFlags::shouldUpdatePlayState);
+        flags &= ~CallBackFlags::shouldUpdatePlayState;
     }
 }
 
@@ -1114,21 +1164,7 @@ void OrbishAudioProcessorEditor::doRefreshThumbnail(bool refresh) {
         playHeadPosition = 0;
 		markActiveTrackForRefresh(false);
 	}
-	while (processor.context->xchange->readVisualisationBufferQueue->read_available()) {
-		processor.context->xchange->readVisualisationBufferQueue->pop(b);
-		if (nullptr != b->buffer &&
-			b->buffer->getNumChannels() <= processor.context->audioOutputsCount &&
-			b->buffer->getNumChannels() > 0
-			) {
-			updateLoopVisualiser(b);
-		}
-		else {
-			b = std::make_shared<BufferForVisualisation>();
-			b->buffer = nullptr;
-			b->numSamples = 0;
-			updateLoopVisualiser(b);
-		}
-	}
+    updateLoopVisualiser(b);
 }
 void OrbishAudioProcessorEditor::doUpdatePlayHead(){
     thumbnail->setReverse(getReverseState());
@@ -1196,7 +1232,7 @@ void OrbishAudioProcessorEditor::doHandleMidiMessages(const MidiBuffer& midiMess
 }
 
 void OrbishAudioProcessorEditor::doCreateTrack(int trackNumber) {
-    if (processor.tracks.size() <= trackNumber) return;
+    if (processor.tracks.size() <= trackNumber || processor.tracks.size()<=0) return;
     auto audioTrack = processor.tracks[trackNumber];
     auto loops = &audioTrack->loops;
 
@@ -1207,18 +1243,30 @@ void OrbishAudioProcessorEditor::doCreateTrack(int trackNumber) {
     if (tracks.size() == trackNumber) {
         auto* t = new TrackComponent(trackNumber, prg, tracksLayoutHorizontal, audioTrack);
         t->addMouseListener(this, true);
-        t->thumbnail->setOpenGLContext(openGLContext, false);
-        t->thumbnail->setTopLevelComponent(this);
+        t->setOpenGLContext(openGLContext, false);
+//        t->setTopLevelComponent(this);
         tracks.add(t);
         trackArea.addAndMakeVisible(t);
+        String id = "Track" + String(t->getIndex());
+        t->thumbnail->setComponentID(id);
         references.push_back (std::make_shared<OpenGLComponentReference>(t->thumbnail.get()));
+        for(auto l : *loops){
+//            t->addLoop(l->Progress);
+            auto lc = t->Loops[l->Index];
+            lc->thumbnail->setSourceLoop(l);
+            references.push_back (std::make_shared<OpenGLComponentReference>(lc->thumbnail.get()));
+        }
     }
     else {
         while(tracks[trackNumber]->Loops.size() > 0){
             tracks[trackNumber]->removeLoop();
         }
         for(auto l : *loops){
-            tracks[trackNumber]->addLoop(l->Progress);
+            auto t = tracks[trackNumber];
+            t->addLoop(l->Progress);
+            String id = "Loop" + String(t->Loops.getLast()->getIndex());
+            t->Loops.getLast()->thumbnail->setComponentID(id);
+            t->Loops.getLast()->thumbnail->setSourceLoop(l);
         }
     }
 
@@ -1245,8 +1293,14 @@ void OrbishAudioProcessorEditor::doChangeTrack(){
 
 void OrbishAudioProcessorEditor::doCreateLoop(){
     auto currentTrack = tracks[activeTrack];
-    if (processor.activeTrack->loops.size() <= currentTrack->Loops.size()) return;
-currentTrack->addLoop(currentTrack->getAudioTrack()->loops.getLast()->Progress);
+    auto audioTrack = currentTrack->getAudioTrack();
+    if (audioTrack->loops.size() <= currentTrack->Loops.size()) return;
+    currentTrack->addLoop(audioTrack->loops.getLast()->Progress);
+    auto l = currentTrack->Loops.getLast();
+    String id = "Loop" + String(l->getIndex());
+    l->thumbnail->setComponentID(id);
+    l->thumbnail->setSourceLoop(audioTrack->loops.getLast());
+    references.push_back (std::make_shared<OpenGLComponentReference>(currentTrack->Loops.getLast()->thumbnail.get()));
 
     makeTracks();
     project.dirty = true;
@@ -1263,6 +1317,9 @@ void OrbishAudioProcessorEditor::doRemoveTrack(){
                     references.erase(references.begin() + i);
                     lock.exitWrite();
                 }
+            }
+            for(auto l :t->Loops){
+                removeReference(l->thumbnail.get());
             }
             tracks.remove(trackToRemove);
         }
@@ -1281,6 +1338,7 @@ void OrbishAudioProcessorEditor::doChangeLoop(){
     if (tracks.size() > trackToChange && trackToChange >= 0 && nextLoopNumber >= 0) {
         auto t = tracks[trackToChange];
         t->setActiveLoop(nextLoopNumber);
+        t->thumbnail->setOffset(processor.activeTrack->ActiveLoop->Progress);
         infoAndControlArea->infoArea.setLoopNumber(String(tracks[activeTrack]->getActiveLoop() + 1));
         auto navigationControlArea = &infoAndControlArea->controlArea.buttonControlArea.modeAndNavigationControlArea.navigationControlArea;
         navigationControlArea->setActiveLoop(String(tracks[activeTrack]->getActiveLoop() + 1));
@@ -1298,9 +1356,16 @@ void OrbishAudioProcessorEditor::doChangeLayer(){
 
 void OrbishAudioProcessorEditor::doRemoveLoop(){
     auto currentTrack = tracks[activeTrack];
+    auto currentLoop = currentTrack->Loops.getLast();
+    if (currentLoop->getIndex() == currentTrack->getActiveLoop()) {
+        return;
+    }
+    lock.enterWrite();
+        removeReference(currentLoop->thumbnail.get());
         currentTrack->removeLoop();
         makeTracks();
         project.dirty = true;
+    lock.exitWrite();
 }
 
 void OrbishAudioProcessorEditor::doUpdatePlayState(){

@@ -42,7 +42,7 @@ void OpenGLAudioMeter::setUniforms(){
     if (channelNumber == 1){
         shader->uniforms->offset->set ((GLfloat) offset2);
     }else if (channelNumber == 0){
-        shader->uniforms->offset->set ((GLfloat) offset);
+        shader->uniforms->offset->set ((GLfloat) offset.get());
     }
     shader->uniforms->origin->set ((GLfloat) x, (GLfloat) y);
 }

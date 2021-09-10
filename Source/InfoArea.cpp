@@ -43,7 +43,7 @@ InfoArea::~InfoArea(){
 void InfoArea::setOpenGLContext(std::shared_ptr<OpenGLContext> ctxt){
     openGLContext = ctxt;
     witness->setOpenGLContext(openGLContext, false);
-    witness->setTopLevelComponent(getTopLevelComponent());
+//    witness->setTopLevelComponent(getTopLevelComponent());
     witness->setLookAndFeel(&getLookAndFeel());
     addAndMakeVisible(*witness);
     witness->start();
@@ -111,8 +111,8 @@ void InfoArea::setTimeSignature(String timeSig){
 String InfoArea::getTimeSignature(){
     return timeSigLabel.getText();
 }
-void InfoArea::setSubDivs(float subDivs){
-    witness->setOffset(subDivs);
+void InfoArea::setSubDivs(std::atomic<float> &subDivs){
+    witness->setOffset(std::ref(subDivs));
 }
 
 void InfoArea::setBeatsPerMinute(String bpm){

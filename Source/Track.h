@@ -76,6 +76,8 @@ public:
 	void RemoveTopLayer();
     
     void UpdateLoopVisualizer();
+    
+    void updateVisualizationBuffers();
   
     void UpdateLoopVisualizer(Layer*);
 
