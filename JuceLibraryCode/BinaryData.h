@@ -36,13 +36,13 @@ namespace BinaryData
     const int            render_vsSize = 242;
 
     extern const char*   thumbnailplayhead_fs;
-    const int            thumbnailplayhead_fsSize = 983;
+    const int            thumbnailplayhead_fsSize = 949;
 
     extern const char*   thumbnailplayhead_vs;
     const int            thumbnailplayhead_vsSize = 82;
 
     extern const char*   thumbnailwave_fs;
-    const int            thumbnailwave_fsSize = 1520;
+    const int            thumbnailwave_fsSize = 1660;
 
     extern const char*   thumbnailwave_vs;
     const int            thumbnailwave_vsSize = 82;
