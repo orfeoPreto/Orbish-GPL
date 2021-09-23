@@ -31,6 +31,7 @@ OutputControlArea::OutputControlArea(){
     outputLevelSlider.setSliderStyle(Slider::LinearBarVertical);
     outputLevelSlider.setTextBoxStyle(Slider::TextEntryBoxPosition::NoTextBox, true, 0, 0);
     outputLevelSlider.setPopupDisplayEnabled(true, false, this);
+    outputLevelSlider.setDoubleClickReturnValue(true, 0);
     addAndMakeVisible(outputLevelSlider);
 
     // global slider
@@ -48,6 +49,7 @@ OutputControlArea::OutputControlArea(){
     globalVolumeSlider.setPopupDisplayEnabled(true, false, this);
     globalVolumeSlider.textFromValueFunction = [this](double val){ return String(val, 1);};
     globalVolumeSlider.setTooltip("Adjust the level of the general output signal");
+    globalVolumeSlider.setDoubleClickReturnValue(true, 0);
     addAndMakeVisible(globalVolumeSlider);
 
 }
@@ -68,6 +70,8 @@ void OutputControlArea::resized(){
 
     outputLevelLabel.setBounds(bounds.removeFromBottom(20));
     outputLevelSlider.setBounds(bounds.removeFromLeft(bounds.getWidth() / 3));
+    outputLevelSlider.setCentrePosition(0, outputLevelSlider.getHeight() * .5f);
+
     bounds.removeFromLeft(5);
     globalVolumeSlider.setBounds(bounds.removeFromLeft(bounds.getWidth() / 2));
     bounds.removeFromLeft(5);

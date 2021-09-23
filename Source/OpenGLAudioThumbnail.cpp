@@ -77,7 +77,11 @@ void OpenGLAudioThumbnail::renderOpenGL() {
     OpenGLComponent::renderOpenGL();
     try {
 //        auto grbl = std::make_unique<OpenGLShaderProgram> (*openGLContext);
-        if(nullptr == sourceLoop)return;
+        if(nullptr == sourceLoop
+           || nullptr == sourceLoop->Layers
+           || sourceLoop->Layers->size() == 0){
+            return;
+        }
         if (getDisplayType() == kFlat) {
             shaderThumbnailWave->use();
             // set up the uniforms for use in shader
@@ -193,6 +197,10 @@ WaveDisplayType OpenGLAudioThumbnail::getDisplayType(){
 
 void OpenGLAudioThumbnail::setSourceLoop(Loop* src){
     sourceLoop = src;
-    setTotalAudioLength(src->LoopDuration);
+    if (nullptr != src){
+        setTotalAudioLength(src->LoopDuration);
+    }else{
+        setTotalAudioLength(0);
+    }
 }
 

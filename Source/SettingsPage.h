@@ -29,6 +29,7 @@ public:
 	void changeListenerCallback(ChangeBroadcaster* source) override;
 	void labelTextChanged(Label* label) override;
 	void parentSizeChanged() override;
+
 	Component settingsCentre;
     Component right;
     Component left;
@@ -45,7 +46,7 @@ public:
     OrbishSlider maxUndoHistorySlider{ "History" };
     Label tracksPerRowLabel{ "Tracks per row" };
     OrbishSlider tracksPerRowSlider{ "Tracks per row" };
-
+        
 	class  Listener
 	{
 	public:

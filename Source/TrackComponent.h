@@ -68,8 +68,8 @@ public:
     bool isSoloArmed();
     int getIndex();
     void labelTextChanged (Label* label) override;
-    void setActiveLoop(int);
-    int getActiveLoop();
+    void setActiveLoopIdx(int);
+    int getActiveLoopIdx();
     void removeLoop();
     void addLoop(std::atomic<float>&);
     bool horizontalLayout = false;
@@ -109,7 +109,7 @@ private:
     exu::Label trackNumberLabel;
     exu::Label trackNameLabel;
 	exu::Label groupLabel;
-    int activeLoop =0;
+    int activeLoopIdx =0;
     OpenGLComponentContainer thumbnailContainer;
 };
 #endif

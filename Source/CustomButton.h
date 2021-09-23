@@ -17,6 +17,8 @@ class CustomButton : public juce::TextButton {
 public:
     CustomButton(const String&, bool, bool);
     CustomButton(const String&, bool);
+    CustomButton();
+
     ~CustomButton();
     
     bool isPushButton();
