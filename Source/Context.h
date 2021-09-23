@@ -34,7 +34,6 @@ struct OrbishContext {
 		defaultLoopLength = 120; //120 seconds max activeTrack.Recording
 		timeRatio = 0;
 		samplesPerBlock = 0;
-		trackCount = 0;
 		loopCount = 0;
 		fadeInc = 0;
 		samplesPerBeat = 0;
@@ -73,7 +72,6 @@ struct OrbishContext {
     std::unique_ptr<AudioBuffer<float> > barStartClickBuffer;
 	int samplesPerBlock;
 	Observer* observer;
-	int trackCount;
 	int loopCount;
 	Array<std::atomic<float>*> progress{};
 	std::mutex mtx;

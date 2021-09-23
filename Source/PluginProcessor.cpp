@@ -98,7 +98,7 @@ parameters(*this, nullptr, "OrbishState", {
     make_unique<AudioParameterFloat>("globalMix", "GlobalMix"
                                           ,NormalisableRange<float>(
                                                                     -120.0f
-                                                                    , 6.0f
+                                                                    , 30
                                                                     , [](float start, float end, float gain) {
                                                                                                                 return Decibels::gainToDecibels(gain * Decibels::decibelsToGain(end) , start);
                                                                                                              }
@@ -126,7 +126,7 @@ parameters(*this, nullptr, "OrbishState", {
     , make_unique<AudioParameterFloat>("latency", "Latency"
                                             ,NormalisableRange<float>(-500.0f, 500.0f), 0, "ms")
     , make_unique<AudioParameterFloat>("inputLevel", "InputLevel"
-                                            , NormalisableRange<float>(-60.0f, 6.0f
+                                            , NormalisableRange<float>(-60.0f, 12.0f
                                                                        , [](float start, float end, float gain) {
                                                                                                                     return Decibels::gainToDecibels(gain * Decibels::decibelsToGain(end) , start);
                                                                                                                 }
@@ -140,7 +140,7 @@ parameters(*this, nullptr, "OrbishState", {
                                        , 0.5f
                                        , "db")
     , make_unique<AudioParameterFloat>("outputLevel", "outputLevel"
-                                            , NormalisableRange<float>(-60.0f, 6.0f
+                                            , NormalisableRange<float>(-60.0f, 12.0f
                                                                        , [](float start, float end, float gain) {
                                                                                                                     return Decibels::gainToDecibels(gain * Decibels::decibelsToGain(end) , start);
                                                                                                                 }
@@ -262,7 +262,6 @@ parameters(*this, nullptr, "OrbishState", {
             if (nullptr != trackToAdd) {
 //                tracks.add(trackToAdd);
                 trackToAdd = nullptr;
-                context->trackCount = tracks.size();
             }
             if(context->loggingActive){
                 int64 stamp = Time::getApproximateMillisecondCounter();
@@ -871,7 +870,6 @@ void OrbishAudioProcessor::removeTrack(int& removeTrackIndex) {
         for (int i = removeTrackIndex + 1;i < tracks.size();++i) {
             --tracks[i]->Index;
         }
-        --context->trackCount;
     }
     trackToRemove = -1;
 }
@@ -2226,6 +2224,10 @@ bool OrbishAudioProcessor::loadLoopFromValueTree(ValueTree* loopTree, Loop* loop
             layer->dirty = true;
         }
     }
-    loop->activePlaybackLayer = loop->Layers.get()->at(loop->CurrentTop) ;
+    if(loop->CurrentTop < 0 || loop->CurrentTop >= loop->Layers->size()){
+        loop->activePlaybackLayer = nullptr;
+    }else{
+        loop->activePlaybackLayer = loop->Layers.get()->at(loop->CurrentTop) ;
+    }
     return true;
 }

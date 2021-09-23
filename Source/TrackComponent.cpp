@@ -27,18 +27,13 @@ TrackComponent::TrackComponent(int index, std::vector<std::atomic<float>*> progr
 
     loopHeight = margin + buttonSize;
 
-//    addAndMakeVisible(thumbnailContainer);
-    thumbnail = std::make_unique<OpenGLAudioThumbnail>(*progress[activeLoop], true);
+    thumbnail = std::make_unique<OpenGLAudioThumbnail>(*progress[activeLoopIdx], true);
     thumbnail->setLookAndFeel(&getLookAndFeel());
-//    thumbnail->setTopLevelComponent(this);
     thumbnail->setDisplayType(WaveDisplayType::kFlat);
     addAndMakeVisible(thumbnail.get());
     for(int i=0;i<progress.size() && (nullptr != progress[i]);++i){
         addLoop(*progress[i]);
     }
-//    for(auto l:Loops){
-//        l->thumbnail->setTopLevelComponent(thumbnail->getTopLevelComponent());
-//    }
     addAndMakeVisible(witness);
 
     trackNameLabel.setText(this->getName(), NotificationType::sendNotification);
@@ -76,28 +71,21 @@ void TrackComponent::setOpenGLContext(std::shared_ptr<OpenGLContext> context, bo
 }
 
 
-void TrackComponent::setActiveLoop(int loopIdx){
-    activeLoop =  loopIdx;
+void TrackComponent::setActiveLoopIdx(int loopIdx){
+    activeLoopIdx =  loopIdx;
     if(Loops.size() < loopIdx+1)return;
     updateLoopColours();
     resized();
 }
 
-int TrackComponent::getActiveLoop(){
-    return activeLoop;
+int TrackComponent::getActiveLoopIdx(){
+    return activeLoopIdx;
 }
 
 void TrackComponent::removeLoop(){
     Loops.removeLast();
     resized();
 }
-
-//void TrackComponent::setTopLevelComponent(Component* top){
-//    thumbnail->setTopLevelComponent(top);
-//    for(auto l:Loops){
-//        l->thumbnail->setTopLevelComponent(top);
-//    }
-//}
 
 void TrackComponent::addLoop(std::atomic<float>& p){
     LoopComponent* newLoop = new LoopComponent(p, Loops.size());
@@ -107,7 +95,6 @@ void TrackComponent::addLoop(std::atomic<float>& p){
     String id = "Loop" + String(newLoop->getIndex());
     newLoop->thumbnail->setComponentID(id);
     newLoop->thumbnail->setOpenGLContext(thumbnail->openGLContext, false);
-//    newLoop->thumbnail->setTopLevelComponent(thumbnail->getTopLevelComponent());
     addAndMakeVisible(newLoop);
     resized();
 }
@@ -200,7 +187,7 @@ String TrackComponent::getGroup(){
 void TrackComponent::updateLoopColours(){
     for (auto l : Loops) {
         if (active) {
-            if (activeLoop == l->getIndex()) {
+            if (activeLoopIdx == l->getIndex()) {
                 l->setColour(juce::ProgressBar::foregroundColourId, juce::Colour(0xfffddc11));
                 l->setColour(juce::ProgressBar::backgroundColourId, juce::Colour(0xff707070));
             }
@@ -210,7 +197,7 @@ void TrackComponent::updateLoopColours(){
             }
         }
         else {
-            if (activeLoop == l->getIndex()) {
+            if (activeLoopIdx == l->getIndex()) {
                 l->setColour(juce::ProgressBar::foregroundColourId, juce::Colour(0xffc1a402));
                 l->setColour(juce::ProgressBar::backgroundColourId, juce::Colour(0xff42403a));
             }

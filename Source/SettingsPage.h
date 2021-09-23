@@ -6,6 +6,7 @@
 
 #include <JuceHeader.h>
 #include "OrbishSlider.h"
+#include "CustomButton.h"
 
 
 class SettingsPage:public Component,
@@ -28,23 +29,24 @@ public:
 	void changeListenerCallback(ChangeBroadcaster* source) override;
 	void labelTextChanged(Label* label) override;
 	void parentSizeChanged() override;
+
 	Component settingsCentre;
     Component right;
     Component left;
     Component top;
     Component bottom;
-	TextButton activateLoggingButton;
+    CustomButton activateLoggingButton{"Logging", false };
 	Label activateLoggingLabel;
-    TextButton monitoringButton;
+    CustomButton monitoringButton{"Post Mix", false };
     Label monitoringLabel;
-	TextButton closeSettingsButton;
+    CustomButton closeSettingsButton{"Close", false };
 	Label latencyLabel;
     OrbishSlider latencySlider;
 	Label maxUndoHistoryLabel{ "History" };
     OrbishSlider maxUndoHistorySlider{ "History" };
     Label tracksPerRowLabel{ "Tracks per row" };
     OrbishSlider tracksPerRowSlider{ "Tracks per row" };
-
+        
 	class  Listener
 	{
 	public:

@@ -77,12 +77,24 @@ void OpenGLAudioThumbnail::renderOpenGL() {
     OpenGLComponent::renderOpenGL();
     try {
 //        auto grbl = std::make_unique<OpenGLShaderProgram> (*openGLContext);
-        if(nullptr == sourceLoop)return;
+        if(nullptr == sourceLoop
+           || nullptr == sourceLoop->Layers
+           || sourceLoop->Layers->size() == 0){
+            return;
+        }
         if (getDisplayType() == kFlat) {
             shaderThumbnailWave->use();
             // set up the uniforms for use in shader
             shaderThumbnailWave->uniforms->resolution->set ((GLfloat) width, (GLfloat) height);
-            shaderThumbnailWave->uniforms->audioSampleData->set (sourceLoop->flattenedVisualizationBuffer, BUFFER_READ_SIZE);
+            if (!reverse) {
+                GLfloat inversedBuffer[BUFFER_READ_SIZE];
+                for(auto i=0;i<BUFFER_READ_SIZE;++i){
+                    inversedBuffer[i] = sourceLoop->flattenedVisualizationBuffer[BUFFER_READ_SIZE-(i+1)];
+                }
+                shaderThumbnailWave->uniforms->audioSampleData->set (inversedBuffer, BUFFER_READ_SIZE);
+            }else{
+                shaderThumbnailWave->uniforms->audioSampleData->set (sourceLoop->flattenedVisualizationBuffer, BUFFER_READ_SIZE);
+            }
             shaderThumbnailWave->uniforms->origin->set ((GLfloat) x, (GLfloat) y);
             shaderThumbnailWave->uniforms->windowForLog->set (GLfloat(-1));
             {
@@ -142,14 +154,7 @@ void OpenGLAudioThumbnail::openGLContextClosing() {
 }
 
 void OpenGLAudioThumbnail::setReverse(bool rev){
-    if (getDisplayType()==kFlat && reverse != rev) {
-        GLfloat inversedBuffer[BUFFER_READ_SIZE];
-        FloatVectorOperations::copy(inversedBuffer, flattenedVisualizationBuffer, BUFFER_READ_SIZE);
-        for(auto i=0;i<BUFFER_READ_SIZE;++i){
-            flattenedVisualizationBuffer[i] = inversedBuffer[BUFFER_READ_SIZE-(i+1)];
-        }
-    }
-    reverse = rev;
+        reverse = rev;
 }
 
 bool OpenGLAudioThumbnail::getReverse(){
@@ -233,6 +238,10 @@ WaveDisplayType OpenGLAudioThumbnail::getDisplayType(){
 
 void OpenGLAudioThumbnail::setSourceLoop(Loop* src){
     sourceLoop = src;
-    setTotalAudioLength(src->LoopDuration);
+    if (nullptr != src){
+        setTotalAudioLength(src->LoopDuration);
+    }else{
+        setTotalAudioLength(0);
+    }
 }
 

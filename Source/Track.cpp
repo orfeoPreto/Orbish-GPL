@@ -470,6 +470,7 @@ void Track::StartRecordingBefore()
         setActivePlaybackLayer(l);
         setActiveRecordingLayer(l);
     }
+    ActiveLoop->activeRecordingLayer = (*Layers)[*CurrentTop];
     // actually start Recording
     Recording = true;
     CurrentRecordingIndex = *CurrentPlayingIndex;
@@ -799,9 +800,6 @@ void Track::RemoveLoopBefore(){
             ChangeLoopBefore(ActiveLoop->Index -1);
         }
             RunAfters.push_back(&Track::RemoveLoopAfter);
-//        }else{
-//            RemoveLoopAfter();
-//        }
     }
 }
 

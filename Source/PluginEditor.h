@@ -178,7 +178,7 @@ public:
     void openGLContextClosing() override;
     std::shared_ptr<OpenGLContext> getOpenGLContext();
     void removeReference(OpenGLComponent*);
-
+    void totalReset();
     
 private:
     std::mutex rendererVectorMutex;
@@ -263,7 +263,7 @@ private:
     AudioProcessorValueTreeState& valueTreeState;
     OwnedArray<TrackComponent> tracks;
     bool tracksDirty = false;
-    int activeTrack = 0;
+    int activeTrackIdx = 0;
     int activeLoop = 0;
     bool dirty = false;
     int nextTrackNumber = 0;
