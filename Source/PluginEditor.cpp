@@ -222,21 +222,25 @@ void OrbishAudioProcessorEditor::renderOpenGL()
 //    auto grbl = std::make_unique<OpenGLShaderProgram> (*openGLContext);
     lock.enterRead();
     for (auto reference : references){
-        if(nullptr == reference)continue;
+        if(nullptr == reference ||
+           nullptr == reference->asOpenGLComponent->shader)continue;
         if(reference->asComponent->isVisible()){
 //            auto grbl = std::make_unique<OpenGLShaderProgram> (*openGLContext);
-            if (reference->asOpenGLComponent->shaderName == "thumbnail-playhead"
-                && reference->asComponent->getName() != "main"){
-                auto widgetPosition = reference->asComponent->getPosition();
-                auto widgetPosRelativeToViewport = reference->asComponent->getPointFromTopLevel(&tracksViewport,widgetPosition);
-                if(flags & CallBackFlags::shouldRemoveLoop
-                    || flags & CallBackFlags::shouldRemoveTrack
-                    || tracksViewport.getWidth() < widgetPosRelativeToViewport.getX()
-                    || tracksViewport.getHeight() < widgetPosRelativeToViewport.getY()
-                   || 0 < widgetPosRelativeToViewport.getX() - reference->asComponent->getWidth()
-                   || 0 < widgetPosRelativeToViewport.getY() - reference->asComponent->getHeight()
-                   ){
+            if (reference->asOpenGLComponent->shaderName == "thumbnail-playhead"){
+                if (flags & CallBackFlags::shouldRemoveLoop
+                    || flags & CallBackFlags::shouldRemoveTrack) {
                     continue;
+                }
+                if(reference->asComponent->getName() != "main"){
+                    auto widgetPosition = reference->asComponent->getPosition();
+                    auto widgetPosRelativeToViewport = reference->asComponent->getPointFromTopLevel(&tracksViewport,widgetPosition);
+                    if(tracksViewport.getWidth() < widgetPosRelativeToViewport.getX()
+                        || tracksViewport.getHeight() < widgetPosRelativeToViewport.getY()
+                       || 0 < widgetPosRelativeToViewport.getX() - reference->asComponent->getWidth()
+                       || 0 < widgetPosRelativeToViewport.getY() - reference->asComponent->getHeight()
+                       ){
+                        continue;
+                    }
                 }
             }
             if (!reference->asOpenGLComponent->isInitialized()) {
@@ -272,7 +276,6 @@ void OrbishAudioProcessorEditor::removeReference(OpenGLComponent* r){
 
 void OrbishAudioProcessorEditor::showSettingsPage() {
     thumbnail->stop();
-    thumbnail->setVisible(false);
 	settingsPage = std::make_shared<SettingsPage>(processor.context->postMixMonitoring, processor.context->loggingActive, processor.context->maxUndoHistory, nbrTracksInARow, processor.context->delayCompensation );
 	settingsPage->addListener(this);
     settingsPage->setLookAndFeel(&getLookAndFeel());
@@ -1169,6 +1172,9 @@ void OrbishAudioProcessorEditor::doRefreshThumbnail(bool refresh) {
 void OrbishAudioProcessorEditor::doUpdatePlayHead(){
     thumbnail->setReverse(getReverseState());
     tracks[activeTrack]->thumbnail->setReverse(getReverseState());
+    for(auto l:tracks[activeTrack]->Loops){
+        l->thumbnail->setReverse(getReverseState());
+    }
 }
 
 void OrbishAudioProcessorEditor::doUpdateHostPosition(){
@@ -1356,16 +1362,27 @@ void OrbishAudioProcessorEditor::doChangeLayer(){
 
 void OrbishAudioProcessorEditor::doRemoveLoop(){
     auto currentTrack = tracks[activeTrack];
-    auto currentLoop = currentTrack->Loops.getLast();
-    if (currentLoop->getIndex() == currentTrack->getActiveLoop()) {
-        return;
-    }
-    lock.enterWrite();
-        removeReference(currentLoop->thumbnail.get());
-        currentTrack->removeLoop();
-        makeTracks();
-        project.dirty = true;
-    lock.exitWrite();
+    do{
+        auto currentLoop = currentTrack->Loops.getLast();
+        DBG("audioTrack->loops.size - before: ");
+        DBG(currentTrack->getAudioTrack()->loops.size());
+        DBG("uiTrack->Loops.size - before: ");
+        DBG(currentTrack->Loops.size());
+        if (currentLoop->getIndex() < currentTrack->getAudioTrack()->loops.size() ||
+            currentLoop->getIndex() == currentTrack->getAudioTrack()->ActiveLoop->Index) {
+            return;
+        }
+        lock.enterWrite();
+            removeReference(currentLoop->thumbnail.get());
+            currentTrack->removeLoop();
+            makeTracks();
+            project.dirty = true;
+        lock.exitWrite();
+    }while (currentTrack->getAudioTrack()->loops.size()<currentTrack->Loops.size());
+    DBG("audioTrack->loops.size: ");
+    DBG(currentTrack->getAudioTrack()->loops.size());
+    DBG("uiTrack->Loops.size: ");
+    DBG(currentTrack->Loops.size());
 }
 
 void OrbishAudioProcessorEditor::doUpdatePlayState(){

@@ -98,7 +98,7 @@ parameters(*this, nullptr, "OrbishState", {
     make_unique<AudioParameterFloat>("globalMix", "GlobalMix"
                                           ,NormalisableRange<float>(
                                                                     -120.0f
-                                                                    , 6.0f
+                                                                    , 24.0f
                                                                     , [](float start, float end, float gain) {
                                                                                                                 return Decibels::gainToDecibels(gain * Decibels::decibelsToGain(end) , start);
                                                                                                              }
@@ -126,7 +126,7 @@ parameters(*this, nullptr, "OrbishState", {
     , make_unique<AudioParameterFloat>("latency", "Latency"
                                             ,NormalisableRange<float>(-500.0f, 500.0f), 0, "ms")
     , make_unique<AudioParameterFloat>("inputLevel", "InputLevel"
-                                            , NormalisableRange<float>(-60.0f, 6.0f
+                                            , NormalisableRange<float>(-60.0f, 12.0f
                                                                        , [](float start, float end, float gain) {
                                                                                                                     return Decibels::gainToDecibels(gain * Decibels::decibelsToGain(end) , start);
                                                                                                                 }
@@ -140,7 +140,7 @@ parameters(*this, nullptr, "OrbishState", {
                                        , 0.5f
                                        , "db")
     , make_unique<AudioParameterFloat>("outputLevel", "outputLevel"
-                                            , NormalisableRange<float>(-60.0f, 6.0f
+                                            , NormalisableRange<float>(-60.0f, 12.0f
                                                                        , [](float start, float end, float gain) {
                                                                                                                     return Decibels::gainToDecibels(gain * Decibels::decibelsToGain(end) , start);
                                                                                                                 }

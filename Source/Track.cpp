@@ -724,6 +724,8 @@ void Track::ChangeLoopBefore(int newLoopIdx){
 
 void Track::ChangeLoopAfter(){
     RegisterLoop(nextLoop);
+    DBG("Changing active loop:");
+    DBG(nextLoop);
     LastPlaybackBuffer = false;
     FirstPlaybackBuffer = true;
     if(WasRecording){
@@ -791,9 +793,6 @@ void Track::RefreshLoopVisualizer(){
 }
 
 void Track::RemoveLoopBefore(){
-    if(guiAlive){
-        (context->observer->*(context->observer->loopRemoval)) ();
-    }
     if(loops.size() > 1){
         if (ActiveLoop->Index == uint(loops.size() -1)){
             ChangeLoopBefore(ActiveLoop->Index -1);
@@ -807,7 +806,11 @@ void Track::RemoveLoopBefore(){
 
 
 void Track::RemoveLoopAfter(){
+    if(guiAlive){
+        (context->observer->*(context->observer->loopRemoval)) ();
+    }
     RemoveLoop();
+    DBG("Removing audio loop");
     realignment->setRealigned(true);
 }
 

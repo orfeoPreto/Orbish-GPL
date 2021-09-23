@@ -6,6 +6,7 @@
 
 #include <JuceHeader.h>
 #include "OrbishSlider.h"
+#include "CustomButton.h"
 
 
 class SettingsPage:public Component,
@@ -33,11 +34,11 @@ public:
     Component left;
     Component top;
     Component bottom;
-	TextButton activateLoggingButton;
+        CustomButton activateLoggingButton{"Logging",false};
 	Label activateLoggingLabel;
-    TextButton monitoringButton;
+        CustomButton monitoringButton{"Post Mix", false};
     Label monitoringLabel;
-	TextButton closeSettingsButton;
+        CustomButton closeSettingsButton{"Close", false};
 	Label latencyLabel;
     OrbishSlider latencySlider;
 	Label maxUndoHistoryLabel{ "History" };

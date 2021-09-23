@@ -18,8 +18,8 @@ SettingsPage::SettingsPage(bool monitoring, bool loggingActive, int maxHistory, 
 	addAndMakeVisible(top);
 	addAndMakeVisible(bottom);
 	closeSettingsButton.addListener(this);
-	closeSettingsButton.setButtonText("x");
-	latencySlider.setRange(-300, 300);
+	closeSettingsButton.setButtonText("Close");
+	latencySlider.setRange(-500, 500);
 	latencySlider.setValue(latency);
 	latencySlider.setNumDecimalPlacesToDisplay(1);
 
@@ -90,21 +90,21 @@ void SettingsPage::paint(Graphics& g){
 }
 void SettingsPage::resized(){
 	settingsCentre.setBounds(getWidth() * .2f, getHeight() * .2f, getWidth() * .6f, getHeight() * .6f);
-	closeSettingsButton.setBounds(settingsCentre.getWidth() - margin - buttonSize, margin, buttonSize, buttonSize);
+	closeSettingsButton.setBounds(settingsCentre.getWidth() - margin - buttonSize*2, margin, buttonSize*2, buttonSize);
 	top.setBounds(0, 0, getWidth(), getHeight() * .2f);
-bottom.setBounds(0, getHeight() - getHeight() * .2f, getWidth(), getHeight() * .2f);
-left.setBounds(0, getHeight() * .2f, getWidth() * .2f, getHeight() * .6f);
-right.setBounds(getWidth() - getWidth() * .2f, getHeight() * .2f, getWidth() * .2f, getHeight() * .6f);
-latencyLabel.setBounds(10, 30, 150, 15);
-latencySlider.setBounds(160, 35, 100, 15);
-maxUndoHistoryLabel.setBounds(10, 65, 150, 15);
-maxUndoHistorySlider.setBounds(160, 70, 50, 15);
-    tracksPerRowLabel.setBounds(10, 105, 150, 15);
-    tracksPerRowSlider.setBounds(160,105,50,15);
-    activateLoggingLabel.setBounds(10, 130, 150, 15);
-    activateLoggingButton.setBounds(160,135,15,15);
-    monitoringLabel.setBounds(10, 165, 150, 15);
-    monitoringButton.setBounds(160,170,15,15);
+    bottom.setBounds(0, getHeight() - getHeight() * .2f, getWidth(), getHeight() * .2f);
+    left.setBounds(0, getHeight() * .2f, getWidth() * .2f, getHeight() * .6f);
+    right.setBounds(getWidth() - getWidth() * .2f, getHeight() * .2f, getWidth() * .2f, getHeight() * .6f);
+    latencyLabel.setBounds(20, 30, 150, 15);
+    latencySlider.setBounds(200, 35, 200, 15);
+    maxUndoHistoryLabel.setBounds(20, 65, 150, 15);
+    maxUndoHistorySlider.setBounds(200, 70, 200, 15);
+    tracksPerRowLabel.setBounds(20, 105, 150, 15);
+    tracksPerRowSlider.setBounds(200,105,200,15);
+    activateLoggingLabel.setBounds(20, 130, 150, 15);
+    activateLoggingButton.setBounds(200,135,100,30);
+    monitoringLabel.setBounds(20, 165, 150, 15);
+    monitoringButton.setBounds(200,170,100,30);
     
 }
 void SettingsPage::buttonClicked(Button* button){

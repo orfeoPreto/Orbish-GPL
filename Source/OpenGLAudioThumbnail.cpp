@@ -82,7 +82,14 @@ void OpenGLAudioThumbnail::renderOpenGL() {
             shaderThumbnailWave->use();
             // set up the uniforms for use in shader
             shaderThumbnailWave->uniforms->resolution->set ((GLfloat) width, (GLfloat) height);
-            shaderThumbnailWave->uniforms->audioSampleData->set (sourceLoop->flattenedVisualizationBuffer, BUFFER_READ_SIZE);
+            if (!reverse) {
+                for(auto i=0;i<BUFFER_READ_SIZE;++i){
+                    flattenedVisualizationBuffer[i] = sourceLoop->flattenedVisualizationBuffer[BUFFER_READ_SIZE-(i+1)];
+                }
+            }else{
+                FloatVectorOperations::copy(flattenedVisualizationBuffer, sourceLoop->flattenedVisualizationBuffer, BUFFER_READ_SIZE);
+            }
+            shaderThumbnailWave->uniforms->audioSampleData->set(flattenedVisualizationBuffer, BUFFER_READ_SIZE);
             shaderThumbnailWave->uniforms->origin->set ((GLfloat) x, (GLfloat) y);
             shaderThumbnailWave->uniforms->windowForLog->set (GLfloat(-1));
             {
@@ -142,13 +149,6 @@ void OpenGLAudioThumbnail::openGLContextClosing() {
 }
 
 void OpenGLAudioThumbnail::setReverse(bool rev){
-    if (getDisplayType()==kFlat && reverse != rev) {
-        GLfloat inversedBuffer[BUFFER_READ_SIZE];
-        FloatVectorOperations::copy(inversedBuffer, flattenedVisualizationBuffer, BUFFER_READ_SIZE);
-        for(auto i=0;i<BUFFER_READ_SIZE;++i){
-            flattenedVisualizationBuffer[i] = inversedBuffer[BUFFER_READ_SIZE-(i+1)];
-        }
-    }
     reverse = rev;
 }
 
@@ -164,58 +164,18 @@ void OpenGLAudioThumbnail::setTotalAudioLength(int t){
 }
 
 void OpenGLAudioThumbnail::resetVisualizationBuffers(){
-    visualizationBuffers.clear();
     if(getDisplayType() == kLayered){
         setTotalAudioLength(0);
     }
 }
 
-void OpenGLAudioThumbnail::initVisualizationBuffer(){
-    GLfloat * visualizationBuffer = new GLfloat [BUFFER_READ_SIZE];
-    FloatVectorOperations::clear(visualizationBuffer, BUFFER_READ_SIZE);
-    auto size = getTotalLength();
-    for (auto i=0; i<BUFFER_READ_SIZE; ++i) {
-        visualizationBuffer[i] =  readBuffer->getSample(0, float(i)/float(BUFFER_READ_SIZE) * size);
-    }
-    visualizationBuffers.push_back(visualizationBuffer);
-}
 
 void OpenGLAudioThumbnail::setActiveLayer(GLuint layer){
     layerNumber = layer+1;
-//    if(getDisplayType() == kFlat){
-//        FloatVectorOperations::clear(flattenedVisualizationBuffer, BUFFER_READ_SIZE);
-//        for(auto i=0;i<visualizationBuffers.size() && i<layerNumber;++i){
-//            FloatVectorOperations::add(flattenedVisualizationBuffer, visualizationBuffers[i], BUFFER_READ_SIZE);
-//        }
-//    }
+
 }
 
-void OpenGLAudioThumbnail::setBuffer(std::shared_ptr<AudioSampleBuffer> b, GLfloat length, int layerIndex){
-    if(layerIndex < 0)return;
-    setTotalAudioLength(length);
-    readBuffer = b;
-    GLfloat * visualizationBuffer;
-    auto size = getTotalLength();
 
-
-    visualizationBuffer = new GLfloat [BUFFER_READ_SIZE];
-    FloatVectorOperations::clear(visualizationBuffer, BUFFER_READ_SIZE);
-    
-    for (auto i=0; i<BUFFER_READ_SIZE; ++i) {
-        visualizationBuffer[i] =  readBuffer->getSample(0, float(i)/float(BUFFER_READ_SIZE) * size);
-    }
-    if (layerIndex >= visualizationBuffers.size()) {
-        visualizationBuffers.push_back(visualizationBuffer);
-    }else{
-        visualizationBuffers[layerIndex] = visualizationBuffer;
-    }
-    if(getDisplayType() == kFlat){
-        FloatVectorOperations::clear(flattenedVisualizationBuffer, BUFFER_READ_SIZE);
-        for(auto i=0;i<visualizationBuffers.size() && i<layerNumber;++i){
-            FloatVectorOperations::add(flattenedVisualizationBuffer, visualizationBuffers[i], BUFFER_READ_SIZE);
-        }
-    }
-}
 
 void OpenGLAudioThumbnail::clear(){
     visualizationBuffers.clear();
