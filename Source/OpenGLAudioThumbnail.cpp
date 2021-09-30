@@ -77,9 +77,8 @@ void OpenGLAudioThumbnail::renderOpenGL() {
     OpenGLComponent::renderOpenGL();
     try {
 //        auto grbl = std::make_unique<OpenGLShaderProgram> (*openGLContext);
-        if(nullptr == sourceLoop
-           || nullptr == sourceLoop->Layers
-           || sourceLoop->Layers->size() == 0){
+        if(nullptr == sourceLoop->Layers
+           || sourceLoop->CurrentTop < 0){
             return;
         }
         if (getDisplayType() == kFlat) {

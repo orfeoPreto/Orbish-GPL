@@ -220,12 +220,15 @@ void OrbishAudioProcessorEditor::renderOpenGL()
 //    auto grbl = std::make_unique<OpenGLShaderProgram> (*openGLContext);
     lock.enterRead();
     for (auto reference : references){
+        if (!reference->asOpenGLComponent->isInitialized()) {
+            reference->asOpenGLComponent->init();
+        }
         if(nullptr == reference ||
            nullptr == reference->asOpenGLComponent->shader)continue;
         if(reference->asComponent->isVisible()){
 //            auto grbl = std::make_unique<OpenGLShaderProgram> (*openGLContext);
             if (reference->asOpenGLComponent->shaderName == "thumbnail-playhead"){
-                if (flags & CallBackFlags::shouldRemoveLoop
+                 if (flags & CallBackFlags::shouldRemoveLoop
                     || flags & CallBackFlags::shouldRemoveTrack) {
                     continue;
                 }
@@ -241,9 +244,7 @@ void OrbishAudioProcessorEditor::renderOpenGL()
                     }
                 }
             }
-            if (!reference->asOpenGLComponent->isInitialized()) {
-                reference->asOpenGLComponent->init();
-            }
+
 //             grbl = std::make_unique<OpenGLShaderProgram> (*openGLContext);
 //            if(reference->asComponent->getComponentID() == "Loop1"){
 //                DBG(reference->asOpenGLComponent->getTotalLength());
@@ -267,6 +268,7 @@ void OrbishAudioProcessorEditor::removeReference(OpenGLComponent* r){
         if(r == (references)[i]->asComponent){
             lock.enterWrite();
             references.std::vector<std::shared_ptr<OpenGLComponentReference> >::erase(references.std::vector<std::shared_ptr<OpenGLComponentReference> >::begin() + i);
+                DBG(String((uint64)references[i]->asComponent));
             lock.exitWrite();
         }
     }
@@ -1088,7 +1090,6 @@ void OrbishAudioProcessorEditor::updateHostPosition(){
 void OrbishAudioProcessorEditor::createTrack(){
     if(flags & CallBackFlags::shouldCreateTrack){
         doCreateTrack(tracks.size());
-        makeTracks();
         project.dirty = true;
         flags &= ~CallBackFlags::shouldCreateTrack;
     }
@@ -1271,6 +1272,7 @@ void OrbishAudioProcessorEditor::doCreateTrack(int trackNumber) {
         }
         t->thumbnail->setSourceLoop(audioTrack->ActiveLoop);
     }
+    makeTracks();
 
 }
 
@@ -1303,7 +1305,7 @@ void OrbishAudioProcessorEditor::doCreateLoop(){
     String id = "Loop" + String(l->getIndex());
     l->thumbnail->setComponentID(id);
     l->thumbnail->setSourceLoop(audioTrack->loops.getLast());
-    references.push_back (std::make_shared<OpenGLComponentReference>(currentTrack->Loops.getLast()->thumbnail.get()));
+    references.push_back (std::make_shared<OpenGLComponentReference>(l->thumbnail.get()));
 
     makeTracks();
     project.dirty = true;
@@ -1358,8 +1360,8 @@ void OrbishAudioProcessorEditor::doChangeLayer(){
 }
 
 void OrbishAudioProcessorEditor::doRemoveLoop(){
-    auto currentTrack = tracks[activeTrack];
-    do{
+    auto currentTrack = tracks[activeTrackIdx];
+    do{  
         auto currentLoop = currentTrack->Loops.getLast();
         DBG("audioTrack->loops.size - before: ");
         DBG(currentTrack->getAudioTrack()->loops.size());

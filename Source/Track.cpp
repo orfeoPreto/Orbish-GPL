@@ -311,6 +311,7 @@ void Track::AddLoop(){
 
 void Track::RemoveLoop(){
     if(loops.size() > 1){
+        loops.getLast()->Layers = nullptr;
         loops.removeLast();
     }
 }
@@ -453,24 +454,21 @@ void Track::StartRecordingBefore()
     }
     // Add a new buffer if active track doesn't have one yet
     if(getRecordMode() == 1 && Layers->size() == 0){
-        AddLayer(false);
         *LoopDuration = int(context->beatsToSamples(fixedSize));
+    }
+    if(Layers->size() == 0){
+        AddLayer(false);
         setActiveRecordingLayer(Layers->at(0));
-    }
-    if ((Layers->size() < uint(1)
-         || (getRecordMode() < 4
-             && *CurrentTop == Layers->size() - uint(1)
-             && (*Layers)[*CurrentTop]->dirty))) {
-//        AddLayer(true);
-//        ActiveLoop->activePlaybackLayer = (*Layers)[*CurrentTop];
-//        ActiveLoop->activeRecordingLayer = (*Layers)[*CurrentTop];
-    }
-    else if (getRecordMode() < 4 && *CurrentTop < Layers->size() - uint(1)) {
+    }else{
+//         || (getRecordMode() < 4
+//             && *CurrentTop == Layers->size() - uint(1)
+//             && (*Layers)[*CurrentTop]->dirty))) {
+            
         auto l = (*Layers)[*CurrentTop];
         setActivePlaybackLayer(l);
         setActiveRecordingLayer(l);
     }
-    ActiveLoop->activeRecordingLayer = (*Layers)[*CurrentTop];
+//    ActiveLoop->activeRecordingLayer = (*Layers)[*CurrentTop];
     // actually start Recording
     Recording = true;
     CurrentRecordingIndex = *CurrentPlayingIndex;
@@ -1102,13 +1100,16 @@ void Track::setAutoTrigger(bool newValue){
 }
 
 std::shared_ptr<Layer> Track::getActivePlaybackLayer(){
+    if (ActiveLoop->Layers->size() == 0) {
+        return nullptr;
+    }
     if(nullptr == ActiveLoop->activePlaybackLayer){
         *CurrentTop = getLimit();
         if(*CurrentTop>=0){
             setActivePlaybackLayer((*Layers)[*CurrentTop]);
         }
     }
-
+    
     return ActiveLoop->activePlaybackLayer;
 }
 void Track::setActivePlaybackLayer(std::shared_ptr<Layer> l){
