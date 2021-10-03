@@ -180,6 +180,7 @@ public:
     void removeReference(OpenGLComponent*);
     void totalReset();
     
+    
 private:
     std::mutex rendererVectorMutex;
     std::atomic<uint> flags;

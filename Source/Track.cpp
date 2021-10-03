@@ -736,7 +736,7 @@ void Track::ChangeLoopAfter(){
     if(guiAlive){
         (context->observer->*(context->observer->updatePlayPosition)) (0, Reverse);
         (context->observer->*(context->observer->loopChange)) (this->Index, nextLoop);
-    }
+    } 
 //    UpdateLoopVisualizer();
     realignment->setRealigned(true);
     context->skipAlign = true;

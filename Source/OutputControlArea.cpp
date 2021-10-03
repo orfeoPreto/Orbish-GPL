@@ -70,7 +70,7 @@ void OutputControlArea::resized(){
 
     outputLevelLabel.setBounds(bounds.removeFromBottom(20));
     outputLevelSlider.setBounds(bounds.removeFromLeft(bounds.getWidth() / 3));
-    outputLevelSlider.setCentrePosition(0, outputLevelSlider.getHeight() * .5f);
+//    outputLevelSlider.setCentrePosition(0, outputLevelSlider.getHeight() * .5f);
 
     bounds.removeFromLeft(5);
     globalVolumeSlider.setBounds(bounds.removeFromLeft(bounds.getWidth() / 2));

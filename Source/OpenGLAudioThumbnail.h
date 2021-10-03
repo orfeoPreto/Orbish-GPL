@@ -61,6 +61,10 @@ public:
     // OpenGL Variables
     int sampleRate = 0;
     String shader2Name;
+    void activate();
+    void deactivate();
+    
+    
 private:
     bool reverse = true;
     int frameRate = 0;

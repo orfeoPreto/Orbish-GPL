@@ -72,9 +72,10 @@ void TrackComponent::setOpenGLContext(std::shared_ptr<OpenGLContext> context, bo
 
 
 void TrackComponent::setActiveLoopIdx(int loopIdx){
+    Loops[activeLoopIdx]->thumbnail->deactivate();
     activeLoopIdx =  loopIdx;
     if(Loops.size() < loopIdx+1)return;
-    updateLoopColours();
+    Loops[activeLoopIdx]->thumbnail->activate();
     resized();
 }
 
@@ -96,12 +97,12 @@ void TrackComponent::addLoop(std::atomic<float>& p){
     newLoop->thumbnail->setComponentID(id);
     newLoop->thumbnail->setOpenGLContext(thumbnail->openGLContext, false);
     addAndMakeVisible(newLoop);
+    newLoop->thumbnail->deactivate();
     resized();
 }
 
 void TrackComponent::setActive(bool isActive){
     this->active = isActive;
-    updateLoopColours();
 }
 
 bool TrackComponent::isActive(){
