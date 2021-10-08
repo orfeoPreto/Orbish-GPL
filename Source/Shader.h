@@ -11,6 +11,8 @@
 #include <stdio.h>
 #include <istream>
 #define SHADERS_FROM_BINARY_DATA 0
+#define GL_VERTEX_SHADER   0x8B31
+#define GL_FRAGMENT_SHADER  0x8B30
 using namespace juce;
 
 

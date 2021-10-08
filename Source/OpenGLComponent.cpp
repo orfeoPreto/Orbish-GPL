@@ -107,11 +107,12 @@ void OpenGLComponent::renderOpenGL() {
 //    auto grbl = std::make_unique<OpenGLShaderProgram> (*openGLContext);
 
 
-    
-    juce::Point<int> pointOnTopLevel = getPointFromTopLevel(getTopLevelComponent(), juce::Point<int>{-localX,-localY});
-    x = pointOnTopLevel.getX() * -1;
+    //juce::Point<int> pointOnTopLevel = getPointFromTopLevel(getTopLevelComponent(), juce::Point<int>{-localX,-localY});
+	juce::Point<int> pointOnTopLevel = getPointFromTopLevel();
+	x = pointOnTopLevel.getX() * -1;
     y = getTopLevelComponent()->getHeight() + (pointOnTopLevel.getY()) - getHeight();
     updateScale();
+	
     glViewport(x,y, width, height);
     juce::OpenGLHelpers::enableScissorTest (Rectangle<int>{x,y,width,height});
 //    grbl = std::make_unique<OpenGLShaderProgram> (*openGLContext);

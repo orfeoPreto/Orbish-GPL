@@ -13,30 +13,32 @@
 #include <JuceHeader.h>
 #include "exu/Label.hpp"
 
-//==============================================================================
-/*
-*/
-class ModeControlArea  :
-public juce::Component,
-public ComboBox::Listener
+namespace juce {
+	//==============================================================================
+	/*
+	*/
+	class ModeControlArea :
+		public juce::Component,
+		public ComboBox::Listener
 
-{
-public:
-    ModeControlArea();
-    ~ModeControlArea() override;
+	{
+	public:
+		ModeControlArea();
+		~ModeControlArea() override;
 
-    void paint (juce::Graphics&) override;
-    void resized() override;
+		void paint(juce::Graphics&) override;
+		void resized() override;
 
-    ComboBox recModeCombo;
-    ComboBox snapModeCombo;
-    ComboBox fixedSizeBeatsCombo;
-    void comboBoxChanged (ComboBox*) override;
+		ComboBox recModeCombo;
+		ComboBox snapModeCombo;
+		ComboBox fixedSizeBeatsCombo;
+		void comboBoxChanged(ComboBox*) override;
 
-    exu::Label recModeLabel = { {}, {"Record Mode"} };
-    exu::Label snapModeLabel = { {}, {"Snap Mode"} };
+		exu::Label recModeLabel = { {}, {"Record Mode"} };
+		exu::Label snapModeLabel = { {}, {"Snap Mode"} };
 
 
-private:
-    JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (ModeControlArea)
-};
+	private:
+		JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(ModeControlArea)
+	};
+}
