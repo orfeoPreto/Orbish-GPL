@@ -106,9 +106,8 @@ void OpenGLComponent::renderOpenGL() {
     jassert (OpenGLHelpers::isContextActive());
 //    auto grbl = std::make_unique<OpenGLShaderProgram> (*openGLContext);
 
-
-    //juce::Point<int> pointOnTopLevel = getPointFromTopLevel(getTopLevelComponent(), juce::Point<int>{-localX,-localY});
-	juce::Point<int> pointOnTopLevel = getPointFromTopLevel();
+	
+	juce::Point<int> pointOnTopLevel = getLocalPoint(getTopLevelComponent(), Point<int>{-localX, -localY});
 	x = pointOnTopLevel.getX() * -1;
     y = getTopLevelComponent()->getHeight() + (pointOnTopLevel.getY()) - getHeight();
     updateScale();
@@ -186,4 +185,3 @@ void OpenGLComponent::setOffset(std::reference_wrapper<std::atomic<float>> posit
 bool OpenGLComponent::isInitialized(){
     return initialized;
 }
-

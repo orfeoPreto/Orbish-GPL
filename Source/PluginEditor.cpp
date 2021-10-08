@@ -234,7 +234,8 @@ void OrbishAudioProcessorEditor::renderOpenGL()
                 }
                 if(reference->asComponent->getName() != "main"){
                     auto widgetPosition = reference->asComponent->getPosition();
-                    auto widgetPosRelativeToViewport = reference->asComponent->getPointFromTopLevel(&tracksViewport,widgetPosition);
+                    auto widgetPosRelativeToViewport = reference->asComponent->getLocalPoint(&tracksViewport,widgetPosition);
+
                     if(tracksViewport.getWidth() < widgetPosRelativeToViewport.getX()
                         || tracksViewport.getHeight() < widgetPosRelativeToViewport.getY()
                        || 0 < widgetPosRelativeToViewport.getX() - reference->asComponent->getWidth()

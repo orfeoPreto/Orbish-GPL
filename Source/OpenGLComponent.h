@@ -23,6 +23,10 @@ using namespace juce::gl;
 /*
 */
 
+//==============================================================================
+
+
+
 struct vertex{
     vertex(float x, float y, float z){
         this->x = x;
@@ -65,7 +69,8 @@ public:
     virtual int getTotalLength();
     virtual void init();
     bool isInitialized();
-
+	struct ComponentHelpers;
+	friend struct ComponentHelpers;
 protected:
 //    Component* topLevelComponent;
     GLuint vbo, vao, ebo, fbo;
@@ -82,6 +87,7 @@ protected:
     bool fractionOfTotal = false;
     bool initialized = false;
     bool ownsContext = false;
+
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (OpenGLComponent);
 
 };
