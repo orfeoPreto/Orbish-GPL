@@ -25,7 +25,10 @@ LoopComponent::LoopComponent(std::atomic<float>& p, int idx) :  progress(p){
 
 LoopComponent::~LoopComponent(){}
 
-void LoopComponent::setActive(bool a){active =a;}
+void LoopComponent::setActive(bool a){
+    active =a;
+    thumbnail->activate();
+}
 bool LoopComponent::isActive(){
     return active;
 }

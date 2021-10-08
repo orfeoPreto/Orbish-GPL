@@ -70,6 +70,13 @@ OpenGLAudioThumbnail::~OpenGLAudioThumbnail(){
     clear();
 }
 
+void OpenGLAudioThumbnail::activate(){
+    OpenGLComponent::bgColour = Colour{0xff000000};
+}
+void OpenGLAudioThumbnail::deactivate(){
+    OpenGLComponent::bgColour = Colour{0xff565656};
+}
+
 void OpenGLAudioThumbnail::renderOpenGL() {
     if (nullptr == sourceLoop) {
         return;

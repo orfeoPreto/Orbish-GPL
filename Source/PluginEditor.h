@@ -179,7 +179,8 @@ public:
     std::shared_ptr<OpenGLContext> getOpenGLContext();
     void removeReference(OpenGLComponent*);
     void totalReset();
-
+    
+    
 private:
     std::mutex rendererVectorMutex;
     std::atomic<uint> flags;

@@ -1272,21 +1272,15 @@ void OrbishAudioProcessor::handleLoopChangeEvent(int startLoopChangeSample){
     bool doStartLoopChange = (startLoopChangeSample >= 0) && (context->maxBlockSize > startLoopChangeSample);
     if (doStartLoopChange) {
         if (nullptr != getTrackGroup(activeTrack)) {
-            if ((activeTrack->nextLoop - activeTrack->ActiveLoop->Index) == 1) {
+            int diff = activeTrack->nextLoop - activeTrack->ActiveLoop->Index;
+            if (std::abs(diff) == 1) {
                 for(auto groupedTrack:*CurrentGroup){
-                    groupedTrack->ChangeLoopBefore(groupedTrack->ActiveLoop->Index + 1);
+                    groupedTrack->ChangeLoopBefore(groupedTrack->ActiveLoop->Index + diff);
                 }
-            }
-            else
-                if ((activeTrack->nextLoop - activeTrack->ActiveLoop->Index) == -1) {
-                    for(auto groupedTrack:*CurrentGroup){
-                        groupedTrack->ChangeLoopBefore(groupedTrack->ActiveLoop->Index - 1);
-                    }
-                }
-                else {
+            }else {
                     activeTrack->ChangeLoopBefore(activeTrack->nextLoop);
                     
-                }
+            }
         }
         else {
             activeTrack->ChangeLoopBefore(activeTrack->nextLoop);
