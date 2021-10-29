@@ -221,13 +221,14 @@ void Track::parameterChanged(const String &parameterID, float newValue) {
         auto p = params.getParameter("inputLevel");
         state->setProperty(parameterID, p->convertTo0to1(newValue), nullptr);
         //  DBG("input: "+String(p->convertTo0to1(newValue)));
-        input = state->getProperty("inputLevel");
+        input = Decibels::decibelsToGain(newValue);
+;
         return;
     }
     if(parameterID == "outputLevel"){
         auto p = params.getParameter("outputLevel");
         state->setProperty(parameterID, p->convertTo0to1(newValue), nullptr);
-        output = state->getProperty("outputLevel");
+        output = Decibels::decibelsToGain(newValue);
         return;
     }
     if(parameterID == "record"){
@@ -422,6 +423,7 @@ void Track::StartResetBefore(){
 
 void Track::updateVisualizationBuffers(){
     ActiveLoop->activeRecordingLayer->makeVisualizationBuffer(*LoopDuration);
+    getActivePlaybackLayer();
     ActiveLoop->updateFlattenedVisualizationBuffer();
 }
 

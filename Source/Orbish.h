@@ -72,4 +72,5 @@ inline bool doublesEqual(double dFirstVal, double dSecondVal)
 {
     return std::abs(dFirstVal - dSecondVal) < std::numeric_limits<double>::epsilon();
 }
+
 #endif

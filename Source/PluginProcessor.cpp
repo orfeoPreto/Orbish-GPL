@@ -14,37 +14,7 @@
 #include <iostream>
 #include <chrono>
 using namespace std;
-//unique_ptr<AudioParameterFloat> OrbishAudioProcessor::createDecibelsParameter (
-//                                                        String parameterID,
-//                                                        String parameterName,
-//                                                        String labelText,
-//                                                        float defaultValueInDb,
-//                                                        float minDb = Decibels::gainToDecibels(0.0f),
-//                                                        float maxDb = Decibels::gainToDecibels(1.0f),
-//                                                        float dbAtMidPoint = -0.0f,
-//                                                        std::function<String (float)> valueToTextFunction = {},
-//                                                        std::function<float (const String& )> textToValueFunction = {}
-//                                                        )
-//{
-//    auto skewFactor = log (0.5) / log ((dbAtMidPoint - minDb) / (maxDb - minDb));
-//    
-//    if(!valueToTextFunction)
-//        valueToTextFunction = [](float value){ return Decibels::toString(value); };
-//    
-//    if(!textToValueFunction)
-//        textToValueFunction = [](const String& str) { return str.getFloatValue(); };
-//    
-//    auto p =  std::make_unique<AudioProcessorValueTreeState::Parameter>(
-//                                       parameterID,
-//                                       parameterName,
-//                                       labelText,
-//                                       NormalisableRange<float>(minDb, maxDb, 0.0f, skewFactor),
-//                                       defaultValueInDb,
-//                                       valueToTextFunction,
-//                                       textToValueFunction
-//                                       );
-//    return move(p);
-//}
+
 
 //#include "Track.h"
 unique_ptr<RangedAudioParameter> OrbishAudioProcessor::createParamFromBool(AudioParameterBool* boolParam, bool defaultValue) {// return
@@ -81,6 +51,70 @@ unique_ptr<RangedAudioParameter> OrbishAudioProcessor::createParamFromInt(AudioP
     return move(p);
 }
 
+float OrbishAudioProcessor::fromDBTo0To1(float start, float end, float dB){
+    if(start == dB){
+        return .0f;
+    }
+    if(end == dB){
+        return 1.0f;
+    }
+    if(dB >= 0){
+        // linear distribution if dB above 0
+        auto r = dB/end;
+        r = .25 * r;
+        r = .75 + r;
+        return r;
+    }else{
+            // linear distribution if dB below 0
+            auto r = (std::abs(start) - std::abs(dB))/std::abs(start);
+            r = .75 * r;
+            return r;
+    }
+//    auto ref = end/-60;
+//    auto coeff = 4/(pow(10, ref));
+//    // skewed distribution below 0
+//    float currentGain = Decibels::decibelsToGain(std::max(start+1, dB), start);
+//    float endGain = Decibels::decibelsToGain(end, start);
+//    float startGain = Decibels::decibelsToGain(start+1, start);
+//    float current1stNorm = currentGain / endGain;
+//    float start1stNorm = startGain / endGain;
+//    float  startTemp = std::log10(start1stNorm*0.4);
+//    float  currentTemp = std::log10(current1stNorm * coeff);
+//    float current2ndNorm = (currentTemp + std::abs(startTemp)) / std::abs(startTemp);
+//    //        context->logMessage(r);
+//    return current2ndNorm;
+}
+float OrbishAudioProcessor::from0To1toDB(float start, float end, float gain){
+    if(.0f == gain){
+        return start;
+    }
+    if(1.0f == gain){
+        return end;
+    }
+    if(gain >= .75f){
+        auto r = gain - .75f;
+        r = r / .25f;
+        r = r * end;
+        return r;
+    }else{
+        // linear distribution if dB below 0
+        auto r = gain / .75f;
+        r = r * std::abs(start) - std::abs(start);
+        return r;
+    }
+//    auto ref = end/-60;
+//    auto coeff = 4/(pow(10, ref));
+//    float endGain = Decibels::decibelsToGain(end, start);
+//    float startGain = Decibels::decibelsToGain(start+1, start);
+//    float start1stNorm = startGain / endGain;
+//    float  startTemp = std::log10(start1stNorm);
+//    float currentTemp = gain * std::abs(startTemp) - std::abs(startTemp);
+//    float  current1stNorm = std::pow(10,currentTemp)/coeff;
+//    float  currentGain = current1stNorm * endGain;
+//    auto r = Decibels::gainToDecibels(currentGain, start);
+//    return r;
+}
+
 //==============================================================================
 OrbishAudioProcessor::OrbishAudioProcessor() :
 #ifndef JucePlugin_PreferredChannelConfigurations
@@ -97,18 +131,15 @@ context(std::make_shared<OrbishContext>()),
 parameters(*this, nullptr, "OrbishState", {
     make_unique<AudioParameterFloat>("globalMix", "GlobalMix"
                                           ,NormalisableRange<float>(
-                                                                    -120.0f
-                                                                    , 30
-                                                                    , [](float start, float end, float gain) {
-                                                                                                                return Decibels::gainToDecibels(gain * Decibels::decibelsToGain(end) , start);
-                                                                                                             }
-                                                                    , [](float start, float end, float dB) {
-                                                                                                                float n = Decibels::decibelsToGain(dB, start);
-                                                                                                                float d = Decibels::decibelsToGain(end);
-                                                                                                                float r = n / d;
-                                                                                                                return r;
-                                                                                                            }
-                                                                    )
+                                                                    -60.0f
+                                                                    , 12
+                                                                    , [this](float start, float end, float gain) {
+        return from0To1toDB(start, end, gain);
+    }
+    , [this](float start, float end, float dB) {
+        return fromDBTo0To1(start, end, dB);
+        }
+)
                                          , 0.5f
                                          , "db")
     , make_unique<AudioParameterFloat>("clickLevel", "clickLevel"
@@ -127,25 +158,26 @@ parameters(*this, nullptr, "OrbishState", {
                                             ,NormalisableRange<float>(-500.0f, 500.0f), 0, "ms")
     , make_unique<AudioParameterFloat>("inputLevel", "InputLevel"
                                             , NormalisableRange<float>(-60.0f, 12.0f
-                                                                       , [](float start, float end, float gain) {
-                                                                                                                    return Decibels::gainToDecibels(gain * Decibels::decibelsToGain(end) , start);
+                                                                       , [this](float start, float end, float gain) {
+        return from0To1toDB(start, end, gain);
+
                                                                                                                 }
-                                                                       , [](float start, float end, float dB) {
-                                                                                                                    float n = Decibels::decibelsToGain(dB, start);
-                                                                                                                    float d = Decibels::decibelsToGain(end);
-                                                                                                                    float r = n / d;
-                                                                                                                    return r;
-                                                                                                                }
-                                                                       )
+                                                                       , [this](float start, float end, float dB) {
+        return fromDBTo0To1(start, end, dB);
+
+    }
+)
                                        , 0.5f
                                        , "db")
     , make_unique<AudioParameterFloat>("outputLevel", "outputLevel"
                                             , NormalisableRange<float>(-60.0f, 12.0f
-                                                                       , [](float start, float end, float gain) {
-                                                                                                                    return Decibels::gainToDecibels(gain * Decibels::decibelsToGain(end) , start);
+                                                                       , [this](float start, float end, float gain) {
+        return from0To1toDB(start, end, gain);
+
                                                                                                                 }
-                                                                       , [](float start, float end, float dB) {
-                                                                                                                    return Decibels::decibelsToGain(dB, start) / Decibels::decibelsToGain(end);
+                                                                       , [this](float start, float end, float dB) {
+        return fromDBTo0To1(start, end, dB);
+
                                                                                                             }
                                                                        )
                                        , 0.5f
@@ -193,8 +225,8 @@ parameters(*this, nullptr, "OrbishState", {
     context->buffer = make_shared<AudioBuffer<float> >();
     context->inputBuffer = make_shared<AudioBuffer<float> >();
 
-    context->feedback = Decibels::decibelsToGain(float(-0.3));
-    context->mix = Decibels::decibelsToGain(parameters.getParameter("globalMix")->getValue());
+    context->feedback = Decibels::decibelsToGain(float(-0.0));
+    context->mix = Decibels::decibelsToGain(std::stof(parameters.getParameter("globalMix")->getCurrentValueAsText().toStdString()));
     context->clickLevel = Decibels::decibelsToGain(parameters.getParameter("clickLevel")->getValue());
 
     context->xchange = new DataExchange();
@@ -333,8 +365,7 @@ OrbishAudioProcessor::~OrbishAudioProcessor()
 
 void OrbishAudioProcessor::parameterChanged(const String& parameterID, float newValue) {
     if (parameterID == "globalMix") {
-        auto p = parameters.getParameter("globalMix");
-        context->mix =  p->convertTo0to1(newValue);
+        context->mix = Decibels::decibelsToGain(newValue);
     }
     if (parameterID == "clickLevel") {
         auto p = parameters.getParameter("clickLevel");
@@ -1380,6 +1411,7 @@ void OrbishAudioProcessor::processBlock(AudioBuffer<float>& buffer, MidiBuffer& 
     int64 beginMark = Time::getHighResolutionTicks();
     int64 startBeginning = Time::getHighResolutionTicks();
     //   logMessage("begin processBlock");
+    if(buffer.getNumSamples() == 0)return;
     initBlock(buffer, midiMessages);
     // In case we have more outputs than inputs, this code clears any output
     // channels that didn't contain input data, (because these aren't
@@ -1493,9 +1525,12 @@ void OrbishAudioProcessor::processBlock(AudioBuffer<float>& buffer, MidiBuffer& 
         }
     }
 
-    if (!activeTrack->isMonitoring() && !context->info->isPlaying) {
+    if (!context->info->isPlaying) {
         // prevent input from ending up in the output buffer
         context->buffer->clear();
+        if(!activeTrack->isMonitoring()){
+            context->inputBuffer->clear();
+        }
     }
     // overwrite the output buffer with the processed audio
     for (uint c = 0; c < context->audioInputsCount; ++c) {
@@ -1573,7 +1608,6 @@ void OrbishAudioProcessor::handleRecordBlock(int start, int stop) {
 #if DEBUG_LOG
     int64 start0 = 0, end0 = 0, start1 = 0, end1 = 0, start2 = 0, end2 = 0;
 #endif
-    // don't record if no layers in track
     // in destructive mode make sure we write within bounds
     if (activeTrack->getRecordMode() > 3 && *activeTrack->CurrentTop < 0) {
         *activeTrack->CurrentTop = 0;
@@ -1643,6 +1677,7 @@ void OrbishAudioProcessor::handleRecordBlock(int start, int stop) {
     // in overdub/punch mode at the end of the loop apply fade in/out
     // and prepare writing to the next layer previously created
     int tail = 0, samplesBeforeTail = 0;
+    // Scenario: writing in non extending mode, we're at the end of an existing loop and the current buffer goes beyond loop duration
     if ((activeTrack->getRecordMode() == kRecLoopOver || activeTrack->getRecordMode() == kRecFixedLoopOver || activeTrack->getRecordMode() == kRecPunch)
         && *activeTrack->LoopDuration > 0
         && activeTrack->CurrentRecordingIndex + context->maxBlockSize >= *activeTrack->LoopDuration) {
@@ -1671,6 +1706,7 @@ void OrbishAudioProcessor::handleRecordBlock(int start, int stop) {
     //                DBG("fo: " + String(fadeOut));
     // fade in
     //  start0 = Time::getHighResolutionTicks();
+    // main writing section
     for (uint c = 0; c < context->audioInputsCount; ++c)
     {
                         activeTrack->getActiveRecordingLayer()->Buffer->copyFrom(c
@@ -1743,21 +1779,10 @@ void OrbishAudioProcessor::handleRecordBlock(int start, int stop) {
 #endif
         activeTrack->updateVisualizationBuffers();
 
-//        if(guiAlive){
-//            if (context->xchange->writeVisualisationBufferQueue->read_available() && context->xchange->readVisualisationBufferQueue->write_available()) {
-//                shared_ptr<BufferForVisualisation> b;
-//                context->xchange->writeVisualisationBufferQueue->pop(b);
-//                b->numSamples = *activeTrack->LoopDuration;
-//                b->buffer = activeTrack->getActiveRecordingLayer()->Buffer;
-//                b->layerIndex = activeTrack->getActiveRecordingLayer()->index;
-//                (context->observer->*(context->observer->layerChange)) ( activeTrack->Index,b->layerIndex);
-//                context->xchange->readVisualisationBufferQueue->push(b);
-//            }
-//        }
 #if DEBUG_LOG
         end2 = Time::getHighResolutionTicks();
 #endif
-        if (true) {
+            {
             
             for (auto i = 0;i<=*activeTrack->CurrentTop;++i) {
 #if DEBUG_LOG
