@@ -16,7 +16,6 @@
 typedef unsigned int uint;
 
 
-
 struct OrbishContext {
 	OrbishContext() {
 		buffer = nullptr;
@@ -46,6 +45,7 @@ struct OrbishContext {
 	~OrbishContext() {
 
 	}
+public:
 
 	uint32    audioInputsCount;
 	float mix = 0;

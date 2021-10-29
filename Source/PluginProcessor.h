@@ -142,7 +142,9 @@ public:
 	bool loadLoopFromValueTree(ValueTree* loopTree, Loop* loop);
     void handleClick(std::shared_ptr<OrbishContext> context, AudioSampleBuffer*);
 	void initGroups();
-    
+    float fromDBTo0To1(float, float, float);
+    float from0To1toDB(float, float, float);
+
     bool clickInProcess = false;
     int numBuffersDoneForClick = 0;
     std::shared_ptr<OrbishContext> context;

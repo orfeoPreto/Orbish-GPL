@@ -43,7 +43,6 @@ Loop::~Loop()
     
 void Loop::updateFlattenedVisualizationBuffer(){
     clearFlattenedVisualizationBuffer();
-        
         for(auto i=0;i<Layers->size() && i<=activePlaybackLayer->index;++i){
             FloatVectorOperations::add(flattenedVisualizationBuffer, Layers->at(i)->visualizationBuffer, BUFFER_READ_SIZE);
         }

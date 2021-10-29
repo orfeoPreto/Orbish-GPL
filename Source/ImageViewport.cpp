@@ -19,7 +19,7 @@ ImageViewport::ImageViewport()
     background.setImage(ImageFileFormat::loadFrom(BinaryData::viewport_background_png, BinaryData::viewport_background_pngSize));
     background.setOpaque(false);
     background.toBack();
-    background.setAlpha(0.1);
+    background.setAlpha(0.07);
 }
 
 ImageViewport::~ImageViewport()
@@ -58,6 +58,6 @@ void ImageViewport::resized()
     Viewport::resized();
     addAndMakeVisible(background);
     auto ratio = background.getImage().getHeight() / std::max(getHeight(),1);
-    background.setBounds(10,20, std::max(getWidth(),1)*0.8, std::max(getWidth(),1)*0.8);
-    background.setCentrePosition(getWidth() /2, getHeight()/0.75);
+    background.setBounds(10,20, std::max(getWidth(),1)*0.3, std::max(getWidth(),1)*0.3);
+    background.setCentrePosition(getWidth() /2, getHeight()/2);
 }

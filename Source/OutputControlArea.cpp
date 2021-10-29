@@ -21,7 +21,7 @@ OutputControlArea::OutputControlArea(){
     outputLevelLabel.setJustificationType(Justification::centred);
     addAndMakeVisible(outputLevelLabel);
 
-    outputLevelSlider.setRange(-60, 6);
+    outputLevelSlider.setRange(-60, 12);
     outputLevelSlider.setNumDecimalPlacesToDisplay(1);
     outputLevelSlider.setTextBoxIsEditable(true);
     outputLevelSlider.setTextValueSuffix(" db");
@@ -39,7 +39,7 @@ OutputControlArea::OutputControlArea(){
     addAndMakeVisible(globalVolumeLabel);
 
     globalVolumeSlider.setValue(0);
-    globalVolumeSlider.setRange(-120, 6);
+    globalVolumeSlider.setRange(-60, 12);
     globalVolumeSlider.setNumDecimalPlacesToDisplay(2);
     globalVolumeSlider.setTextBoxIsEditable(true);
     globalVolumeSlider.setTextValueSuffix(" db");
@@ -50,6 +50,7 @@ OutputControlArea::OutputControlArea(){
     globalVolumeSlider.textFromValueFunction = [this](double val){ return String(val, 1);};
     globalVolumeSlider.setTooltip("Adjust the level of the general output signal");
     globalVolumeSlider.setDoubleClickReturnValue(true, 0);
+//    globalVolumeSlider.setSkewFactorFromMidPoint(2.5);
     addAndMakeVisible(globalVolumeSlider);
 
 }
