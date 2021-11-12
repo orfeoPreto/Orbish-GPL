@@ -16,10 +16,17 @@ public:
     InternalSynchronizer(std::shared_ptr<OrbishContext>, int*);
     ~InternalSynchronizer() override;
     
-    int getNextSample(SnapMode) override;
+    int getNextSynchronizationPoint(SnapMode) override;
     
     void setCurrentPosition(int*);
 
+    void setLoopEnd(int*);
+    
+    void setMasterLoopEnd(int*);
+
+
 private:
     int* currentPos=nullptr;
+    int* loopEnd = 0;
+    int* masterLoopEnd = 0;
 };

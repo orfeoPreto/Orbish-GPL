@@ -82,6 +82,7 @@ public:
     String getGroup();
     void setOpenGLContext(std::shared_ptr<OpenGLContext> context, bool owner);
     void setTopLevelComponent(Component* top) ;
+    Track* audioTrack;
 
     std::unique_ptr<OpenGLAudioThumbnail> thumbnail{nullptr};
             
@@ -94,7 +95,6 @@ private:
     Blinker highlighter {};
     DrawablePath witness {};
     int buttonSize;
-    Track* audioTrack;
     int margin;
     bool active = false;
     bool muted = false;

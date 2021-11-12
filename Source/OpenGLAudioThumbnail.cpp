@@ -112,7 +112,7 @@ void OpenGLAudioThumbnail::renderOpenGL() {
                 glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
             }
         }else{
-            for(int i=std::max(0, int(layerNumber)-LAYERS_VISIBLE); layerNumber<=sourceLoop->Layers->size() && i<layerNumber;++i){
+            for(int i=std::max(0, int(layerNumber)-numberVisibleLayers); layerNumber<=sourceLoop->Layers->size() && i<layerNumber;++i){
                 {
                     GLfloat vb[BUFFER_READ_SIZE];
                     for (auto j=0; j<BUFFER_READ_SIZE; ++j) {
@@ -125,9 +125,9 @@ void OpenGLAudioThumbnail::renderOpenGL() {
                     shaderThumbnailWave->uniforms->audioSampleData->set (vb, BUFFER_READ_SIZE);
                     shaderThumbnailWave->uniforms->origin->set ((GLfloat) x, (GLfloat) y);
                     float coeff = 0;
-                    float threshold = std::min(float(LAYERS_VISIBLE),float(layerNumber));
-                    if(threshold==0)threshold=LAYERS_VISIBLE;
-                    float normalize = threshold / float(LAYERS_VISIBLE);
+                    float threshold = std::min(float(numberVisibleLayers),float(layerNumber));
+                    if(threshold==0)threshold=numberVisibleLayers;
+                    float normalize = threshold / float(numberVisibleLayers);
                     float h = std::max(1.f,std::fmod(float(i-(layerNumber-threshold)), threshold));
                     coeff = (h/normalize   )*2*.5;
                    // coeff = pow(coeff,(coeff>=0.5)?1./1.5:1.5);
@@ -179,13 +179,9 @@ void OpenGLAudioThumbnail::resetVisualizationBuffers(){
     }
 }
 
-
 void OpenGLAudioThumbnail::setActiveLayer(GLuint layer){
     layerNumber = layer+1;
-
 }
-
-
 
 void OpenGLAudioThumbnail::clear(){
     visualizationBuffers.clear();
@@ -210,3 +206,6 @@ void OpenGLAudioThumbnail::setSourceLoop(Loop* src){
     }
 }
 
+void OpenGLAudioThumbnail::setNumberVisibleLayers(int nbrVisible){
+    numberVisibleLayers = nbrVisible;
+}

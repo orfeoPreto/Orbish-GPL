@@ -41,6 +41,7 @@ struct OrbishContext {
 		timeSigBottom = 1;
 		timeSigTop = 1;
 		info = new AudioPlayHead::CurrentPositionInfo();
+    
 	}
 	~OrbishContext() {
 
@@ -93,6 +94,8 @@ public:
     int64 timestamp = 0;
     float maxDelta = 0.1;
     bool skipAlign = false;
+    int numVisibleLayers = 5;
+    
     inline double quartersToSamples(double position)
     {
         return position * samplesPerMinute / bpm;

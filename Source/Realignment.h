@@ -4,6 +4,7 @@
 //
 //  Created by Duke Quarcoo on 13/09/2020.
 //
+#pragma once
 
 #ifndef Realignment_h
 #define Realignment_h
@@ -11,6 +12,8 @@
 #include <stdio.h>
 #include <limits.h>
 #include "JuceHeader.h"
+#include "Track.h"
+
 
 class Realignment{
 public:
@@ -34,6 +37,8 @@ public:
     void setSampleRate(int);
     void setBlockSize(int);
     int getMinOffset(int);
+    static void realign(std::shared_ptr<OrbishContext> context, OwnedArray<Track, CriticalSection>* tracks, bool hostHasPlayed);
+
 private:
     int block = 0;
     int currentOffset = 0;

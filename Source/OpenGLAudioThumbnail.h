@@ -63,7 +63,8 @@ public:
     String shader2Name;
     void activate();
     void deactivate();
-    
+    void setNumberVisibleLayers(int nbrVisible);
+
     
 private:
     bool reverse = true;
@@ -75,6 +76,7 @@ private:
     GLuint layerNumber =0;
     Loop* sourceLoop = nullptr;
     WaveDisplayType display;
+    int numberVisibleLayers = 0;
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (OpenGLAudioThumbnail);
     std::shared_ptr<AudioBuffer<GLfloat> > readBuffer;

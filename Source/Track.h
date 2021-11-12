@@ -1,5 +1,5 @@
 //
-//  Track.hpp
+//  Track.h
 //  Orbish
 //
 //  Created by Duke Quarcoo on 23/03/2019.
@@ -10,9 +10,10 @@
 #define __TRACK_GUARD
 #include "Orbish.h"
 #include "Loop.h"
-#include "Realignment.h"
 #include "InternalSynchronizer.h"
-#endif
+
+//forward declaration
+class Realignment;
 
 
 enum TrackGroupCommands {
@@ -30,7 +31,7 @@ public:
 	Track(uint, bool, AudioProcessorValueTreeState& params, std::shared_ptr<OrbishContext>& c, bool& gui);
 
 	~Track() override;
-    int getNextSample(SnapMode) override;
+    int getNextSynchronizationPoint(SnapMode) override;
     
 	OwnedArray<Loop> loops;
 	Loop* ActiveLoop;
@@ -186,9 +187,14 @@ public:
     void processNextChange();
     void processTriggerModeChange();
 	void processRecModeChange();
+    void processNextRecModeChange();
     void processSnapModeChange();
+    void processNextSnapModeChange();
+    void processIncFixedChange();
 	void processBounceChange();
     void processLoopChange(int);
+    void processNextLoop();
+    void processPreviousLoop();
     void processNewLoop();
     void processRemoveLoop();
     void updateCachedVar(String);
@@ -207,7 +213,9 @@ public:
     void setMonitoring(bool newValue);
     void setRecordingArmed(bool newValue);
     void setAutoTrigger(bool newValue);
-    
+    void setRecMode(int newValue);
+    void setSnapMode(int newValue);
+    void setFixedSize(int newValue);
     bool isMuteArmed();
     bool isSoloArmed();
     bool isStopArmed();
@@ -237,3 +245,4 @@ private:
     float input, output;
     int snap, recMode;
 };
+#endif

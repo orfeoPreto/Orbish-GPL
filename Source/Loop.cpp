@@ -52,3 +52,6 @@ void Loop::clearFlattenedVisualizationBuffer(){
     FloatVectorOperations::clear(flattenedVisualizationBuffer, BUFFER_READ_SIZE);
 }
 
+void Loop::setActivePlaybackLayer(std::shared_ptr<Layer> l){
+    activePlaybackLayer = l;
+}

@@ -72,7 +72,9 @@ void TrackComponent::setOpenGLContext(std::shared_ptr<OpenGLContext> context, bo
 
 
 void TrackComponent::setActiveLoopIdx(int loopIdx){
-    Loops[activeLoopIdx]->thumbnail->deactivate();
+    if (nullptr != Loops[activeLoopIdx]) {
+        Loops[activeLoopIdx]->thumbnail->deactivate();
+    }
     activeLoopIdx =  loopIdx;
     if(Loops.size() < loopIdx+1)return;
     Loops[activeLoopIdx]->thumbnail->activate();

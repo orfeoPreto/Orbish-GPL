@@ -13,7 +13,7 @@
 #ifndef Editor_h
 #define Editor_h
 
-
+#include <unordered_map>
 #include "PluginProcessor.h"
 #include "Observer.h"
 #include "Orbish.h"
@@ -31,7 +31,7 @@
 #include <algorithm>
 #include <mutex>
 #include <chrono>
-
+#include "TrackLoader.h"
 
 //==============================================================================
 /**
@@ -273,6 +273,7 @@ private:
     int trackToRemove = -1;
     int trackToChange = -1;
     int updatedTrackNumber = -1;
+    std::unordered_map<int, int> tracksWithLoopChange;
     std::vector<std::shared_ptr<OpenGLComponentReference>> references;
     std::mutex renderingTargetsLock;
     ReadWriteLock lock{};
