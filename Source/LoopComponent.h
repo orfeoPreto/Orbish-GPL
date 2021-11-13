@@ -41,8 +41,10 @@ public Component{
     std::atomic<float>& getProgress();
     std::unique_ptr<OpenGLAudioThumbnail> thumbnail{nullptr};
     void setMargin(int);
+	void highlightBecomingActive();
+	void unHighlightBecomingActive();
 
-    void mouseDrag();
+	void mouseDrag();
 
     private:
         std::atomic<float>& progress;
@@ -51,6 +53,7 @@ public Component{
         bool active = false;
         bool muted = false;
         int index;
+		bool becomingActive = false;
 };
 #endif
 

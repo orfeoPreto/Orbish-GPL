@@ -82,3 +82,11 @@ void LoopComponent::paint(Graphics& g){
 void LoopComponent::setMargin(int marg){
     margin = marg;
 }
+
+void LoopComponent::highlightBecomingActive() { 
+	thumbnail->prepareActivation();
+ }
+
+void LoopComponent::unHighlightBecomingActive() {
+	thumbnail->unPrepareActivation();
+}

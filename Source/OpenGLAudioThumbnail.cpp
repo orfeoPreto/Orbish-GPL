@@ -78,6 +78,19 @@ void OpenGLAudioThumbnail::deactivate(){
     OpenGLComponent::bgColour = Colour{0xff565656};
 }
 
+void OpenGLAudioThumbnail::prepareActivation() {
+	logMessage("prepare activation");
+
+	OpenGLComponent::bgColour = Colour{ 0xff333300 + OpenGLComponent::bgColour.getARGB() };
+}
+
+void OpenGLAudioThumbnail::unPrepareActivation() {
+	logMessage("unprepare activation");
+
+	OpenGLComponent::bgColour = Colour{ OpenGLComponent::bgColour.getARGB() - 0xff333300 };
+}
+
+
 void OpenGLAudioThumbnail::renderOpenGL() {
 	logMessage("start OpenGLAudioThumbnail::renderOpenGL()");
 	logMessage("displayType: " + String(getDisplayType()));

@@ -64,6 +64,8 @@ public:
     void activate();
     void deactivate();
     void setNumberVisibleLayers(int nbrVisible);
+	void prepareActivation();
+	void unPrepareActivation();
 
     
 private:

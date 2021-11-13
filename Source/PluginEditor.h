@@ -273,6 +273,7 @@ private:
     int trackToRemove = -1;
     int trackToChange = -1;
     int updatedTrackNumber = -1;
+	int loopBecomingActive = -1;
     std::unordered_map<int, int> tracksWithLoopChange;
     std::vector<std::shared_ptr<OpenGLComponentReference>> references;
     std::mutex renderingTargetsLock;

@@ -91,6 +91,9 @@ void OrbishAudioProcessorEditor::setupTracks(){
 
 void OrbishAudioProcessorEditor::setupNavigationControls(ButtonControlArea* buttonControlArea){
     auto navigationControlArea = &buttonControlArea->modeAndNavigationControlArea.navigationControlArea;
+	navigationControlArea->nextLoopButton.addListener(this);
+	navigationControlArea->previousLoopButton.addListener(this);
+
     // Loop button attachments
     previousLoopAttachment.reset (new ButtonAttachment (valueTreeState, "previousLoop", navigationControlArea->previousLoopButton));
     nextLoopAttachment.reset (new ButtonAttachment (valueTreeState, "nextLoop", navigationControlArea->nextLoopButton));
@@ -925,9 +928,41 @@ void OrbishAudioProcessorEditor::sliderChanged(Slider* slider) {
 }
 
 void OrbishAudioProcessorEditor::buttonClicked(Button* button){
+	auto navigationControlArea = &infoAndControlArea->controlArea.buttonControlArea.modeAndNavigationControlArea.navigationControlArea;
+	logMessage("button clicked");
 	if (button == &settingsPage->closeSettingsButton) {
 		closeSettingsPage();
 	}
+	else 
+		if (button == &navigationControlArea->nextLoopButton) {
+			logMessage("next loop");
+
+			auto t = tracks[activeTrackIdx];
+			if (loopBecomingActive >= 0 && loopBecomingActive < t->Loops.size()) {
+				t->Loops[loopBecomingActive]->unHighlightBecomingActive();
+			}
+			else {
+				loopBecomingActive = t->getActiveLoopIdx();
+			}
+			loopBecomingActive = (loopBecomingActive + 1) % t->Loops.size();
+			t->Loops[loopBecomingActive]->highlightBecomingActive();
+	}
+		else
+			if (button == &navigationControlArea->previousLoopButton) {
+				auto t = tracks[activeTrackIdx];
+				if (loopBecomingActive >= 0 && loopBecomingActive < t->Loops.size()) {
+					t->Loops[loopBecomingActive]->unHighlightBecomingActive();
+				}
+				else {
+					loopBecomingActive = t->getActiveLoopIdx();
+				}
+				auto newIdx = (loopBecomingActive - 1) % t->Loops.size();
+				if ((loopBecomingActive - 1) < 0) {
+					newIdx = newIdx + t->Loops.size();
+				}
+				loopBecomingActive = newIdx;
+				t->Loops[loopBecomingActive]->highlightBecomingActive();
+			}
 }
 
 void OrbishAudioProcessorEditor::sliderValueChanged(Slider* ){
@@ -1327,7 +1362,6 @@ void OrbishAudioProcessorEditor::doChangeTrack(){
 
     infoAndControlArea->infoArea.setTrackNumber(String(activeTrackIdx + 1));
     infoAndControlArea->infoArea.setLoopNumber(String(tracks[activeTrackIdx]->getActiveLoopIdx() + 1));
-
     auto navigationControlArea = &infoAndControlArea->controlArea.buttonControlArea.modeAndNavigationControlArea.navigationControlArea;
     navigationControlArea->setActiveTrack(String(activeTrackIdx + 1));
     navigationControlArea->setActiveLoop(String(tracks[activeTrackIdx]->getActiveLoopIdx() + 1));
@@ -1379,6 +1413,7 @@ void OrbishAudioProcessorEditor::doRemoveTrack(){
 }
 
 void OrbishAudioProcessorEditor::doChangeLoop(){
+	loopBecomingActive = -1;
     for(auto tidx:tracksWithLoopChange){
         if (tidx.first < 0 || tidx.first >= tracks.size()){
             return;
