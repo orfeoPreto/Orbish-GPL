@@ -5,8 +5,10 @@
 //  Created by Duke Quarcoo on 23/03/2019.
 //  Copyright © 2019 EXU. All rights reserved.
 //
+#pragma once
 
 #include "Track.h"
+#include "Realignment.h"
 
 #include <math.h>
 #include <mutex>
@@ -41,7 +43,11 @@ Track::Track(uint index, bool a, AudioProcessorValueTreeState& p, std::shared_pt
             { "Parameter", {{ "id", "inputLevel" },     { "value", 0.7 }}},
             { "Parameter", {{ "id", "outputLevel" },     { "value", 0.5 }}},
             { "Parameter", {{ "id", "mode" },     { "value", 0 }}},
+            { "Parameter", {{ "id", "nextRecMode" },     { "value", false }}},
             { "Parameter", {{ "id", "snap" },     { "value", 1 }}},
+            { "Parameter", {{ "id", "nextSnapMode" },     { "value", false }}},
+            { "Parameter", {{ "id", "incFixed" },     { "value", false }}},
+
             { "Parameter", {{ "id", "bounce" },     { "value", 1 }}},
             { "Parameter", {{ "id", "nextLoop" }, { "value" , false}}},
             { "Parameter", {{ "id", "previousLoop" }, { "value" , false}}},
@@ -64,7 +70,10 @@ Track::Track(uint index, bool a, AudioProcessorValueTreeState& p, std::shared_pt
     state->setProperty("solo", false, nullptr);
     state->setProperty("trigger", false, nullptr);
     state->setProperty("mode", 0, nullptr);
+    state->setProperty("nextRecMode", false, nullptr);
     state->setProperty("snap", 1, nullptr);
+    state->setProperty("nextSnapMode", false, nullptr);
+    state->setProperty("incFixed", false, nullptr);
     state->setProperty("bounce", 1, nullptr);
     state->setProperty("nextLoop", false, nullptr);
     state->setProperty("previousLoop", false, nullptr);
@@ -105,11 +114,11 @@ Track::~Track() {
     loops.clear();
 }
 
-int Track::getNextSample(SnapMode snapMode){
+int Track::getNextSynchronizationPoint(SnapMode snapMode){
     if(Recording){
-        return secondarySynchronizer->getNextSample(snapMode);
+        return secondarySynchronizer->getNextSynchronizationPoint(snapMode);
     }else if(Playing && *LoopDuration > 0){
-        return primarySynchronizer->getNextSample(snapMode);
+        return primarySynchronizer->getNextSynchronizationPoint(snapMode);
     }
     return -1;
 }
@@ -144,8 +153,14 @@ void Track::setActive(bool newValue){
             p->setValueNotifyingHost(state->getProperty("outputLevel"));
             p = params.getParameter("mode");
             p->setValueNotifyingHost(p->convertTo0to1(state->getProperty("mode")));
+            p = params.getParameter("nextRecMode");
+            p->setValueNotifyingHost(p->convertTo0to1(state->getProperty("nextRecMode")));
             p = params.getParameter("snap");
             p->setValueNotifyingHost(p->convertTo0to1(state->getProperty("snap")));
+            p = params.getParameter("nextSnapMode");
+            p->setValueNotifyingHost(p->convertTo0to1(state->getProperty("nextSnapMode")));
+            p = params.getParameter("incFixed");
+            p->setValueNotifyingHost(p->convertTo0to1(state->getProperty("incFixed")));
             p = params.getParameter("bounce");
             p->setValueNotifyingHost(p->convertTo0to1(state->getProperty("bounce")));
             p = params.getParameter("nextLoop");
@@ -175,7 +190,10 @@ void Track::setActive(bool newValue){
             params.addParameterListener("inputLevel", this);
             params.addParameterListener("outputLevel", this);
             params.addParameterListener("mode", this);
+            params.addParameterListener("nextRecMode", this);
             params.addParameterListener("snap", this);
+            params.addParameterListener("nextSnapMode", this);
+            params.addParameterListener("incFixed", this);
             params.addParameterListener("bounce", this);
             params.addParameterListener("nextLoop", this);
             params.addParameterListener("previousLoop", this);
@@ -201,7 +219,10 @@ void Track::setActive(bool newValue){
             params.removeParameterListener("inputLevel", this);
             params.removeParameterListener("outputLevel", this);
             params.removeParameterListener("mode", this);
+            params.removeParameterListener("nextRecMode", this);
             params.removeParameterListener("snap", this);
+            params.removeParameterListener("nextSnapMode", this);
+            params.removeParameterListener("incFixed", this);
             params.removeParameterListener("bounce", this);
             params.removeParameterListener("nextLoop", this);
             params.removeParameterListener("previousLoop", this);
@@ -262,14 +283,20 @@ void Track::parameterChanged(const String &parameterID, float newValue) {
         processResetChange();
     }else if (parameterID == "mode") {
         processRecModeChange();
+    }else if (parameterID == "nextRecMode") {
+        processNextRecModeChange();
     }else if (parameterID == "snap") {
         processSnapModeChange();
+    }else if (parameterID == "nextSnapMode") {
+        processNextSnapModeChange();
+    }else if (parameterID == "incFixed") {
+        processIncFixedChange();
     }else if (parameterID == "bounce") {
         processBounceChange();
     }else if(parameterID == "nextLoop"){
-        processLoopChange(ActiveLoop->Index + 1);
+         processNextLoop();
     }else if(parameterID == "previousLoop"){
-        processLoopChange(ActiveLoop->Index - 1);
+         processPreviousLoop();
     }else if(parameterID == "newLoop"){
         processNewLoop();
     }else if (parameterID == "removeLoop") {
@@ -298,9 +325,11 @@ void Track::RegisterLoop(int loopIdx){
         *CurrentPlayingIndex = 0;
         if (InternalSynchronizer* s = dynamic_cast<InternalSynchronizer*>(primarySynchronizer.get())){
             s->setCurrentPosition(CurrentPlayingIndex);
+            s->setLoopEnd(LoopDuration);
         }
         if (InternalSynchronizer* s = dynamic_cast<InternalSynchronizer*>(secondarySynchronizer.get())){
             s->setCurrentPosition(&CurrentRecordingIndex);
+            s->setLoopEnd(LoopDuration);
         }
     }
 }
@@ -704,19 +733,14 @@ void Track::StopSoloAfter(){
 }
 
 void Track::ChangeLoopBefore(int newLoopIdx){
-    if(newLoopIdx >= -1 && newLoopIdx <= loops.size()){
-        if(newLoopIdx == loops.size()){
-            newLoopIdx = 0;
-        }
-        if(newLoopIdx == -1){
-            newLoopIdx = loops.size() - 1;
-        }
-        nextLoop = newLoopIdx;
-        RunAfters.push_back(&Track::ChangeLoopAfter);
-        if(Recording){
-            StopRecordingBefore();
-            WasRecording = true;
-        }
+    nextLoop = newLoopIdx % loops.size();
+    if (newLoopIdx < 0){
+        nextLoop = nextLoop + loops.size();
+    }
+    RunAfters.push_back(&Track::ChangeLoopAfter);
+    if(Recording){
+        StopRecordingBefore();
+        WasRecording = true;
     }
     LastPlaybackBuffer = true;
     loopChangeArmed = false;
@@ -930,8 +954,23 @@ void Track::processRecModeChange() {
     recMode = state->getProperty("mode");
 }
 
+void Track::processNextRecModeChange() {
+    recMode=(recMode==kLastRec)?kFirstRec:recMode+1;
+    setRecMode(recMode);
+}
+
 void Track::processSnapModeChange() {
     snap = state->getProperty("snap");
+}
+
+void Track::processNextSnapModeChange() {
+    snap=(snap==kLastSnap)?kFirstSnap:snap+1;
+    setSnapMode(snap);
+}
+
+void Track::processIncFixedChange() {
+    fixedSize=(fixedSize==16)?1:fixedSize+1;
+    setFixedSize(fixedSize);
 }
 
 void Track::processPreviousChange() {
@@ -976,6 +1015,16 @@ void Track::processBounceChange() {
 
 void Track::processLoopChange(int newLoopIdx){
     nextLoop = newLoopIdx;
+    loopChangeArmed = true;
+}
+
+void Track::processNextLoop(){
+    ++nextLoop;
+    loopChangeArmed = true;
+}
+
+void Track::processPreviousLoop(){
+    --nextLoop;
     loopChangeArmed = true;
 }
 
@@ -1093,12 +1142,45 @@ void Track::setRecordingArmed(bool newValue){
 void Track::setAutoTrigger(bool newValue){
     if(isActive()){
         auto p = params.getParameter("trigger");
-        if(p->getValue() != float(newValue)){
+        if(p->convertTo0to1(p->getValue()) != float(newValue)){
             p->setValueNotifyingHost(p->convertTo0to1(float(newValue)));
         }
     }
     state->setProperty("trigger", newValue, nullptr);
     trigger = state->getProperty("trigger");
+}
+
+void Track::setRecMode(int newValue){
+    if(isActive()){
+        auto p = params.getParameter("mode");
+        if(p->getValue() != p->convertTo0to1(newValue)){
+            p->setValueNotifyingHost(p->convertTo0to1(newValue));
+        }
+    }
+    state->setProperty("mode", newValue, nullptr);
+    recMode = state->getProperty("mode");
+}
+
+void Track::setSnapMode(int newValue){
+    if(isActive()){
+        auto p = params.getParameter("snap");
+        if(p->getValue() != p->convertTo0to1(newValue)){
+            p->setValueNotifyingHost(p->convertTo0to1(newValue));
+        }
+    }
+    state->setProperty("snap", newValue, nullptr);
+    snap = state->getProperty("snap");
+}
+
+void Track::setFixedSize(int newValue){
+    if(isActive()){
+        auto p = params.getParameter("fixed");
+        if(p->getValue() != p->convertTo0to1(newValue)){
+            p->setValueNotifyingHost(p->convertTo0to1(newValue));
+        }
+    }
+    state->setProperty("fixed", newValue, nullptr);
+    fixedSize = state->getProperty("fixed");
 }
 
 std::shared_ptr<Layer> Track::getActivePlaybackLayer(){

@@ -18,7 +18,7 @@ OutputControlArea::OutputControlArea(){
     
     // output slider
     outputLevelLabel.setText("Output", NotificationType::dontSendNotification);
-    outputLevelLabel.setJustificationType(Justification::centred);
+    //outputLevelLabel.setJustificationType(Justification::centred);
     addAndMakeVisible(outputLevelLabel);
 
     outputLevelSlider.setRange(-60, 12);

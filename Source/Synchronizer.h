@@ -20,10 +20,12 @@ public:
     }
     virtual ~Synchronizer(){}
     
-    virtual int getNextSample(SnapMode)=0;
-    
+    virtual int getNextSynchronizationPoint(SnapMode)=0;
+    bool isSyncEventImminent(int sample){
+        return(sample >= 0) && (context->maxBlockSize > sample);
+    }
     std::shared_ptr<OrbishContext> context;
-
+    
 };
 
-#endif /* Synchronizer_hpp */
+#endif

@@ -42,6 +42,10 @@ ModeControlArea::ModeControlArea(){
     listSnapModeNames.add({ "No Sync", "Snap disabled, functionality goes into effect instantly" });
     listSnapModeNames.add({ "Bar","Snaps to bar" });
     listSnapModeNames.add({ "Beat","Snaps to the beat (bottom of time signature)" });
+    listSnapModeNames.add({ "Loop","Snaps to the duration of the loop" });
+    listSnapModeNames.add({ "Host Loop","Snaps to the host if looping" });
+
+
     for (int i = 0; i < listSnapModeNames.size(); ++i){
         snapModeCombo.addItem(listSnapModeNames[i][0], i + 1);
     }
@@ -49,7 +53,11 @@ ModeControlArea::ModeControlArea(){
     listSnapModeNames.clear();
     str = String("No Sync: Snap disabled, functionality goes into effect instantly\n") +
         String("Bar: Snaps to bar\n") +
-        String("Beat: Snaps to the beat (bottom of time signature)");
+        String("Beat: Snaps to the beat (bottom of time signature)\n") +
+        String("Loop: Snaps to the duration of the loop\n");
+        String( "Host: Snaps to the host if looping" );
+
+
     snapModeCombo.setTooltip(str);
 
     snapModeCombo.setSelectedId(2);
@@ -86,6 +94,8 @@ ModeControlArea::ModeControlArea(){
 //        comboBoxChanged(&fixedSizeBeatsCombo);
 //    };
     recModeCombo.addListener(this);
+    snapModeCombo.addListener(this);
+
     addAndMakeVisible(fixedSizeBeatsCombo);
 
 }

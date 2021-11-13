@@ -28,7 +28,8 @@ public:
 
     
     void AddLayer(bool incrementTop, std::shared_ptr<OrbishContext> context);
-    
+    void setActivePlaybackLayer(std::shared_ptr<Layer> l);
+
     void updateFlattenedVisualizationBuffer();
     void clearFlattenedVisualizationBuffer();
     std::shared_ptr<Layer> activePlaybackLayer;

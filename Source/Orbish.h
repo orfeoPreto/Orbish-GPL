@@ -55,14 +55,36 @@ enum RecordMode
     kRecExtend,     ///< records over existing material and extends original loop length when reaching end of loop
     kRecAppend,     ///< append to existing loop (without recording original loop content after loop duration has been reached)
     kRecOverWrite,  ///< overwrite loop content with new material, and extend original loop until activeTrack.Recording ends
-    kRecPunch     ///< overwrite loop content with new material, but keeps original loop length
+    kRecPunch,     ///< overwrite loop content with new material, but keeps original loop length
+    kFirstRec = kRecLoopOver,
+    kLastRec = kRecPunch
 };
 
 enum SnapMode
 {
     kSnapNone=0,
     kSnapMeasure,
-    kSnapQuarter
+    kSnapQuarter,
+    kSnapLoop,
+    kSnapHostLoop,
+    kFirstSnap=kSnapNone,
+    kLastSnap=kSnapHostLoop
+};
+
+//==============================================================================
+/**
+ */
+struct Events{
+    int startRecordingSample = -1; // sample number in buffer when activeTrack->Recording should be started
+    int stopRecordingSample = -1; // sample number in buffer when activeTrack->Recording should be stopped
+    int startPlayingSample = -1; // sample number in buffer when playback should be started
+    int stopPlayingSample = -1; // sample number in buffer when playback should be stopped
+    int startReverseSample = -1; // sample number in buffer when activeTrack->Reverse should be started
+    int stopReverseSample = -1; // sample number in buffer when activeTrack->Reverse should be stopped
+    int toggleMuteSample = -1; //sample number in buffer when Mute state should be toggled
+    int toggleSoloSample = -1; //sample number in buffer when Solo state should be toggled
+    int startLoopChangeSample = -1;
+    bool toggleSolo = false;
 };
 
 // determines if 2 doubles are equal

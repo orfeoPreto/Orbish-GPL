@@ -16,7 +16,7 @@ class SettingsPage:public Component,
 	public Label::Listener {
 public:
 	SettingsPage();
-	SettingsPage(bool, bool , int , int , int );
+	SettingsPage(bool, bool , int , int , int, int );
 
 	
 	~SettingsPage();
@@ -46,7 +46,8 @@ public:
     OrbishSlider maxUndoHistorySlider{ "History" };
     Label tracksPerRowLabel{ "Tracks per row" };
     OrbishSlider tracksPerRowSlider{ "Tracks per row" };
-        
+    Label visibleLayersLabel{ "Visible Layers" };
+    OrbishSlider visibleLayersSlider{ "Number of audio layers displayed as waveform" };
 	class  Listener
 	{
 	public:

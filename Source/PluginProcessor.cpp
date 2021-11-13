@@ -203,8 +203,11 @@ parameters(*this, nullptr, "OrbishState", {
     , createParamFromBool(new AudioParameterBool("startAll", "StartAll", false), false)
     , createParamFromBool(new AudioParameterBool("pauseAll", "PauseAll", false), false)
     , createParamFromBool(new AudioParameterBool("resetAll", "ResetAll", false), false)
-    , make_unique<AudioParameterChoice>("snap", "Snap", StringArray("No Sync","Measure","Beat"), 0.5)
-    , make_unique<AudioParameterChoice>("mode", "Mode", StringArray("Loop","Repeat","Append","Overwrite","Punch","Clear"), 0)
+    , make_unique<AudioParameterChoice>("snap", "Snap", StringArray("No Sync","Measure","Beat","Loop", "Host Loop"), 0.2)
+    , createParamFromBool(new AudioParameterBool("nextSnapMode", "NextSnapMode", false), false)
+    , make_unique<AudioParameterChoice>("mode", "Mode", StringArray("Overdub","Fixed","Repeat","Append","Overwrite","Punch"), 0)
+    , createParamFromBool(new AudioParameterBool("nextRecMode", "NextRecMode", false), false)
+    , createParamFromBool(new AudioParameterBool("incFixed", "IncFixed", false), false)
     , createParamFromBool(new AudioParameterBool("bounce", "Bounce", false), false)
     , createParamFromInt(new AudioParameterInt("trackSelect", "Track", 0, 100, 0), 0)
     , createParamFromBool(new AudioParameterBool("nextLoop", "NextLoop", false), false)
@@ -933,7 +936,6 @@ void OrbishAudioProcessor::initBlock(AudioBuffer<float>& buffer, MidiBuffer& mid
         context->samplesPerQuarter = int(context->quartersToSamples(1.0));
         //logMessage(String("bpm: ") + String(context->bpm));
     }
-    
     context->maxBlockSize = buffer.getNumSamples();
     context->info->bpm = info.bpm;
     context->info->editOriginTime = info.editOriginTime;
@@ -943,8 +945,12 @@ void OrbishAudioProcessor::initBlock(AudioBuffer<float>& buffer, MidiBuffer& mid
     context->info->timeSigDenominator = info.timeSigDenominator;
     context->info->timeSigNumerator = info.timeSigNumerator;
     context->info->ppqPositionOfLastBarStart = info.ppqPositionOfLastBarStart;
-    int diff = context->maxBlockSize - context->samplesPerBlock;
+    context->info->ppqLoopEnd = info.ppqLoopEnd;
+    context->info->ppqLoopStart = info.ppqLoopStart;
+    context->info->isLooping = info.isLooping;
+
 #if DEBUG_LOG
+    int diff = context->maxBlockSize - context->samplesPerBlock;
     if(diff != 0){
         context->logMessage("buffer excess:" + String(diff));
     }
@@ -954,84 +960,6 @@ void OrbishAudioProcessor::initBlock(AudioBuffer<float>& buffer, MidiBuffer& mid
     }
 }
 
-void OrbishAudioProcessor::realign(){
-#if DEBUG_LOG
-    int df = int(context->quartersToSamples(context->info->ppqPosition)) % context->samplesPerQuarter;
-#endif
-    if (context->info->isPlaying) {
-        if (!hostHasPlayed)hostHasPlayed = true;
-        for(auto track:tracks){
-            if (track->IsPlaying() && !track->Reverse && track->getSnapMode() != kSnapNone){
-                auto currentPosition = *track->CurrentPlayingIndex;
-                double currentPosInQuarters =0;
-                double currentHostPosInQuarters=0;
-                double diffQuarters = 0;
-                switch (track->getSnapMode()) {
-                    case kSnapQuarter:
-                         currentPosInQuarters = fmod(context->samplesToQuarters(currentPosition), 4 / context->timeSigBottom);
-                         currentHostPosInQuarters = fmod(context->info->ppqPosition, 4 / context->timeSigBottom);
-                         diffQuarters = currentHostPosInQuarters - currentPosInQuarters;
-                         if (abs(diffQuarters) > (.5 * 4 / context->timeSigBottom)) {
-                            if(currentPosInQuarters < currentHostPosInQuarters){
-                                diffQuarters = currentHostPosInQuarters - (4 / context->timeSigBottom) - currentPosInQuarters ;
-                            }else{
-                                diffQuarters = (4 / context->timeSigBottom) - currentPosInQuarters + currentHostPosInQuarters;
-                            }
-                        }
-                        break;
-                    case kSnapMeasure:
-                        currentPosInQuarters = fmod(context->samplesToQuarters(currentPosition), context->quartersPerBar());
-                        currentHostPosInQuarters = fmod(context->info->ppqPosition, context->quartersPerBar());
-                        diffQuarters = currentHostPosInQuarters - currentPosInQuarters;
-                        if (abs(diffQuarters) > (context->quartersPerBar()*.5)) {
-                            if(currentPosInQuarters < currentHostPosInQuarters){
-                                diffQuarters = currentHostPosInQuarters - context->quartersPerBar() - currentPosInQuarters ;
-                            }else{
-                                diffQuarters = context->quartersPerBar() - currentPosInQuarters + currentHostPosInQuarters;
-                            }
-                        }
-                        break;
-                    default:
-                        break;
-                }
-                int diff= context->quartersToSamples(diffQuarters);
-                if (abs(diff) >= context->sampleRate / 400) {
-                    if (!((diff < 0 && *track->CurrentPlayingIndex < abs(diff))
-                          || (diff > 0 && *track->CurrentPlayingIndex > * track->LoopDuration - diff))) {
-                            if (!track->realignment->isSyncInProgress()){
-                                track->realignment->setTotalOffset(diff);
-                            }
-                    }
-                }
-#if DEBUG_LOG
-
-//            context->logMessage("#======================================");
-//            context->logMessage(String("#current pos in quarters:") + String(currentPosInQuarters));
-//            context->logMessage(String("#realign with host at:") + String(context->info->ppqPosition) + String("\tdiff:")+String(diff));
-//            context->logMessage(String("#current host pos in quarters:") + String(currentHostPosInQuarters));
-//
-//            context->logMessage(String("#diff in quarters:") + String(diffQuarters));
-//            context->logMessage(String("#hostSamples:") + String(context->info->timeInSamples));
-//            context->logMessage(String("#host position converted:") + String(int(context->quartersToSamples(context->info->ppqPosition))));
-//            context->logMessage(String("#host Samples tracked by p/i:") + String(trackHostSamples));
-//            context->logMessage(String("#host samples gap:") + String(trackHostSamples - context->info->timeInSamples));
-//            context->logMessage(String("#gap in quarters:") + String(context->samplesToQuarters(trackHostSamples - context->info->timeInSamples)));
-//
-//            context->logMessage(String("#plugin pos after host sync:") + String(*track->CurrentPlayingIndex));
-//            context->logMessage(String("#samples per beat:") + String(context->samplesPerBeat));
-//            context->logMessage(String("#samples per quarter:") + String(context->samplesPerQuarter));
-//            context->logMessage(String("#Loop duration:") + String(*track->LoopDuration));
-//            context->logMessage(String("#Loop duration in quarters:") + String(context->samplesToQuarters(*track->LoopDuration)));
-//            context->logMessage(String("#block in quarters:") + String(context->samplesToQuarters(context->maxBlockSize)));
-//            context->logMessage(String("#sample rate:") + String(context->sampleRate));
-//            context->logMessage(String("#samples per minute:") + String(context->samplesPerMinute));
-//            context->logMessage(String("#bpm:") + String(context->bpm));
-//            context->logMessage(String("#denominator:") + String(context->timeSigBottom));
-#endif
-           }
-        }
-    }
-}
 
 void OrbishAudioProcessor::handleClick(std::shared_ptr<OrbishContext> context, AudioSampleBuffer* output){
     int targetOffset = 0, sourceOffset = 0;
@@ -1095,7 +1023,7 @@ void OrbishAudioProcessor::handleClick(std::shared_ptr<OrbishContext> context, A
     }
 }
 
-void OrbishAudioProcessor::captureTrigger(int& startRecordingSample){
+void OrbishAudioProcessor::captureTrigger(int& startRecordingSyncPoint){
     // Auto Trigger mode: check if there is any sound before starting new activeTrack->Recording
     if (!activeTrack->Recording
         && activeTrack->isRecordingArmed()
@@ -1104,13 +1032,13 @@ void OrbishAudioProcessor::captureTrigger(int& startRecordingSample){
     {
         
         const float** samples = context->buffer->getArrayOfReadPointers();
-        for (uint32 channel = 0; channel < context->audioInputsCount && startRecordingSample == -1; channel++)
+        for (uint32 channel = 0; channel < context->audioInputsCount && startRecordingSyncPoint == -1; channel++)
             
-            for (int i = 0; i < context->maxBlockSize && startRecordingSample == -1; i++)
+            for (int i = 0; i < context->maxBlockSize && startRecordingSyncPoint == -1; i++)
             {
                 if (abs(samples[channel][i]) > context->triggerThreshold)
                 {
-                    startRecordingSample = i;
+                    startRecordingSyncPoint = i;
                     activeTrack->Triggered = true;
                 }
             }
@@ -1118,12 +1046,10 @@ void OrbishAudioProcessor::captureTrigger(int& startRecordingSample){
 }
 
 
-void OrbishAudioProcessor::handleReverseEvent(int startReverseSample, int stopReverseSample){
+void OrbishAudioProcessor::handleReverseEvent(int startReverseSyncPoint, int stopReverseSyncPoint){
     // manage activeTrack->Reverse state
-    bool doStartReversal = (startReverseSample >= 0) && (context->maxBlockSize > startReverseSample);
-    bool doStopReversal = (stopReverseSample >= 0) && (context->maxBlockSize > stopReverseSample);
     
-    if (doStartReversal) {
+    if (primarySynchronizer->isSyncEventImminent(startReverseSyncPoint)) {
         if (nullptr != getTrackGroup(activeTrack)) {
             for(auto groupedTrack:*CurrentGroup){
                 groupedTrack->StartReverse();
@@ -1133,7 +1059,7 @@ void OrbishAudioProcessor::handleReverseEvent(int startReverseSample, int stopRe
             activeTrack->StartReverse();
         }
     }
-    else if (doStopReversal) {
+    else if (primarySynchronizer->isSyncEventImminent(stopReverseSyncPoint)) {
         if (nullptr != getTrackGroup(activeTrack)) {
             for(auto groupedTrack:*CurrentGroup){
                 groupedTrack->StopReverse();
@@ -1146,7 +1072,7 @@ void OrbishAudioProcessor::handleReverseEvent(int startReverseSample, int stopRe
     }
 }
 
-void OrbishAudioProcessor::handleRecordingEvent(int startRecordingSample, int stopRecordingSample){
+void OrbishAudioProcessor::handleRecordingEvent(int startRecordingSyncPoint, int stopRecordingSyncPoint){
 //    int pluginDiff=-1;
 //    if(*activeTrack->LoopDuration > 0 && activeTrack->Playing){
 //        pluginDiff = *activeTrack->LoopDuration - *activeTrack->CurrentPlayingIndex;
@@ -1158,21 +1084,17 @@ void OrbishAudioProcessor::handleRecordingEvent(int startRecordingSample, int st
 //        stopRecordingSample = max(stopRecordingSample + pluginDiff,0);
 //    }
     //context->logMessage("startRecordingSample: " + String(startRecordingSample));
-    bool doStartRecording = (startRecordingSample >= 0) && (context->maxBlockSize > startRecordingSample);
-    bool doStopRecording = (stopRecordingSample >= 0) && (context->maxBlockSize > stopRecordingSample);
-    if (doStartRecording) {
+    if (primarySynchronizer->isSyncEventImminent(startRecordingSyncPoint)) {
         activeTrack->StartRecordingBefore();
     }
-    else if (doStopRecording) {
+    else if (primarySynchronizer->isSyncEventImminent(stopRecordingSyncPoint)) {
         // switch recording off but still allow for the last samples to be written + fade
         activeTrack->StopRecordingBefore();
     }
 }
 
-void OrbishAudioProcessor::handlePlaybackEvent(int startPlayingSample, int stopPlayingSample){
-    bool doStartPlaying = (startPlayingSample >= 0) && (context->maxBlockSize > startPlayingSample);
-    bool doStopPlaying = (stopPlayingSample >= 0) && (context->maxBlockSize > stopPlayingSample);
-    if (doStartPlaying)
+void OrbishAudioProcessor::handlePlaybackEvent(int startPlayingSyncPoint, int stopPlayingSyncPoint){
+    if (primarySynchronizer->isSyncEventImminent(startPlayingSyncPoint))
     {
         if (globalAction == kGlobalPlay) {
             startPlayback();
@@ -1192,7 +1114,7 @@ void OrbishAudioProcessor::handlePlaybackEvent(int startPlayingSample, int stopP
         }
         globalAction = kGlobalNone;
     }
-    else if (doStopPlaying)
+    else if (primarySynchronizer->isSyncEventImminent(stopPlayingSyncPoint))
     {
         if (globalAction == kGlobalStop) {
             stopPlayback();
@@ -1225,9 +1147,8 @@ void OrbishAudioProcessor::handlePlaybackEvent(int startPlayingSample, int stopP
 }
 
 
-void OrbishAudioProcessor::handleMuteEvent(int toggleMuteSample){
-    bool toggleMute = (toggleMuteSample >= 0) && (context->maxBlockSize > toggleMuteSample);
-    if (toggleMute) {
+void OrbishAudioProcessor::handleMuteEvent(int toggleMuteSyncPoint){
+    if (primarySynchronizer->isSyncEventImminent(toggleMuteSyncPoint)) {
         if (globalAction == kGlobalMute) {
             doMute();
         }
@@ -1257,8 +1178,8 @@ void OrbishAudioProcessor::handleMuteEvent(int toggleMuteSample){
     }
 }
 
-bool OrbishAudioProcessor::handleSoloEvent(int toggleSoloSample){
-    bool toggleSolo = (toggleSoloSample >= 0) && (context->maxBlockSize > toggleSoloSample);
+bool OrbishAudioProcessor::handleSoloEvent(int toggleSoloSyncPoint){
+    auto toggleSolo = primarySynchronizer->isSyncEventImminent(toggleSoloSyncPoint);
     if (toggleSolo) {
         if (activeTrack->isSoloArmed()) {
             aTrackIsSoloed = true;
@@ -1305,19 +1226,12 @@ bool OrbishAudioProcessor::handleSoloEvent(int toggleSoloSample){
     return toggleSolo;
 }
 
-void OrbishAudioProcessor::handleLoopChangeEvent(int startLoopChangeSample){
-    
-    bool doStartLoopChange = (startLoopChangeSample >= 0) && (context->maxBlockSize > startLoopChangeSample);
-    if (doStartLoopChange) {
+void OrbishAudioProcessor::handleLoopChangeEvent(int startLoopChangeSyncPoint){
+        if (primarySynchronizer->isSyncEventImminent(startLoopChangeSyncPoint)) {
         if (nullptr != getTrackGroup(activeTrack)) {
             int diff = activeTrack->nextLoop - activeTrack->ActiveLoop->Index;
-            if (std::abs(diff) == 1) {
-                for(auto groupedTrack:*CurrentGroup){
-                    groupedTrack->ChangeLoopBefore(groupedTrack->ActiveLoop->Index + diff);
-                }
-            }else {
-                    activeTrack->ChangeLoopBefore(activeTrack->nextLoop);
-                    
+            for(auto groupedTrack:*CurrentGroup){
+                groupedTrack->ChangeLoopBefore(groupedTrack->ActiveLoop->Index + diff % groupedTrack->loops.size());
             }
         }
         else {
@@ -1326,98 +1240,15 @@ void OrbishAudioProcessor::handleLoopChangeEvent(int startLoopChangeSample){
     }
 }
 
-void OrbishAudioProcessor::handleEvents(Events& e){
-    captureTrigger(e.startRecordingSample);
-    
-    // actions will be performed in sync based on the snap mode
-    // look for the sample corresponding to the snap (bar or beat) and perform action
-    // if no sync the actions are performed immediately
-    
-    //print2("timeSigBottom:", data.transport->timeSigBottom);
-    // start position is either buffer start, or startRecordingSample if we are detecting automatically
-    int nextSample=-1;
-    nextSample = activeTrack->getNextSample(activeTrack->getSnapMode());
-    if(nextSample < 0){
-        nextSample = primarySynchronizer->getNextSample(activeTrack->getSnapMode());
-    }
-#if DEBUG_LOG
 
-    //context->logMessage("currentPos: " + String(currentPos));
-    //context->logMessage("expectedSamplePositi on: " + String(int64(expectedSamplePosition)));
-    //context->logMessage("expectedPos: " + String(expectedPos));
-    
-    //context->logMessage("nextSample" + String(nextSample));
-    //context->logMessage("timeInSamples:" + String(context->info->timeInSamples));
-    //context->logMessage("timeInSecs: " + String(context->info->timeInSeconds));
-    //context->logMessage("currentRecordingIndex:" + String(activeTrack->CurrentRecordingIndex));
-    //context->logMessage("currentPlayingIndex:" + String(*activeTrack->CurrentPlayingIndex));
-    
-    //context->logMessage("active track loop duration:" + String(*activeTrack->LoopDuration));
-#endif
-    // manage activeTrack->Recording
-    if (!activeTrack->Recording && activeTrack->isRecordingArmed())
-    {
-        if((activeTrack->getSnapMode() == kSnapNone
-            && activeTrack->isAutoTrigger())){
-            if (!activeTrack->Triggered) {
-                e.startRecordingSample = -1;
-            }
-        }else{
-            e.startRecordingSample = nextSample;
-        }
-    }
-    else if (activeTrack->Recording && !activeTrack->isRecordingArmed())
-    {
-        e.stopRecordingSample = nextSample;
-    }
-    // manage activeTrack->Playing
-    if ((!activeTrack->Playing && activeTrack->isPlayArmed()) || globalAction == kGlobalPlay || globalAction == kGlobalResume)
-    {
-        e.startPlayingSample = nextSample;
-    }
-    else if ((activeTrack->Playing && !activeTrack->isPlayArmed()) || globalAction == kGlobalStop || globalAction == kGlobalPause)
-    {
-        e.stopPlayingSample = nextSample;
-    }
-    
-    // manage reversing
-    if (!activeTrack->Reverse && activeTrack->isReverseArmed())
-    {
-        e.startReverseSample = nextSample;
-    }
-    
-    else if (activeTrack->Playing && activeTrack->Reverse && !activeTrack->isReverseArmed()) {
-        e.stopReverseSample = nextSample;
-    }
-    if (activeTrack->loopChangeArmed)
-    {
-        e.startLoopChangeSample = nextSample;
-    }
-    // manage Mute
-    if ((activeTrack->isMuteArmed() != activeTrack->Muted) || globalAction == kGlobalMute) {
-        e.toggleMuteSample = nextSample;
-    }
-    // manage Solo
-    if (activeTrack->isSoloArmed() != activeTrack->Soloed) {
-        e.toggleSoloSample = nextSample;
-    }
-    handlePlaybackEvent(e.startPlayingSample, e.stopPlayingSample);
-    handleRecordingEvent(e.startRecordingSample, e.stopRecordingSample);
-    // manage activeTrack->Reverse state
-    handleReverseEvent(e.startReverseSample, e.stopReverseSample);
-    // manage mute state
-    handleMuteEvent(e.toggleMuteSample);
-    
-    handleLoopChangeEvent(e.startLoopChangeSample);
-    // manage solo state
-    e.toggleSolo = handleSoloEvent(e.toggleSoloSample);
-}
 
 void OrbishAudioProcessor::processBlock(AudioBuffer<float>& buffer, MidiBuffer& midiMessages)
 {
+#if DEBUG_LOG
     int64 beginMark = Time::getHighResolutionTicks();
     int64 startBeginning = Time::getHighResolutionTicks();
-     context->logMessage("begin processBlock");
+#endif
+    //   logMessage("begin processBlock");
     if(buffer.getNumSamples() == 0)return;
     initBlock(buffer, midiMessages);
     // In case we have more outputs than inputs, this code clears any output
@@ -1440,7 +1271,6 @@ void OrbishAudioProcessor::processBlock(AudioBuffer<float>& buffer, MidiBuffer& 
             context->inputBuffer->copyFrom(c, 0, buffer.getReadPointer(c, 0),  context->maxBlockSize);
         }
     }
-
 //    DBG("inputBuffer: " + String(context->inputBuffer->getMagnitude(0, 0, context->maxBlockSize)));
     if(context->xchange->writeMeasureBufferQueue->read_available() > 0 &&
        context->xchange->readMeasureBufferQueue->write_available() > 0){
@@ -1488,11 +1318,11 @@ void OrbishAudioProcessor::processBlock(AudioBuffer<float>& buffer, MidiBuffer& 
         if(context->skipAlign){
             context->skipAlign = false;
         }else{
-                realign();
+            Realignment::realign(context, &tracks, hostHasPlayed);
         }
         Events e;
         if (!changingTrack) {
-            handleEvents(e);
+            TrackEventHandler::handleEvents(e, activeTrack);
         }
 #if DEBUG_LOG
         int64 endBeginning = Time::getHighResolutionTicks();
@@ -1556,8 +1386,9 @@ void OrbishAudioProcessor::processBlock(AudioBuffer<float>& buffer, MidiBuffer& 
 //        DBG("outputBuffer: " + String(buffer.getMagnitude(0, 0, context->maxBlockSize)));
 
     }
+#if DEBUG_LOG
     int64 endFinal = Time::getHighResolutionTicks();
-    
+#endif
     // run the methods defined to be executed after the block
     for(auto t :tracks){
         //context->logMessage(String(t->RunAfters.size()));
@@ -1977,7 +1808,7 @@ void OrbishAudioProcessor::handlePlaybackBlock(int start, int stop) {
                                 fadeIn = max(0,min(*track->LoopDuration - adjustedPosition - 1, fadeIn));
                                 temp->addFromWithRamp(c
                                                       , targetIndex
-                                                      , (*track->Layers)[l]->Buffer->getReadPointer(c, reverseSourceIndex)
+                                                      , (*track->Layers)[l]->Buffer->getReadPointer(c, track->Reverse?reverseSourceIndex:sourceIndex)
                                                       , fadeOut, 1 - reSync->getCurrentFadeLevelStart(), 1 - reSync->getCurrentFadeLevelEnd());
                                 // write fade in with signal from adjusted position
                                 temp->addFromWithRamp(c
@@ -2161,100 +1992,4 @@ void OrbishAudioProcessor::setStateInformation(const void* data, int sizeInBytes
 AudioProcessor* JUCE_CALLTYPE createPluginFilter()
 {
     return new OrbishAudioProcessor();
-}
-
-bool OrbishAudioProcessor::loadFromValueTree(ValueTree* tree) {
-#if DEBUG_LOG
-    context->logMessage("loading tracks");
-#endif
-    if (tree == nullptr)return false;
-    if (!tree->hasType("project"))return false;
-    auto tracksElement = tree->getChildWithName("tracks");
-    int numTracksToLoad = tracksElement.getNumChildren();
-    for (auto i = 0;i < numTracksToLoad;++i) {
-        ValueTree tChild(tracksElement.getChild(i));
-        auto trackIdx = int(tChild.getProperty("index"));
-        if (trackIdx >= 0) {
-            if (trackIdx == tracks.size()) {
-                processNewTrack();
-            }
-            Track* t(tracks[trackIdx]);
-            if (!loadTrackFromValueTree(&tChild, t)) { context->logMessage("File load failed"); }
-        }
-    }
-    //    context->logMessage("loading groups");
-    auto groupTree = tree->getChildWithName("groups");
-    for (auto groupNode: groupTree) {
-        processGroupSelect(groupNode.getProperty("index"));
-        for (auto j = 0;j < groupNode.getNumChildren(); ++j) {
-            auto groupedTrack = groupNode.getChild(j);
-            processAddToGroup(groupedTrack.getProperty("index"));
-        }
-    }
-    if (guiAlive) {
-        (context->observer->*(context->observer->updatePlayPosition)) (0, activeTrack->Reverse);
-    }
-    activeTrack->RegisterLoop(0);
-//    activeTrack->UpdateLoopVisualizer();
-    return true;
-}
-
-bool OrbishAudioProcessor::loadTrackFromValueTree(ValueTree* trackTree, Track* track) {
-    int numLoopsToLoad = trackTree->getNumChildren() - 1;
-    for (auto i = 0;i < numLoopsToLoad;++i) {
-        ValueTree lChild(trackTree->getChild(i));
-        auto loopIdx = int(lChild.getProperty("index", -1));
-        if (loopIdx >= 0) {
-            if (loopIdx == track->loops.size()) {
-                track->processNewLoop();
-            }
-            if (!loadLoopFromValueTree(&lChild, track->loops[loopIdx]))return false;
-        }
-    }
-    auto params = trackTree->getChildWithName("TrackParams");
-    *track->state = params;
-    return true;
-}
-
-bool OrbishAudioProcessor::loadLoopFromValueTree(ValueTree* loopTree, Loop* loop) {
-    int numLayersToLoad = loopTree->getNumChildren();
-    for (auto i = 0;i < numLayersToLoad;++i) {
-        auto lyChild = loopTree->getChild(i);
-        auto layerIdx = int(lyChild.getProperty("index", -1));
-        if (layerIdx >= 0) {
-            if (layerIdx == loop->Layers->size()) {
-                loop->AddLayer(true, context);
-            }
-            shared_ptr<Layer> layer(loop->Layers.get()->at(layerIdx));
-            String filePath = lyChild.getProperty("file");
-            if (filePath.isEmpty())return false;
-            File file(filePath);
-            auto formatMgr = make_unique<AudioFormatManager>();
-            formatMgr->registerBasicFormats();
-            unique_ptr<AudioFormatReader> reader(formatMgr->createReaderFor(file));
-            if (reader.get() != nullptr)
-            {
-                try {
-                    unique_ptr<AudioSampleBuffer> buffer = make_unique<AudioSampleBuffer>(reader->numChannels, (int)reader->lengthInSamples);
-                    reader->read(buffer.get(), 0, (int)reader->lengthInSamples, 0, true, true);
-                    layer->Buffer->setSize(buffer->getNumChannels(), buffer->getNumSamples());
-                    layer->Buffer->clear();
-                    for(auto i=0;i<buffer->getNumChannels();++i){
-                        layer->Buffer->copyFrom(i, 0, *buffer, i, 0, buffer->getNumSamples());
-                    }
-                    loop->LoopDuration = buffer->getNumSamples();
-                }
-                catch (...) {
-                    context->logMessage("read of audio file failed: " + String(filePath));
-                }
-            }
-            layer->dirty = true;
-        }
-    }
-    if(loop->CurrentTop < 0 || loop->CurrentTop >= loop->Layers->size()){
-        loop->activePlaybackLayer = nullptr;
-    }else{
-        loop->activePlaybackLayer = loop->Layers.get()->at(loop->CurrentTop) ;
-    }
-    return true;
 }

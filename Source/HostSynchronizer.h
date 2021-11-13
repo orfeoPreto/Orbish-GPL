@@ -16,7 +16,7 @@ public:
     HostSynchronizer(std::shared_ptr<OrbishContext>);
     ~HostSynchronizer() override;
     
-    int getNextSample(SnapMode) override;
+    int getNextSynchronizationPoint(SnapMode) override;
 
 private:
     

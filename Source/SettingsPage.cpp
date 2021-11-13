@@ -2,7 +2,7 @@
 
 SettingsPage::SettingsPage() {}
 
-SettingsPage::SettingsPage(bool monitoring, bool loggingActive, int maxHistory, int tracksPerRow, int latency) {
+SettingsPage::SettingsPage(bool monitoring, bool loggingActive, int maxHistory, int tracksPerRow, int latency, int numVisibleLayers) {
 	addAndMakeVisible(settingsCentre);
 	activateLoggingButton.setClickingTogglesState(true);
 	activateLoggingButton.addListener(this);
@@ -67,6 +67,18 @@ SettingsPage::SettingsPage(bool monitoring, bool loggingActive, int maxHistory, 
     tracksPerRowLabel.setText("Number of tracks per row: ", NotificationType::dontSendNotification);
     settingsCentre.addAndMakeVisible(tracksPerRowLabel);
     
+    visibleLayersSlider.setSliderStyle(Slider::LinearHorizontal);
+    visibleLayersSlider.setValue(numVisibleLayers);
+    visibleLayersSlider.setRange(2, 50);
+    visibleLayersSlider.setTextBoxStyle(Slider::TextEntryBoxPosition::TextBoxLeft, true, 0, 0);
+    visibleLayersSlider.setPopupDisplayEnabled(true, false, this);
+    visibleLayersSlider.addListener(this);
+    visibleLayersSlider.setNumDecimalPlacesToDisplay(0);
+    visibleLayersSlider.setDoubleClickReturnValue(true, 0);
+    settingsCentre.addAndMakeVisible(visibleLayersSlider);
+    visibleLayersLabel.setText("Visible Layers: ", NotificationType::dontSendNotification);
+    settingsCentre.addAndMakeVisible(visibleLayersLabel);
+    
 	activateLoggingLabel.setText("Activate Logging: ", NotificationType::dontSendNotification);
 	settingsCentre.addAndMakeVisible(activateLoggingLabel);
     monitoringLabel.setText("Post Mix Monitoring: ", NotificationType::dontSendNotification);
@@ -103,10 +115,12 @@ maxUndoHistoryLabel.setBounds(20, 65, 150, 15);
 maxUndoHistorySlider.setBounds(200, 70, 100, 15);
     tracksPerRowLabel.setBounds(20, 105, 150, 15);
     tracksPerRowSlider.setBounds(200,105,100,15);
-    activateLoggingLabel.setBounds(20, 135, 150, 15);
-    activateLoggingButton.setBounds(200,132,100,30);
-    monitoringLabel.setBounds(20, 165, 150, 15);
-    monitoringButton.setBounds(200,162,100,30);
+    visibleLayersLabel.setBounds(20, 145, 150, 15);
+    visibleLayersSlider.setBounds(200,145,100,15);
+    activateLoggingLabel.setBounds(20, 175, 150, 15);
+    activateLoggingButton.setBounds(200,172,100,30);
+    monitoringLabel.setBounds(20, 205, 150, 15);
+    monitoringButton.setBounds(200,202,100,30);
     
 }
 void SettingsPage::buttonClicked(Button* button){

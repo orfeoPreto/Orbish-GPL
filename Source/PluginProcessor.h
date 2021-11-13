@@ -18,38 +18,17 @@
 #include "MidiProcessor.h"
 #include "TrackGroup.h"
 #include "HostSynchronizer.h"
+#include "Realignment.h"
+#include "TrackEventHandler.h"
 
-
-
-//==============================================================================
-/**
-*/
-struct Events{
-    int startRecordingSample = -1; // sample number in buffer when activeTrack->Recording should be started
-    int stopRecordingSample = -1; // sample number in buffer when activeTrack->Recording should be stopped
-    int startPlayingSample = -1; // sample number in buffer when playback should be started
-    int stopPlayingSample = -1; // sample number in buffer when playback should be stopped
-    int startReverseSample = -1; // sample number in buffer when activeTrack->Reverse should be started
-    int stopReverseSample = -1; // sample number in buffer when activeTrack->Reverse should be stopped
-    int toggleMuteSample = -1; //sample number in buffer when Mute state should be toggled
-    int toggleSoloSample = -1; //sample number in buffer when Solo state should be toggled
-    int startLoopChangeSample = -1;
-    bool toggleSolo = false;
-};
 
 class OrbishAudioProcessor  : public AudioProcessor
                             , public AudioProcessorValueTreeState::Listener
+                            , public TrackEventHandler
+
 {
 public:
-    enum GlobalAction{
-        kGlobalNone,
-        kGlobalStop,
-        kGlobalPlay,
-        kGlobalPause,
-        kGlobalResume,
-        kGlobalMute,
-        kGlobalReset
-    };
+
     
     //==============================================================================
     OrbishAudioProcessor();
@@ -105,11 +84,10 @@ public:
     void getStateInformation (MemoryBlock& destData) override;
     void setStateInformation (const void* data, int sizeInBytes) override;
     void initBlock(AudioBuffer<float>& buffer, MidiBuffer& midiMessages);
-    void realign();
     void renderClick();
     void smoothVolume(double& origin, double destination, int samplesToRead, AudioBuffer<float>* source, AudioBuffer<float>* target, int channel);
     
-    void captureTrigger(int& startRecordingSample);
+    void captureTrigger(int& startRecordingSample) override;
     void processMuteAllChange(bool mute);
     void processStopAllChange();
     void processStartAllChange();
@@ -128,18 +106,16 @@ public:
     void askTrackChange(int trackNumber);
 	void askLoopChange(int loopNumber);
     void cleanup();
-    void handleReverseEvent(int, int);
-    void handleRecordingEvent(int, int);
-    void handlePlaybackEvent(int, int);
-    void handleMuteEvent(int);
-    bool handleSoloEvent(int);
-    void handleLoopChangeEvent(int);
+    void handleReverseEvent(int, int) override;
+    void handleRecordingEvent(int, int) override;
+    void handlePlaybackEvent(int, int) override;
+    void handleMuteEvent(int) override;
+    bool handleSoloEvent(int) override;
+    void handleLoopChangeEvent(int) override;
     void handleEvents(Events&);
     void processTempoChange(int);
     TrackGroup* getTrackGroup(Track* t);
-	bool loadFromValueTree(ValueTree* tree);
-	bool loadTrackFromValueTree(ValueTree* trackTree, Track* track);
-	bool loadLoopFromValueTree(ValueTree* loopTree, Loop* loop);
+
     void handleClick(std::shared_ptr<OrbishContext> context, AudioSampleBuffer*);
 	void initGroups();
     float fromDBTo0To1(float, float, float);
@@ -173,14 +149,11 @@ public:
     MessageManager* messenger;
     AudioProcessorValueTreeState parameters;
     bool hostHasPlayed = false;
-    GlobalAction globalAction = kGlobalNone;
 	bool keepRunning = true;
     bool queuesEmpty = false;
     bool aTrackIsSoloed = false;
     double previousMixLevel = -1;
     bool changingTrack = false;
-    std::unique_ptr<Synchronizer> primarySynchronizer;
-    std::unique_ptr<Synchronizer> secondarySynchronizer;
     int trackHostSamples = 0;
     std::atomic<bool> refreshAll;
     std::atomic<Track*> trackToAdd;
