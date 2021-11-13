@@ -13,7 +13,7 @@
 #include <JuceHeader.h>
 #include "Shader.h"
 #include "math.h"
-#include "Orbish.h"
+#include "Context.h"
 
 
 using namespace juce;
@@ -44,7 +44,7 @@ class OpenGLComponent  :
 
 {
 public:
-    OpenGLComponent(std::atomic<float> &offset, bool fraction=false);
+    OpenGLComponent(std::atomic<float> &offset,  bool fraction=false);
     ~OpenGLComponent() override;
 
     void setOpenGLContext(std::shared_ptr<OpenGLContext> openGLContext, bool owner);
@@ -71,6 +71,9 @@ public:
     bool isInitialized();
 	struct ComponentHelpers;
 	friend struct ComponentHelpers;
+	void setContext(std::shared_ptr<OrbishContext>);
+	void logMessage(String message);
+
 protected:
 //    Component* topLevelComponent;
     GLuint vbo, vao, ebo, fbo;
@@ -87,6 +90,7 @@ protected:
     bool fractionOfTotal = false;
     bool initialized = false;
     bool ownsContext = false;
+	std::shared_ptr<OrbishContext> orbishContext;
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (OpenGLComponent);
 

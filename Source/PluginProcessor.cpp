@@ -222,7 +222,8 @@ parameters(*this, nullptr, "OrbishState", {
     //_CrtSetDbgFlag(_CRTDBG_LEAK_CHECK_DF);
 
     context = std::make_shared<OrbishContext>();
-    context->buffer = make_shared<AudioBuffer<float> >();
+
+	context->buffer = make_shared<AudioBuffer<float> >();
     context->inputBuffer = make_shared<AudioBuffer<float> >();
 
     context->feedback = Decibels::decibelsToGain(float(-0.0));
@@ -250,9 +251,14 @@ parameters(*this, nullptr, "OrbishState", {
         File file = File(File::getSpecialLocation(File::userHomeDirectory)).getChildFile("Orbish").getChildFile("Orbish.log");
         auto result = file.create();
         if (result.wasOk()) {
-            context->logger = make_shared<FileLogger>(file, "Hi");
+            context->logger = make_shared<FileLogger>(file, "Heho");
+			context->logger->logMessage("after saying hi");
+
         }
+		context->logger->logMessage("in allocator thread");
+
         while (keepRunning) {
+
                 this_thread::sleep_for(chrono::milliseconds(1));
             if (context->audioInputsCount > 0) {
                 if(context->xchange->resetBuffers.get()){
@@ -297,7 +303,7 @@ parameters(*this, nullptr, "OrbishState", {
             }
             if(context->loggingActive){
                 int64 stamp = Time::getApproximateMillisecondCounter();
-                if (stamp - context->timestamp > 2000) {
+                if (stamp - context->timestamp > 200) {
                     context->timestamp = stamp;
                     context->flushLogs();
                 }
@@ -334,6 +340,7 @@ parameters(*this, nullptr, "OrbishState", {
                 context->xchange->readMeasureBufferQueue->pop();
                 mb->measure();
             };
+
         }
 //        context->xchange->layerQueue->reset();
 //        context->xchange->readBufferQueue->reset();
@@ -347,7 +354,7 @@ parameters(*this, nullptr, "OrbishState", {
 //        context->xchange->writeVisualisationBufferQueue->reset();
     }
                                            );
-    //   logMessage("end constructor");
+       context->logMessage("end constructor");
 }
 
 OrbishAudioProcessor::~OrbishAudioProcessor()
@@ -526,7 +533,7 @@ void OrbishAudioProcessor::initParams() {
 //==============================================================================
 void OrbishAudioProcessor::prepareToPlay(double sampleRate, int samplesPerBlock)
 {
-    //   logMessage("begin prepareToPlay");
+       context->logMessage("begin prepareToPlay");
     // Use this method as the place to do any pre-playback
     // initialisation that you need..
     if (context == nullptr) {
@@ -571,7 +578,7 @@ void OrbishAudioProcessor::prepareToPlay(double sampleRate, int samplesPerBlock)
     context->samplesPerBlock = samplesPerBlock;
     context->fadeTime = int(min(float(samplesPerBlock), float(sampleRate) * .01f));
     context->sampleRate = int(sampleRate);
-    //  logMessage("end prepareToPlay");
+      context->logMessage("end prepareToPlay");
 #if DEBUG_LOG
     context->logMessage("sample rate set to:" + String(context->sampleRate));
 #endif
@@ -1410,7 +1417,7 @@ void OrbishAudioProcessor::processBlock(AudioBuffer<float>& buffer, MidiBuffer& 
 {
     int64 beginMark = Time::getHighResolutionTicks();
     int64 startBeginning = Time::getHighResolutionTicks();
-    //   logMessage("begin processBlock");
+     context->logMessage("begin processBlock");
     if(buffer.getNumSamples() == 0)return;
     initBlock(buffer, midiMessages);
     // In case we have more outputs than inputs, this code clears any output
@@ -1599,6 +1606,7 @@ void OrbishAudioProcessor::processBlock(AudioBuffer<float>& buffer, MidiBuffer& 
         }
    // context->buffer.reset();
    // context->inputBuffer.reset();
+	context->logMessage("end of processBlock");
 }
 
 void OrbishAudioProcessor::handleRecordBlock(int start, int stop) {

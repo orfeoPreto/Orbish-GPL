@@ -17,6 +17,8 @@ OpenGLAudioMeter::OpenGLAudioMeter (std::atomic<float>& offset, std::atomic<floa
 OpenGLComponent(offset),
 offset2(offset2)
 {
+	setDescription("audiometer");
+
     shaderName = "meterBar";
     bgColour = juce::Colour(0xff707070);
     //getLookAndFeel().findColour(FFAU::LevelMeter::lmMeterBackgroundColour);

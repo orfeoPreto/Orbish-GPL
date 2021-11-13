@@ -18,6 +18,7 @@
 OpenGLAudioThumbnail::OpenGLAudioThumbnail (std::atomic<float> &offset, bool fraction):
  OpenGLComponent(offset, fraction)
 {
+	setDescription("thumbnail");
     shaderName = "thumbnail-playhead";
     shader2Name = "thumbnail-wave";
 
@@ -78,6 +79,9 @@ void OpenGLAudioThumbnail::deactivate(){
 }
 
 void OpenGLAudioThumbnail::renderOpenGL() {
+	logMessage("start OpenGLAudioThumbnail::renderOpenGL()");
+	logMessage("displayType: " + String(getDisplayType()));
+	logMessage("topLevelComponent: " + this->getTopLevelComponent()->getComponentID());
     if (nullptr == sourceLoop) {
         return;
     }
@@ -86,6 +90,7 @@ void OpenGLAudioThumbnail::renderOpenGL() {
 //        auto grbl = std::make_unique<OpenGLShaderProgram> (*openGLContext);
         if(nullptr == sourceLoop->Layers
            || sourceLoop->CurrentTop < 0){
+			logMessage("no layers :(");
             return;
         }
         if (getDisplayType() == kFlat) {
@@ -149,8 +154,10 @@ void OpenGLAudioThumbnail::renderOpenGL() {
 //         grbl = std::make_unique<OpenGLShaderProgram> (*openGLContext);
 
     } catch (int e) {
-        std::cout << "Exception occured:" << e << "\n";
+		logMessage("Exception occured: "  + String(e) );
     }
+	logMessage("end OpenGLAudioThumbnail::renderOpenGL()");
+
 }
 
 void OpenGLAudioThumbnail::openGLContextClosing() {

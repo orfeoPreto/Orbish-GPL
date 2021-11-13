@@ -163,9 +163,6 @@ public:
                 if(loggingActive){
                     logger->logMessage(*message);
                 }
-#if DEBUG_MODE
-                    DBG(*message);
-#endif
             }
         }
     }

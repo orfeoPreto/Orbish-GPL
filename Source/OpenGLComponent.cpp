@@ -103,6 +103,7 @@ void OpenGLComponent::newOpenGLContextCreated() {
 }
 
 void OpenGLComponent::renderOpenGL() {
+	logMessage("start OpenGLComponent::renderOpenGL()");
     jassert (OpenGLHelpers::isContextActive());
 //    auto grbl = std::make_unique<OpenGLShaderProgram> (*openGLContext);
 
@@ -157,6 +158,7 @@ void OpenGLComponent::renderOpenGL() {
 		openGLContext->extensions.glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
     }
 //     grbl = std::make_unique<OpenGLShaderProgram> (*openGLContext);
+	logMessage("end OpenGLComponent::renderOpenGL()");
 
 }
 
@@ -184,4 +186,14 @@ void OpenGLComponent::setOffset(std::reference_wrapper<std::atomic<float>> posit
 
 bool OpenGLComponent::isInitialized(){
     return initialized;
+}
+
+void OpenGLComponent::setContext(std::shared_ptr<OrbishContext> ctxt) {
+	orbishContext = ctxt;
+}
+
+void OpenGLComponent::logMessage(String message) {
+	if (orbishContext) {
+		orbishContext->logMessage(message);
+	}
 }

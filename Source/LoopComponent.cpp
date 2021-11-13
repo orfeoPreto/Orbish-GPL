@@ -11,6 +11,8 @@
 LoopComponent::LoopComponent(): progress(bidon){}
 LoopComponent::LoopComponent(std::atomic<float>& p, int idx) :  progress(p){
     index = idx;
+	setComponentID("Loop " + String(index));
+
 //    setPercentageDisplay(false);
     thumbnail = std::make_unique<OpenGLAudioThumbnail>(p, true);
     thumbnail->setLookAndFeel(&getLookAndFeel());

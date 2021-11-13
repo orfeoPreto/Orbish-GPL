@@ -17,6 +17,8 @@
 OpenGLClickWitness::OpenGLClickWitness (std::atomic<float> &offset):
  OpenGLComponent(offset)
 {
+	setDescription("clickWitness");
+
     shaderName = "circle";
 }
 

@@ -14,6 +14,7 @@ OrbishAudioProcessorEditor::OrbishAudioProcessorEditor (OrbishAudioProcessor& p,
 #if DEBUG_LOG
     logMessage("HiRes ticks per sec:" + String(Time::getHighResolutionTicksPerSecond()));
 #endif
+	logMessage("entering editor constructor");
     openGLContext = makeOpenGLContext(true, true, 1);
 //    setAlpha(0.5);
     setOpaque(true);
@@ -58,6 +59,8 @@ OrbishAudioProcessorEditor::OrbishAudioProcessorEditor (OrbishAudioProcessor& p,
     setupNavigationControls(buttonControlArea);
     setSize (1300, 800);
     markActiveTrackForRefresh(true);
+	logMessage("leaving editor constructor");
+
 }
 
 std::shared_ptr<OpenGLContext> OrbishAudioProcessorEditor::getOpenGLContext(){
@@ -138,11 +141,13 @@ std::unique_ptr<OpenGLAudioThumbnail> OrbishAudioProcessorEditor::setupThumbnail
 //    tn->setTopLevelComponent(this);
     tn->setDisplayType(WaveDisplayType::kLayered);
     tn->setName("main");
+	tn->setContext(processor.context);
     return tn;
 }
 
 void OrbishAudioProcessorEditor::setupWitness(){
     witness = std::make_unique<OpenGLClickWitness>(hostPosition);
+	witness->setContext(processor.context);
 }
 
 void OrbishAudioProcessorEditor::setupGlobalButtons(){
@@ -208,6 +213,8 @@ void OrbishAudioProcessorEditor::openGLContextClosing()
 
 void OrbishAudioProcessorEditor::renderOpenGL()
 {
+	logMessage("entering renderOpenGL");
+
     counter++;
     stamp = Time::getApproximateMillisecondCounter();
     if (stamp - startStamp > 1000) {
@@ -225,16 +232,25 @@ void OrbishAudioProcessorEditor::renderOpenGL()
         if(nullptr == reference ||
            nullptr == reference->asOpenGLComponent->shader)continue;
         if(reference->asComponent->isVisible()){
+			logMessage("component type: "+ String(reference->asComponent->getDescription()));
+			logMessage("component id: " + String(reference->asComponent->getComponentID()));
+			logMessage("before if");
+
 //            auto grbl = std::make_unique<OpenGLShaderProgram> (*openGLContext);
             if (reference->asOpenGLComponent->shaderName == "thumbnail-playhead"){
+				logMessage(" if shader name: thumbnail-playhead");
+
                  if (flags & CallBackFlags::shouldRemoveLoop
                     || flags & CallBackFlags::shouldRemoveTrack) {
                     continue;
                 }
                 if(reference->asComponent->getName() != "main"){
+					logMessage(" if >getName() != main");
+
                     auto widgetPosition = reference->asComponent->getPosition();
                     auto widgetPosRelativeToViewport = reference->asComponent->getLocalPoint(&tracksViewport,widgetPosition);
-
+					logMessage("2component type: " + String(reference->asComponent->getDescription()));
+					logMessage("2component id: " + String(reference->asComponent->getComponentID()));
                     if(tracksViewport.getWidth() < widgetPosRelativeToViewport.getX()
                         || tracksViewport.getHeight() < widgetPosRelativeToViewport.getY()
                        || 0 < widgetPosRelativeToViewport.getX() - reference->asComponent->getWidth()
@@ -249,6 +265,8 @@ void OrbishAudioProcessorEditor::renderOpenGL()
 //            if(reference->asComponent->getComponentID() == "Loop1"){
 //                DBG(reference->asOpenGLComponent->getTotalLength());
 //            }
+			logMessage("befor renderopengl of component");
+
                 reference->asRenderer->renderOpenGL();
 //             grbl = std::make_unique<OpenGLShaderProgram> (*openGLContext);
 
@@ -261,6 +279,8 @@ void OrbishAudioProcessorEditor::renderOpenGL()
 //        DBG("time in render:" + String(afterStamp-stamp));
         std::this_thread::sleep_for(std::chrono::milliseconds(33 - (afterStamp-stamp)));
     }
+	logMessage("leaving renderOpenGL");
+
 }
 
 void OrbishAudioProcessorEditor::removeReference(OpenGLComponent* r){
@@ -1250,10 +1270,12 @@ void OrbishAudioProcessorEditor::doCreateTrack(int trackNumber) {
         trackArea.addAndMakeVisible(t);
         String id = "Track" + String(t->getIndex());
         t->thumbnail->setComponentID(id);
+		t->thumbnail->setContext(processor.context);
         references.push_back (std::make_shared<OpenGLComponentReference>(t->thumbnail.get()));
         for(auto l : *loops){
             auto lc = t->Loops[l->Index];
             lc->thumbnail->setSourceLoop(l);
+			lc->thumbnail->setContext(processor.context);
             references.push_back (std::make_shared<OpenGLComponentReference>(lc->thumbnail.get()));
         }
         t->thumbnail->setSourceLoop(audioTrack->ActiveLoop);
@@ -1316,6 +1338,8 @@ void OrbishAudioProcessorEditor::doCreateLoop(){
     String id = "Loop" + String(l->getIndex());
     l->thumbnail->setComponentID(id);
     l->thumbnail->setSourceLoop(audioTrack->loops.getLast());
+	l->thumbnail->setContext(processor.context);
+
     references.push_back (std::make_shared<OpenGLComponentReference>(l->thumbnail.get()));
 
     makeTracks();

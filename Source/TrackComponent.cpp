@@ -26,7 +26,7 @@ TrackComponent::TrackComponent(int index, std::vector<std::atomic<float>*> progr
     
 
     loopHeight = margin + buttonSize;
-
+	setComponentID("Track " + String(index));
     thumbnail = std::make_unique<OpenGLAudioThumbnail>(*progress[activeLoopIdx], true);
     thumbnail->setLookAndFeel(&getLookAndFeel());
     thumbnail->setDisplayType(WaveDisplayType::kFlat);
