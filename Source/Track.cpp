@@ -163,10 +163,10 @@ void Track::setActive(bool newValue){
             p->setValueNotifyingHost(p->convertTo0to1(state->getProperty("incFixed")));
             p = params.getParameter("bounce");
             p->setValueNotifyingHost(p->convertTo0to1(state->getProperty("bounce")));
-            p = params.getParameter("nextLoop");
-            p->setValueNotifyingHost(p->convertTo0to1(state->getProperty("nextLoop")));
-            p = params.getParameter("previousLoop");
-            p->setValueNotifyingHost(p->convertTo0to1(state->getProperty("previousLoop")));
+//            p = params.getParameter("nextLoop");
+//            p->setValueNotifyingHost(p->convertTo0to1(state->getProperty("nextLoop")));
+//            p = params.getParameter("previousLoop");
+//            p->setValueNotifyingHost(p->convertTo0to1(state->getProperty("previousLoop")));
             p = params.getParameter("newLoop");
             p->setValueNotifyingHost(p->convertTo0to1(state->getProperty("newLoop")));
             p = params.getParameter("removeLoop");

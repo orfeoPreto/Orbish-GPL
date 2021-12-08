@@ -18,7 +18,7 @@
 OpenGLAudioThumbnail::OpenGLAudioThumbnail (std::atomic<float> &offset, bool fraction):
  OpenGLComponent(offset, fraction)
 {
-	setDescription("thumbnail");
+	setName("thumbnail");
     shaderName = "thumbnail-playhead";
     shader2Name = "thumbnail-wave";
 

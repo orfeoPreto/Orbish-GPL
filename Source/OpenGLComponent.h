@@ -17,7 +17,7 @@
 
 
 using namespace juce;
-using namespace juce::gl;
+//using namespace juce::gl;
 
 //==============================================================================
 /*

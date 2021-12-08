@@ -63,7 +63,7 @@ public:
 	int EndFadeOffset = 0;
 	bool loopToBeExtended = false;
 	bool doBounce = false;
-    int nextLoop = -1;
+    int nextLoop = 0;
     bool loopChangeArmed = false;
 	typedef void (Track::* RunAfterBlock) ();
 	std::vector<RunAfterBlock> RunAfters;

@@ -1231,7 +1231,10 @@ void OrbishAudioProcessor::handleLoopChangeEvent(int startLoopChangeSyncPoint){
         if (nullptr != getTrackGroup(activeTrack)) {
             int diff = activeTrack->nextLoop - activeTrack->ActiveLoop->Index;
             for(auto groupedTrack:*CurrentGroup){
-                groupedTrack->ChangeLoopBefore(groupedTrack->ActiveLoop->Index + diff % groupedTrack->loops.size());
+                auto newIdx = groupedTrack->ActiveLoop->Index + diff % groupedTrack->loops.size();
+                if (newIdx >=0 && newIdx < groupedTrack->loops.size()) {
+                    groupedTrack->ChangeLoopBefore(newIdx);
+                }
             }
         }
         else {

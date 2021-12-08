@@ -24,9 +24,6 @@ NavigationControlArea::NavigationControlArea(){
     addAndMakeVisible(activeLoopLabel);
 
     nextLoopButton.setTooltip("Go to next loop on active track or group");
-	nextLoopButton.setClickingTogglesState(true);
-	nextLoopButton.setToggleState(false, NotificationType::sendNotification);
-
     addAndMakeVisible(nextLoopButton);
 
     newLoopButton.setTooltip("Create new loop on active track");
@@ -41,9 +38,7 @@ NavigationControlArea::NavigationControlArea(){
     addAndMakeVisible(trackLabel);
 
     previousTrackButton.setTooltip("Go to previous track");
-	previousTrackButton.setClickingTogglesState(true);
 
-	previousTrackButton.setToggleState(false, NotificationType::sendNotification);
 
     addAndMakeVisible(previousTrackButton);
 

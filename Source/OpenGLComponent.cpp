@@ -108,7 +108,7 @@ void OpenGLComponent::renderOpenGL() {
 //    auto grbl = std::make_unique<OpenGLShaderProgram> (*openGLContext);
 
 	
-	juce::Point<int> pointOnTopLevel = getLocalPoint(getTopLevelComponent(), Point<int>{-localX, -localY});
+	juce::Point<float> pointOnTopLevel = getLocalPoint(getTopLevelComponent(), Point<float>{float(-localX), float(-localY)});
 	x = pointOnTopLevel.getX() * -1;
     y = getTopLevelComponent()->getHeight() + (pointOnTopLevel.getY()) - getHeight();
     updateScale();
