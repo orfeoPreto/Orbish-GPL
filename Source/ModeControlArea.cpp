@@ -64,28 +64,14 @@ ModeControlArea::ModeControlArea(){
     addAndMakeVisible(snapModeCombo);
     addAndMakeVisible(snapModeLabel);
     
-    Array<StringArray> listFixedSizeBeats;
-    listFixedSizeBeats.add({ "1", "1 Beat" });
-    listFixedSizeBeats.add({ "2","2 Beats" });
-    listFixedSizeBeats.add({ "3","3 Beats" });
-    listFixedSizeBeats.add({ "4","4 Beats" });
-    listFixedSizeBeats.add({ "5","5 Beats" });
-    listFixedSizeBeats.add({ "6","6 Beats" });
-    listFixedSizeBeats.add({ "7","7 Beats" });
-    listFixedSizeBeats.add({ "8","8 Beats" });
-    listFixedSizeBeats.add({ "9","9 Beats" });
-    listFixedSizeBeats.add({ "10","10 Beats" });
-    listFixedSizeBeats.add({ "11","11 Beats" });
-    listFixedSizeBeats.add({ "12","12 Beats" });
-    listFixedSizeBeats.add({ "13","13 Beats" });
-    listFixedSizeBeats.add({ "14","14 Beats" });
-    listFixedSizeBeats.add({ "15","15 Beats" });
-    listFixedSizeBeats.add({ "16","16 Beats" });
-
-
-    for (int i = 0; i < listFixedSizeBeats.size(); ++i){
-        fixedSizeBeatsCombo.addItem(listFixedSizeBeats[i][0], i + 1);
+    StringArray listFixedSizeBeats;
+    for(auto i=0;i<32;i++){
+        auto s = String(i+1);
+        listFixedSizeBeats.add(s);
     }
+
+    fixedSizeBeatsCombo.addItemList(listFixedSizeBeats, 1);
+    
     str = String("Length of the fixed size loop in number of beats");
 
     fixedSizeBeatsCombo.setTooltip(str);

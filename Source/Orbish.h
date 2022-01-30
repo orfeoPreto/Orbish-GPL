@@ -11,7 +11,7 @@
 #define LAYERS_VISIBLE  5
 #define BUFFER_READ_SIZE 1000
 #define JUCE_MODAL_LOOPS_PERMITTED true
-//#define DEBUG_LOG  1
+#define DEBUG_LOG  1
 
 #include <vector>
 #include <string>

@@ -103,7 +103,7 @@ void OpenGLComponent::newOpenGLContextCreated() {
 }
 
 void OpenGLComponent::renderOpenGL() {
-	logMessage("start OpenGLComponent::renderOpenGL()");
+	//logMessage("start OpenGLComponent::renderOpenGL()");
     jassert (OpenGLHelpers::isContextActive());
 //    auto grbl = std::make_unique<OpenGLShaderProgram> (*openGLContext);
 
@@ -158,7 +158,7 @@ void OpenGLComponent::renderOpenGL() {
 		openGLContext->extensions.glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
     }
 //     grbl = std::make_unique<OpenGLShaderProgram> (*openGLContext);
-	logMessage("end OpenGLComponent::renderOpenGL()");
+	//logMessage("end OpenGLComponent::renderOpenGL()");
 
 }
 

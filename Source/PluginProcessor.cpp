@@ -81,7 +81,7 @@ float OrbishAudioProcessor::fromDBTo0To1(float start, float end, float dB){
 //    float  startTemp = std::log10(start1stNorm*0.4);
 //    float  currentTemp = std::log10(current1stNorm * coeff);
 //    float current2ndNorm = (currentTemp + std::abs(startTemp)) / std::abs(startTemp);
-//    //        context->logMessage(r);
+//    //        //context->logMessage(r);
 //    return current2ndNorm;
 }
 float OrbishAudioProcessor::from0To1toDB(float start, float end, float gain){
@@ -215,7 +215,7 @@ parameters(*this, nullptr, "OrbishState", {
     , make_unique<AudioParameterBool>("newLoop", "NewLoop", false)
     , createParamFromBool(new AudioParameterBool("removeLoop", "RemoveLoop", false), false)
     , createParamFromInt(new AudioParameterInt("loopSelect", "Loop", 0, 100, 0), 0)
-    , createParamFromInt(new AudioParameterInt("fixed", "fixedSizeLength", 1, 16, 0), 0)
+    , createParamFromInt(new AudioParameterInt("fixed", "fixedSizeLength", 1, 32, 0), 0)
     // , createParamFromInt(new AudioParameterInt("selectGroup", "SelectGroup", 0, 10, 0), 0)
     , make_unique<AudioParameterChoice>("selectGroup", "SelectGroup", StringArray("A","B","C","D","E","F","G","H","I","J"), 0)
     , createParamFromBool(new AudioParameterBool("addToGroup", "AddToGroup", false), false)
@@ -254,11 +254,11 @@ parameters(*this, nullptr, "OrbishState", {
         File file = File(File::getSpecialLocation(File::userHomeDirectory)).getChildFile("Orbish").getChildFile("Orbish.log");
         auto result = file.create();
         if (result.wasOk()) {
-            context->logger = make_shared<FileLogger>(file, "Heho");
-			context->logger->logMessage("after saying hi");
+            //context->logger = make_shared<FileLogger>(file, "Heho");
+			//context->logger->logMessage("after saying hi");
 
         }
-		context->logger->logMessage("in allocator thread");
+		//context->logger->logMessage("in allocator thread");
 
         while (keepRunning) {
 
@@ -357,7 +357,7 @@ parameters(*this, nullptr, "OrbishState", {
 //        context->xchange->writeVisualisationBufferQueue->reset();
     }
                                            );
-       context->logMessage("end constructor");
+       //context->logMessage("end constructor");
 }
 
 OrbishAudioProcessor::~OrbishAudioProcessor()
@@ -369,7 +369,7 @@ OrbishAudioProcessor::~OrbishAudioProcessor()
     context->lockForStateUpdate(true);
     cleanup();
     context->lockForStateUpdate(false);
-    context->logger = nullptr;
+    //context->logger = nullptr;
     context = nullptr;
 }
 
@@ -536,7 +536,7 @@ void OrbishAudioProcessor::initParams() {
 //==============================================================================
 void OrbishAudioProcessor::prepareToPlay(double sampleRate, int samplesPerBlock)
 {
-       context->logMessage("begin prepareToPlay");
+       //context->logMessage("begin prepareToPlay");
     // Use this method as the place to do any pre-playback
     // initialisation that you need..
     if (context == nullptr) {
@@ -581,9 +581,9 @@ void OrbishAudioProcessor::prepareToPlay(double sampleRate, int samplesPerBlock)
     context->samplesPerBlock = samplesPerBlock;
     context->fadeTime = int(min(float(samplesPerBlock), float(sampleRate) * .01f));
     context->sampleRate = int(sampleRate);
-      context->logMessage("end prepareToPlay");
+      //context->logMessage("end prepareToPlay");
 #if DEBUG_LOG
-    context->logMessage("sample rate set to:" + String(context->sampleRate));
+    //context->logMessage("sample rate set to:" + String(context->sampleRate));
 #endif
     
 }
@@ -952,7 +952,7 @@ void OrbishAudioProcessor::initBlock(AudioBuffer<float>& buffer, MidiBuffer& mid
 #if DEBUG_LOG
     int diff = context->maxBlockSize - context->samplesPerBlock;
     if(diff != 0){
-        context->logMessage("buffer excess:" + String(diff));
+        //context->logMessage("buffer excess:" + String(diff));
     }
 #endif
     if (context->info->isPlaying) {
@@ -974,11 +974,11 @@ void OrbishAudioProcessor::handleClick(std::shared_ptr<OrbishContext> context, A
     auto hostPosInBeats = context->info->ppqPosition * (context->timeSigBottom * .25);
 
 #if DEBUG_LOG
-    context->logMessage("$offsetFormClosestBeat:" + String(context->samplesToBeats(offsetFromClosestBeat)));
-    context->logMessage("$offsetFormClosestBeat2:" + String(context->samplesToQuarters(offsetFromClosestBeat)));
+    //context->logMessage("$offsetFormClosestBeat:" + String(context->samplesToBeats(offsetFromClosestBeat)));
+    //context->logMessage("$offsetFormClosestBeat2:" + String(context->samplesToQuarters(offsetFromClosestBeat)));
 
-    context->logMessage("$host pos in beats:" + String(hostPosInBeats));
-    context->logMessage("$host pos in quarters:" + String(context->info->ppqPosition));
+    //context->logMessage("$host pos in beats:" + String(hostPosInBeats));
+    //context->logMessage("$host pos in quarters:" + String(context->info->ppqPosition));
 #endif
 
 
@@ -1006,7 +1006,7 @@ void OrbishAudioProcessor::handleClick(std::shared_ptr<OrbishContext> context, A
             clickInProcess = false;
 #if DEBUG_LOG
 
-            context->logMessage("$host pos in quarters:" + String(context->info->ppqPosition));
+            //context->logMessage("$host pos in quarters:" + String(context->info->ppqPosition));
 #endif
             numBuffersDoneForClick = 0;
             return;
@@ -1083,7 +1083,7 @@ void OrbishAudioProcessor::handleRecordingEvent(int startRecordingSyncPoint, int
 //    if(stopRecordingSample >= 0 && pluginDiff >= 0){
 //        stopRecordingSample = max(stopRecordingSample + pluginDiff,0);
 //    }
-    //context->logMessage("startRecordingSample: " + String(startRecordingSample));
+    ////context->logMessage("startRecordingSample: " + String(startRecordingSample));
     if (primarySynchronizer->isSyncEventImminent(startRecordingSyncPoint)) {
         activeTrack->StartRecordingBefore();
     }
@@ -1232,9 +1232,9 @@ void OrbishAudioProcessor::handleLoopChangeEvent(int startLoopChangeSyncPoint){
             int diff = activeTrack->nextLoop - activeTrack->ActiveLoop->Index;
             for(auto groupedTrack:*CurrentGroup){
                 auto newIdx = groupedTrack->ActiveLoop->Index + diff % groupedTrack->loops.size();
-                if (newIdx >=0 && newIdx < groupedTrack->loops.size()) {
+//                if (newIdx >=0 && newIdx < groupedTrack->loops.size()) {
                     groupedTrack->ChangeLoopBefore(newIdx);
-                }
+//                }
             }
         }
         else {
@@ -1284,7 +1284,7 @@ void OrbishAudioProcessor::processBlock(AudioBuffer<float>& buffer, MidiBuffer& 
         auto peak = mb->buffer->getMagnitude(0, mb->buffer->getNumSamples());
         int64 startFinal = Time::getHighResolutionTicks();
         int64 startMeasure = Time::getHighResolutionTicks();
-        context->logMessage("peak: "+ String(peak));
+        //context->logMessage("peak: "+ String(peak));
 #endif
         context->xchange->writeMeasureBufferQueue->pop();
         context->xchange->readMeasureBufferQueue->push(mb);
@@ -1329,7 +1329,7 @@ void OrbishAudioProcessor::processBlock(AudioBuffer<float>& buffer, MidiBuffer& 
         }
 #if DEBUG_LOG
         int64 endBeginning = Time::getHighResolutionTicks();
-        //context->logMessage("Beginning section:" + String(endBeginning - startBeginning));
+        ////context->logMessage("Beginning section:" + String(endBeginning - startBeginning));
 #endif
         if (activeTrack->Recording || (activeTrack->LastRecordingBuffer)) {
 #if DEBUG_LOG
@@ -1338,7 +1338,7 @@ void OrbishAudioProcessor::processBlock(AudioBuffer<float>& buffer, MidiBuffer& 
             handleRecordBlock(e.startRecordingSample, e.stopRecordingSample);
 #if DEBUG_LOG
             int64 endRec = Time::getHighResolutionTicks();
-            //context->logMessage("nano secs spent recording:" + String(endRec - startRec));
+            ////context->logMessage("nano secs spent recording:" + String(endRec - startRec));
 #endif
         }
         if (!activeTrack->isMonitoring()) {
@@ -1353,7 +1353,7 @@ void OrbishAudioProcessor::processBlock(AudioBuffer<float>& buffer, MidiBuffer& 
             handlePlaybackBlock((e.startReverseSample >= 0) ? e.startReverseSample : e.startPlayingSample, (e.stopReverseSample >= 0) ? e.stopReverseSample : e.stopPlayingSample);
 #if DEBUG_LOG
             int64 endPlay = Time::getHighResolutionTicks();
-            //context->logMessage("nano secs spent playing back:" + String(endPlay - startPlay));
+            ////context->logMessage("nano secs spent playing back:" + String(endPlay - startPlay));
 #endif
         }
         
@@ -1372,6 +1372,16 @@ void OrbishAudioProcessor::processBlock(AudioBuffer<float>& buffer, MidiBuffer& 
             context->inputBuffer->clear();
         }
     }
+#if DEBUG_LOG
+    if(activeTrack->isAutoTrigger() && context->firstRun){
+        printBuffer(&buffer, "system buffer");
+        printBuffer((context->inputBuffer).get(), "context->inputBuffer");
+        printBuffer((context->buffer).get(), "context->buffer");
+        printBuffer((activeTrack->getActivePlaybackLayer()->Buffer).get(), "context->buffer");
+        context->firstRun = false;
+    }
+#endif
+
     // overwrite the output buffer with the processed audio
     for (uint c = 0; c < context->audioInputsCount; ++c) {
         buffer.clear(c, 0, context->maxBlockSize);
@@ -1394,7 +1404,7 @@ void OrbishAudioProcessor::processBlock(AudioBuffer<float>& buffer, MidiBuffer& 
 #endif
     // run the methods defined to be executed after the block
     for(auto t :tracks){
-        //context->logMessage(String(t->RunAfters.size()));
+        ////context->logMessage(String(t->RunAfters.size()));
         while (t->RunAfters.size() > 0) {
             (t->*(t->RunAfters).back()) ();
             t->RunAfters.pop_back();
@@ -1419,19 +1429,19 @@ void OrbishAudioProcessor::processBlock(AudioBuffer<float>& buffer, MidiBuffer& 
         outputMeterSource.measureBlock(buffer);
     }
 #if DEBUG_LOG
-    //context->logMessage("Final section:" + String(endFinal - startFinal));
-    //context->logMessage("Measure section:" + String(endMeasure - startMeasure));
+    ////context->logMessage("Final section:" + String(endFinal - startFinal));
+    ////context->logMessage("Measure section:" + String(endMeasure - startMeasure));
     //  logMessage("begin iock");
     int64 diff, endMark = Time::getHighResolutionTicks();
     diff = endMark - beginMark;
 
-    context->logMessage("nano secs spent in callback:" + String(diff = endMark - beginMark));
-    context->logMessage("buffer size:" + String(context->maxBlockSize));
+    //context->logMessage("nano secs spent in callback:" + String(diff = endMark - beginMark));
+    //context->logMessage("buffer size:" + String(context->maxBlockSize));
     int64 expectedDiff = (double(context->maxBlockSize) / context->sampleRate) * 1000000000;
-    context->logMessage("delay:" + String(expectedDiff - diff));
+    //context->logMessage("delay:" + String(expectedDiff - diff));
     ;
     if(expectedDiff - diff < 0){
-        context->logMessage("ALARM!! Buffer Underrun!!!");
+        //context->logMessage("ALARM!! Buffer Underrun!!!");
     }
 #endif
     if (guiAlive)
@@ -1440,7 +1450,16 @@ void OrbishAudioProcessor::processBlock(AudioBuffer<float>& buffer, MidiBuffer& 
         }
    // context->buffer.reset();
    // context->inputBuffer.reset();
-	context->logMessage("end of processBlock");
+	//context->logMessage("end of processBlock");
+}
+
+void OrbishAudioProcessor::printBuffer(AudioBuffer<float> *buffer, String name){
+    context->logMessage("Buffer to print: " + name);
+    for(auto i=0;i< buffer->getNumSamples();++i){
+     auto p= buffer->getReadPointer(0, i);
+        context->logMessage(String(i) + ":"+ String(*p));
+    }
+    context->logMessage("Done printing buffer " + name);
 }
 
 void OrbishAudioProcessor::handleRecordBlock(int start, int stop) {
@@ -1457,8 +1476,9 @@ void OrbishAudioProcessor::handleRecordBlock(int start, int stop) {
     // start should always be 0.  Pre-snap samples are used for crossfade
     start = 0;
     // stop should always == buffer size (except when output buffer size is exceeded). Post-snap samples are used for crossfade
-    activeTrack->EndFadeOffset = min(stop, context->allocatedLength - activeTrack->CurrentRecordingIndex);
+    activeTrack->EndFadeOffset = min(max(stop,0), context->allocatedLength - activeTrack->CurrentRecordingIndex);
     stop = min(context->maxBlockSize, context->allocatedLength - activeTrack->CurrentRecordingIndex);
+    DBG(String("CurrentRecordingIndex at entry handle record")+String(activeTrack->CurrentRecordingIndex));
     int samplesToRead = stop;
     int fadeIn = 0;
     int fadeOut = 0;
@@ -1493,21 +1513,24 @@ void OrbishAudioProcessor::handleRecordBlock(int start, int stop) {
                 auto l = activeTrack->AddLayer(true);
                 activeTrack->setActivePlaybackLayer(l);
                 activeTrack->setActiveRecordingLayer(l);
-                //context->logMessage("1. adding layer at: " + String(activeTrack->CurrentRecordingIndex));
+                ////context->logMessage("1. adding layer at: " + String(activeTrack->CurrentRecordingIndex));
 #if DEBUG_LOG
 
                 end1 = Time::getHighResolutionTicks();
                 //} );
                 end2 = Time::getHighResolutionTicks();
-                context->logMessage("1. at loop start overdub ");
+                //context->logMessage("1. at loop start overdub ");
                 
-                context->logMessage("playback layer: " + String(activeTrack->getActivePlaybackLayer()->index));
-                context->logMessage("recording layer: " + String(l->index));
-                context->logMessage("layers size: " + String(activeTrack->Layers->size()));
-                //context->logMessage("Duration outer block: " + String(end2 - start2));
-                //context->logMessage("Duration inner block: " + String(end1 - start1));
+                //context->logMessage("playback layer: " + String(activeTrack->getActivePlaybackLayer()->index));
+                //context->logMessage("recording layer: " + String(l->index));
+                //context->logMessage("layers size: " + String(activeTrack->Layers->size()));
+                ////context->logMessage("Duration outer block: " + String(end2 - start2));
+                ////context->logMessage("Duration inner block: " + String(end1 - start1));
 #endif
             }
+        }else if(activeTrack->getRecordMode() >= kRecAppend){
+            activeTrack->setActivePlaybackLayer((*activeTrack->Layers)[*activeTrack->CurrentTop]);
+            activeTrack->setActiveRecordingLayer((*activeTrack->Layers)[*activeTrack->CurrentTop]);
         }
         fadeIn = adjustedFadeTime;
 #if DEBUG_LOG
@@ -1658,11 +1681,11 @@ void OrbishAudioProcessor::handleRecordBlock(int start, int stop) {
 #if DEBUG_LOG
 
                 end1 = Time::getHighResolutionTicks();
-                context->logMessage("2. in overlap overdub ");
+                //context->logMessage("2. in overlap overdub ");
 
-                context->logMessage("playback layer: " + String(activeTrack->getActivePlaybackLayer()->index));
-                context->logMessage("recording layer: " + String(l->index));
-                context->logMessage("layers size: " + String(activeTrack->Layers->size()));
+                //context->logMessage("playback layer: " + String(activeTrack->getActivePlaybackLayer()->index));
+                //context->logMessage("recording layer: " + String(l->index));
+                //context->logMessage("layers size: " + String(activeTrack->Layers->size()));
 #endif
             }
         }
@@ -1692,6 +1715,8 @@ void OrbishAudioProcessor::handleRecordBlock(int start, int stop) {
 #endif
         }
         indexUpdate = tail;
+//        DBG(String("tail:")+String(tail));
+
         if (activeTrack->FirstRecordingBuffer) {
             activeTrack->FirstRecordingBuffer=false;
         }
@@ -1699,13 +1724,21 @@ void OrbishAudioProcessor::handleRecordBlock(int start, int stop) {
     else {
         if (activeTrack->FirstRecordingBuffer) {
             indexUpdate = start + samplesToRead;
+//            DBG(String("start + samplesToRead:")+String(start + samplesToRead));
+
             activeTrack->FirstRecordingBuffer=false;
         }
         else if (activeTrack->LastRecordingBuffer) {
             indexUpdate = activeTrack->EndFadeOffset;
+//            DBG(String("activeTrack->EndFadeOffset:")+String(activeTrack->EndFadeOffset));
+            activeTrack->LastRecordingBuffer=false;
+            activeTrack->updateVisualizationBuffers();
+
         }
         else {
             indexUpdate = samplesToRead;
+//            DBG(String("samplesToRead:")+String(samplesToRead));
+
         }
     }
     activeTrack->CurrentRecordingIndex += indexUpdate;
@@ -1727,7 +1760,7 @@ void OrbishAudioProcessor::handlePlaybackBlock(int start, int stop) {
             && *track->LoopDuration > 0
             && track->Layers->size() > 0)
         {
-            //context->logMessage("now playing");
+            ////context->logMessage("now playing");
             auto reSync = track->realignment;
             int tail = min(context->maxBlockSize,max(samplesToRead + *track->CurrentPlayingIndex - *track->LoopDuration,0));
             auto activeLayer = track->getActivePlaybackLayer();
@@ -1751,6 +1784,12 @@ void OrbishAudioProcessor::handlePlaybackBlock(int start, int stop) {
                     index = *track->LoopDuration + indexMinusDelayComp;
                 }
                 int currentPlayBuffer = activeLayer->index;
+                if(activeTrack->getActivePlaybackLayer()->index == activeTrack->getActiveRecordingLayer()->index){
+                    if ( activeTrack->getRecordMode() <= RecordMode::kRecAppend &&
+                        activeTrack->Layers->size()-1 == activeTrack->getActiveRecordingLayer()->index ){
+                        --currentPlayBuffer;
+                    }
+                }
                 // set start to 0 if out of bounds
                 start = (start >= context->maxBlockSize) ? 0 : max(start, 0);
                 start=0;
@@ -1766,12 +1805,12 @@ void OrbishAudioProcessor::handlePlaybackBlock(int start, int stop) {
                 int targetIndex = start;
                 // determine number of samples to read
                 samplesToRead = max(0,stop - start);
-                //                                                context->logMessage("sourceIndex: " + String(sourceIndex));
-                //                                                context->logMessage("LoopDuration: " + String(*track->LoopDuration));
-                //                                                context->logMessage("CurrentPlayingIndex: " + String(*track->CurrentPlayingIndex));
-                //                                                context->logMessage("index: " + String(index));
-                //                                                context->logMessage("SamplesToRead: " + String(samplesToRead));
-                //                                                context->logMessage("track: " + String(track->Index));
+                //                                                //context->logMessage("sourceIndex: " + String(sourceIndex));
+                //                                                //context->logMessage("LoopDuration: " + String(*track->LoopDuration));
+                //                                                //context->logMessage("CurrentPlayingIndex: " + String(*track->CurrentPlayingIndex));
+                //                                                //context->logMessage("index: " + String(index));
+                //                                                //context->logMessage("SamplesToRead: " + String(samplesToRead));
+                //                                                //context->logMessage("track: " + String(track->Index));
                 if (*track->LoopDuration > 0) {
                     int reverseSourceIndex=0;
                     {
@@ -1860,12 +1899,12 @@ void OrbishAudioProcessor::handlePlaybackBlock(int start, int stop) {
                                                           , fadeOut, 1.0f, 0.0f);
                                     tail = 0;
                                 }
-//                                context->logMessage("targetIndex: " + String(targetIndex));
-//                                context->logMessage("sourceIndex: " + String(sourceIndex));
-//                                context->logMessage("fadeIn: " + String(fadeIn));
-//                                context->logMessage("fadeOut: " + String(fadeOut));
-//                                context->logMessage("samplesToRead: " + String(samplesToRead));
-//                                context->logMessage("temp->getNumSamples(): " + String(temp->getNumSamples()));
+//                                //context->logMessage("targetIndex: " + String(targetIndex));
+//                                //context->logMessage("sourceIndex: " + String(sourceIndex));
+//                                //context->logMessage("fadeIn: " + String(fadeIn));
+//                                //context->logMessage("fadeOut: " + String(fadeOut));
+//                                //context->logMessage("samplesToRead: " + String(samplesToRead));
+//                                //context->logMessage("temp->getNumSamples(): " + String(temp->getNumSamples()));
                             }
                             temp->addFrom(c
                                           , targetIndex + fadeIn
@@ -1893,11 +1932,11 @@ void OrbishAudioProcessor::handlePlaybackBlock(int start, int stop) {
                             }
                             if(temp->getReadPointer(c)==nullptr){
 #if DEBUG_LOG
-                                context->logMessage("Nullpointer in temp buffer");
+                                //context->logMessage("Nullpointer in temp buffer");
                                 if(noNullPtrInTmpBuffer){
-                                    context->logMessage("Previously ok");
+                                    //context->logMessage("Previously ok");
                                 }else{
-                                    context->logMessage("Previously nok");
+                                    //context->logMessage("Previously nok");
                                 }
 #endif
                             }else{

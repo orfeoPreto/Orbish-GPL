@@ -21,8 +21,10 @@ Layer::~Layer(){
 }
 
 void Layer::makeVisualizationBuffer(int size){
-    FloatVectorOperations::clear(visualizationBuffer, BUFFER_READ_SIZE);
-    for (auto i=0; i<BUFFER_READ_SIZE; ++i) {
-        visualizationBuffer[i] =  Buffer->getSample(0, float(i)/float(BUFFER_READ_SIZE) * size);
+    if(sizeof(visualizationBuffer) > 0){
+        FloatVectorOperations::clear(visualizationBuffer, BUFFER_READ_SIZE);
+        for (auto i=0; i<BUFFER_READ_SIZE; ++i) {
+            visualizationBuffer[i] =  Buffer->getSample(0, float(i)/float(BUFFER_READ_SIZE) * size);
+        }
     }
 }

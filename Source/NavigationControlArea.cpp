@@ -15,7 +15,7 @@
 NavigationControlArea::NavigationControlArea(){
     loopLabel.setText("Loop", NotificationType::dontSendNotification);
     addAndMakeVisible(loopLabel);
-
+    
     previousLoopButton.setTooltip("Go to previous loop on active track or group");
     addAndMakeVisible(previousLoopButton);
 

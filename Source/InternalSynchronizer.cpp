@@ -22,7 +22,7 @@ int InternalSynchronizer::getNextSynchronizationPoint(SnapMode snapMode){
     switch(snapMode){
         case kSnapMeasure:{
 #if DEBUG_LOG
-            context->logMessage(String(*currentPos));
+            //context->logMessage(String(*currentPos));
 #endif
             int diff = *currentPos % (Synchronizer::context->samplesPerBeat  * Synchronizer::context->timeSigTop);
             expectedPos = *currentPos - diff;

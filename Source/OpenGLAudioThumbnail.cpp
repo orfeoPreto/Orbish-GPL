@@ -79,22 +79,22 @@ void OpenGLAudioThumbnail::deactivate(){
 }
 
 void OpenGLAudioThumbnail::prepareActivation() {
-	logMessage("prepare activation");
+	//logMessage("prepare activation");
 
 	OpenGLComponent::bgColour = Colour{ 0xff333300 + OpenGLComponent::bgColour.getARGB() };
 }
 
 void OpenGLAudioThumbnail::unPrepareActivation() {
-	logMessage("unprepare activation");
+	//logMessage("unprepare activation");
 
 	OpenGLComponent::bgColour = Colour{ OpenGLComponent::bgColour.getARGB() - 0xff333300 };
 }
 
 
 void OpenGLAudioThumbnail::renderOpenGL() {
-	logMessage("start OpenGLAudioThumbnail::renderOpenGL()");
-	logMessage("displayType: " + String(getDisplayType()));
-	logMessage("topLevelComponent: " + this->getTopLevelComponent()->getComponentID());
+	//logMessage("start OpenGLAudioThumbnail::renderOpenGL()");
+	//logMessage("displayType: " + String(getDisplayType()));
+	//logMessage("topLevelComponent: " + this->getTopLevelComponent()->getComponentID());
     if (nullptr == sourceLoop) {
         return;
     }
@@ -103,7 +103,7 @@ void OpenGLAudioThumbnail::renderOpenGL() {
 //        auto grbl = std::make_unique<OpenGLShaderProgram> (*openGLContext);
         if(nullptr == sourceLoop->Layers
            || sourceLoop->CurrentTop < 0){
-			logMessage("no layers :(");
+			//logMessage("no layers :(");
             return;
         }
         if (getDisplayType() == kFlat) {
@@ -167,9 +167,9 @@ void OpenGLAudioThumbnail::renderOpenGL() {
 //         grbl = std::make_unique<OpenGLShaderProgram> (*openGLContext);
 
     } catch (int e) {
-		logMessage("Exception occured: "  + String(e) );
+		//logMessage("Exception occured: "  + String(e) );
     }
-	logMessage("end OpenGLAudioThumbnail::renderOpenGL()");
+	//logMessage("end OpenGLAudioThumbnail::renderOpenGL()");
 
 }
 

@@ -33,8 +33,8 @@ Loop::~Loop()
             context->xchange->layerQueue->pop();
 #if DEBUG_LOG
             end2 = Time::getHighResolutionTicks();
-            context->logMessage("time for Layers->add: " + String(end1 - start1));
-            context->logMessage("time for pop_front: " + String(end2 - start2));
+            //context->logMessage("time for Layers->add: " + String(end1 - start1));
+            //context->logMessage("time for pop_front: " + String(end2 - start2));
 #endif
             if (incrementTop) CurrentTop = int(Layers->size()) - 1;
         }

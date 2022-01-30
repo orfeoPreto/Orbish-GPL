@@ -47,7 +47,7 @@ struct OrbishContext {
 
 	}
 public:
-
+    bool firstRun = false;
 	uint32    audioInputsCount;
 	float mix = 0;
     float clickLevel = .5;

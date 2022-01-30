@@ -12,9 +12,9 @@ valueTreeState(apvts),
 nextLayerNumber(-1)
 {
 #if DEBUG_LOG
-    logMessage("HiRes ticks per sec:" + String(Time::getHighResolutionTicksPerSecond()));
+    //logMessage("HiRes ticks per sec:" + String(Time::getHighResolutionTicksPerSecond()));
 #endif
-    logMessage("entering editor constructor");
+    //logMessage("entering editor constructor");
     openGLContext = makeOpenGLContext(true, true, 1);
     //    setAlpha(0.5);
     setOpaque(true);
@@ -59,7 +59,7 @@ nextLayerNumber(-1)
     setupNavigationControls(buttonControlArea);
     setSize (1300, 800);
     markActiveTrackForRefresh(true);
-    logMessage("leaving editor constructor");
+    //logMessage("leaving editor constructor");
     
 }
 
@@ -218,7 +218,7 @@ void OrbishAudioProcessorEditor::openGLContextClosing()
 
 void OrbishAudioProcessorEditor::renderOpenGL()
 {
-    logMessage("entering renderOpenGL");
+    //logMessage("entering renderOpenGL");
     
     counter++;
     stamp = Time::getApproximateMillisecondCounter();
@@ -237,25 +237,25 @@ void OrbishAudioProcessorEditor::renderOpenGL()
         if(nullptr == reference ||
            nullptr == reference->asOpenGLComponent->shader)continue;
         if(reference->asComponent->isVisible()){
-            logMessage("component type: "+ String(reference->asComponent->getName()));
-            logMessage("component id: " + String(reference->asComponent->getComponentID()));
-            logMessage("before if");
+            //logMessage("component type: "+ String(reference->asComponent->getName()));
+            //logMessage("component id: " + String(reference->asComponent->getComponentID()));
+            //logMessage("before if");
             
             //            auto grbl = std::make_unique<OpenGLShaderProgram> (*openGLContext);
             if (reference->asOpenGLComponent->shaderName == "thumbnail-playhead"){
-                logMessage(" if shader name: thumbnail-playhead");
+                //logMessage(" if shader name: thumbnail-playhead");
                 
                 if (flags & CallBackFlags::shouldRemoveLoop
                     || flags & CallBackFlags::shouldRemoveTrack) {
                     continue;
                 }
                 if(reference->asComponent->getName() != "main"){
-                    logMessage(" if >getName() != main");
+                    //logMessage(" if >getName() != main");
                     
                     auto widgetPosition = reference->asComponent->getPosition();
                     auto widgetPosRelativeToViewport = reference->asComponent->getLocalPoint(&tracksViewport,Point<float>(widgetPosition.getX(), widgetPosition.getY()));
-                    logMessage("2component type: " + String(reference->asComponent->getName()));
-                    logMessage("2component id: " + String(reference->asComponent->getComponentID()));
+                    //logMessage("2component type: " + String(reference->asComponent->getName()));
+                    //logMessage("2component id: " + String(reference->asComponent->getComponentID()));
                     if(tracksViewport.getWidth() < widgetPosRelativeToViewport.getX()
                        || tracksViewport.getHeight() < widgetPosRelativeToViewport.getY()
                        || 0 < widgetPosRelativeToViewport.getX() - reference->asComponent->getWidth()
@@ -270,7 +270,7 @@ void OrbishAudioProcessorEditor::renderOpenGL()
             //            if(reference->asComponent->getComponentID() == "Loop1"){
             //                DBG(reference->asOpenGLComponent->getTotalLength());
             //            }
-            logMessage("befor renderopengl of component");
+            //logMessage("befor renderopengl of component");
             
             reference->asRenderer->renderOpenGL();
             //             grbl = std::make_unique<OpenGLShaderProgram> (*openGLContext);
@@ -284,7 +284,7 @@ void OrbishAudioProcessorEditor::renderOpenGL()
         //        DBG("time in render:" + String(afterStamp-stamp));
         std::this_thread::sleep_for(std::chrono::milliseconds(33 - (afterStamp-stamp)));
     }
-    logMessage("leaving renderOpenGL");
+    //logMessage("leaving renderOpenGL");
     
 }
 
@@ -396,7 +396,7 @@ void OrbishAudioProcessorEditor::saveProject() {
         if (!project.directory.exists()) {
             juce::Result result = project.directory.createDirectory();
             if (result.failed()) {
-                logMessage(result.getErrorMessage());
+                //logMessage(result.getErrorMessage());
                 return;
             }
         }
@@ -406,7 +406,7 @@ void OrbishAudioProcessorEditor::saveProject() {
         if(!fc.getResult().exists()){
             juce::Result result = fc.getResult().createDirectory();
             if (result.failed()) {
-                logMessage(result.getErrorMessage());
+                //logMessage(result.getErrorMessage());
                 return;
             }
         }
@@ -415,7 +415,7 @@ void OrbishAudioProcessorEditor::saveProject() {
         tempDir = std::make_unique<File>(project.directory.getChildFile(project.name));
         juce::Result result = tempDir->createDirectory();
         if (result.failed()) {
-            logMessage(result.getErrorMessage());
+            //logMessage(result.getErrorMessage());
             return;
         }
     }
@@ -428,7 +428,7 @@ void OrbishAudioProcessorEditor::saveProject() {
     for (auto track: tracks) {
         ValueTree tv(String("track"));
         if(nullptr == track ){
-            logMessage("nullpointer in save project (no track)");
+            //logMessage("nullpointer in save project (no track)");
             return;
         }
         tv.setProperty("index", track->getIndex(), nullptr);
@@ -436,17 +436,17 @@ void OrbishAudioProcessorEditor::saveProject() {
         for (auto loop: track->Loops) {
             ValueTree lv(String("loop"));
             if(nullptr == loop ){
-                logMessage("nullpointer in save project (no loop)");
+                //logMessage("nullpointer in save project (no loop)");
                 return;
             }
             if(nullptr == track->getAudioTrack()){
-                logMessage("nullpointer in save project (no audio track)");
-                logMessage(String("Track index:") + String(track->getIndex()));
+                //logMessage("nullpointer in save project (no audio track)");
+                //logMessage(String("Track index:") + String(track->getIndex()));
                 return;
             }
             if(loop->getIndex() >= track->getAudioTrack()->loops.size()){
-                logMessage("exceeded bounds of audio loop array");
-                logMessage(String("Loop index:") + String(loop->getIndex()));
+                //logMessage("exceeded bounds of audio loop array");
+                //logMessage(String("Loop index:") + String(loop->getIndex()));
                 return;
             }
             for (auto k = 0;k <= track->getAudioTrack()->loops[loop->getIndex()]->CurrentTop;++k) {
@@ -565,7 +565,7 @@ bool OrbishAudioProcessorEditor::openFile(const File& file) {
             loader->loadFromValueTree(loopTree.get());
         }
         catch (...) {
-            logMessage("Problem loading file");
+            //logMessage("Problem loading file");
         }
         for (int i = 0;i < processor.tracks.size(); ++i) {
             doCreateTrack(i);
@@ -666,7 +666,7 @@ String OrbishAudioProcessorEditor::saveBuffer(int trackIdx
     if (!dir.exists()) {
         juce::Result result = dir.createDirectory();
         if (result.failed()) {
-            logMessage(result.getErrorMessage());
+            //logMessage(result.getErrorMessage());
             return "";
         }
     }
@@ -930,18 +930,13 @@ void OrbishAudioProcessorEditor::sliderChanged(Slider* slider) {
 
 void OrbishAudioProcessorEditor::buttonClicked(Button* button){
     auto navigationControlArea = &infoAndControlArea->controlArea.buttonControlArea.modeAndNavigationControlArea.navigationControlArea;
-    logMessage("button clicked");
+    //logMessage("button clicked");
     if (button == &settingsPage->closeSettingsButton) {
         closeSettingsPage();
     }
-    if (button == &navigationControlArea->nextTrackButton) {
-        logMessage("next track");
-    }
-    if (button == &navigationControlArea->previousTrackButton) {
-        logMessage("previous track");
-    }
+
     if (button == &navigationControlArea->nextLoopButton) {
-        logMessage("next loop");
+        //logMessage("next loop");
         auto t = tracks[activeTrackIdx];
 //        if (!t->audioTrack->loopChangeArmed)return;
         if (loopBecomingActive >= 0 && loopBecomingActive < t->Loops.size()) {
@@ -1126,13 +1121,13 @@ void OrbishAudioProcessorEditor::askToUpdatePlayState(int trackNumber)
 }
 
 void OrbishAudioProcessorEditor::askToUpdateHostPosition(int hostPos) {
-    //logMessage("before setting host position");
+    ////logMessage("before setting host position");
     hostPosition = float(processor.context->samplesToBeats(hostPos));
     flags |= CallBackFlags::shouldUpdateHostPosition;
 };
 
 void OrbishAudioProcessorEditor::askToRefreshThumbnail() {
-    //logMessage("before setting host position");
+    ////logMessage("before setting host position");
     flags |= CallBackFlags::shouldRefreshThumbnail;
 };
 

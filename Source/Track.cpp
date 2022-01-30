@@ -341,7 +341,11 @@ void Track::AddLoop(){
 
 void Track::RemoveLoop(){
     if(loops.size() > 1){
-        loops.getLast()->Layers = nullptr;
+        auto l = loops.getLast();
+        if (l == ActiveLoop){
+            ActiveLoop = loops[l->Index - 1];
+        }
+        l->Layers = nullptr;
         loops.removeLast();
     }
 }
@@ -444,14 +448,18 @@ int Track::getAdjustedLoopPosition(int currentIndex, int adjustment){
 
 void Track::StartResetBefore(){
     if (IsPlaying()) {
-        setPlayArmed(false);
+//        setPlayArmed(false);
         Playing = false;
     }
     RunAfters.push_back(&Track::StartResetAfter);
 }
 
 void Track::updateVisualizationBuffers(){
-    ActiveLoop->activeRecordingLayer->makeVisualizationBuffer(*LoopDuration);
+    auto l = getActiveRecordingLayer();
+    if (nullptr == l) {
+        return;
+    }
+    l->makeVisualizationBuffer(*LoopDuration);
     getActivePlaybackLayer();
     ActiveLoop->updateFlattenedVisualizationBuffer();
 }
@@ -502,7 +510,9 @@ void Track::StartRecordingBefore()
 //    ActiveLoop->activeRecordingLayer = (*Layers)[*CurrentTop];
     // actually start Recording
     Recording = true;
-    CurrentRecordingIndex = *CurrentPlayingIndex;
+    CurrentRecordingIndex = std::max(*CurrentPlayingIndex, 0);
+    DBG(String("CurrentRecordingIndex in start rec befor")+String(CurrentRecordingIndex));
+
     FirstRecordingBuffer = true;
     RunAfters.push_back(&Track::StartRecordingAfter);
 }
@@ -994,6 +1004,7 @@ void Track::processReverseChange() {
 void Track::processTriggerModeChange() {
     if (isRecordingArmed())
         Triggered = false;
+    context->firstRun = true;
 }
 
 
@@ -1184,7 +1195,7 @@ void Track::setFixedSize(int newValue){
 }
 
 std::shared_ptr<Layer> Track::getActivePlaybackLayer(){
-    if (ActiveLoop->Layers->size() == 0) {
+    if (nullptr == ActiveLoop->Layers || ActiveLoop->Layers->size() == 0) {
         return nullptr;
     }
     if(nullptr == ActiveLoop->activePlaybackLayer){
@@ -1200,14 +1211,15 @@ void Track::setActivePlaybackLayer(std::shared_ptr<Layer> l){
     ActiveLoop->activePlaybackLayer = l;
 }
 std::shared_ptr<Layer> Track::getActiveRecordingLayer(){
+    if (nullptr == ActiveLoop->Layers || ActiveLoop->Layers->size() == 0) {
+        return nullptr;
+    }
     return ActiveLoop->activeRecordingLayer;
-    
 }
+
 void Track::setActiveRecordingLayer(std::shared_ptr<Layer> l){
     ActiveLoop->activeRecordingLayer = l;
 }
-
-
 
 bool Track::isMuteArmed() {  return muteArmed; }
 bool Track::isSoloArmed() {  return soloArmed; }
