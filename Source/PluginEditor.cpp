@@ -689,12 +689,56 @@ String OrbishAudioProcessorEditor::saveBuffer(int trackIdx
     return file.getFullPathName();
 }
 
+String OrbishAudioProcessorEditor::saveBuffer(std::shared_ptr<AudioBuffer<float> > buffer
+                                              , File dir
+                                              , String name
+                                              , bool overwrite){
+
+    if (!dir.exists()) {
+        juce::Result result = dir.createDirectory();
+        if (result.failed()) {
+            //logMessage(result.getErrorMessage());
+            return "";
+        }
+    }
+    File file = dir.getChildFile(name + ".wav");
+    if (overwrite && file.exists()) {
+        file.deleteFile();
+    }
+    file = dir.getNonexistentChildFile(name ,".wav");
+    WavAudioFormat form;
+    std::unique_ptr<AudioFormatWriter> writer;
+    writer.reset(form.createWriterFor(new FileOutputStream(file),
+                                      processor.context->sampleRate,
+                                      buffer->getNumChannels(),
+                                      24,
+                                      {},
+                                      0));
+    
+    writer->writeFromAudioSampleBuffer(*buffer, 0, buffer->getNumSamples());
+    
+    return file.getFullPathName();
+}
+
+
 String OrbishAudioProcessorEditor::saveBufferFromLoop(int trackIdx, int loopIdx) {
     auto track = tracks[trackIdx];
     auto layerIdx = processor.tracks[trackIdx]->CurrentTop;
     File dir = File(File::getSpecialLocation(File::userHomeDirectory));
     dir = dir.getChildFile("Orbish");
     dir = dir.getChildFile("UsedByHost");
+    std::shared_ptr<AudioBuffer<float> > temp;
+    if(processor.context->xchange->readBufferQueue->read_available() > 0){
+        temp = processor.context->xchange->readBufferQueue->front();
+        temp->setSize(temp->getNumChannels(), *track->getAudioTrack()->LoopDuration);
+        for (auto layer: *track->getAudioTrack()->loops[loopIdx]->Layers) {
+            for(auto c=0;c<temp->getNumChannels();++c){
+                temp->addFrom(c, 0, layer->Buffer->getReadPointer(c),*track->getAudioTrack()->LoopDuration);
+            }
+        }
+        return saveBuffer(temp, dir, track->getName() + "_" + String(loopIdx), false);
+    }
+
     return saveBuffer(trackIdx, loopIdx, *processor.tracks[trackIdx]->CurrentTop
                       , dir, track->getName() + "_" + String(loopIdx) + "_" + String(*layerIdx), false);
 }
@@ -992,8 +1036,20 @@ void OrbishAudioProcessorEditor::mouseDown(const MouseEvent &event) {
 
 void OrbishAudioProcessorEditor::mouseDrag(const MouseEvent& event) {
     for (auto track : tracks) {
+        if (event.eventComponent->getParentComponent() == track) {
+            auto l = track->Loops[activeLoop];
+            if (!this->isDragAndDropActive()) {
+                this->startDragging("track", l, Image(), true);
+            }
+            auto s = saveBufferFromLoop(track->getIndex(), l->getIndex());
+            if (s.length() == 0){
+                return;
+            }
+            StringArray files = { s };
+            performExternalDragDropOfFiles({ s }, false, {  });
+        }
         for (auto loop  : track->Loops) {
-            if (event.eventComponent == loop) {
+            if (event.eventComponent->getParentComponent() == loop) {
                 if (!this->isDragAndDropActive()) {
                     this->startDragging("loop", loop, Image(), true);
                 }

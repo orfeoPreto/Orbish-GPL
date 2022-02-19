@@ -125,6 +125,7 @@ public:
     void askToChangeLayer(int trackNumber, int layerNumber) override;
     void askToUpdateHostPosition(int ) override;
 	String saveBuffer(int trackIdx, int loopIdx, int layerIdx, File dir, String name, bool overwrite);
+    String saveBuffer(std::shared_ptr<AudioBuffer<float> > buffer, File dir, String name, bool overwrite);
 	void clicked(Button*) override;
 	void sliderChanged(Slider*) override;
     void buttonClicked (Button* button) override;

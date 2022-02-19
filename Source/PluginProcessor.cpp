@@ -1784,9 +1784,12 @@ void OrbishAudioProcessor::handlePlaybackBlock(int start, int stop) {
                     index = *track->LoopDuration + indexMinusDelayComp;
                 }
                 int currentPlayBuffer = activeLayer->index;
-                if(activeTrack->getActivePlaybackLayer()->index == activeTrack->getActiveRecordingLayer()->index){
-                    if ( activeTrack->getRecordMode() <= RecordMode::kRecAppend &&
-                        activeTrack->Layers->size()-1 == activeTrack->getActiveRecordingLayer()->index ){
+                if(activeTrack->Index == track->Index &&
+                   track->Recording &&
+                   nullptr != track->getActiveRecordingLayer() &&
+                   track->getActivePlaybackLayer()->index == track->getActiveRecordingLayer()->index){
+                    if ( track  ->getRecordMode() <= RecordMode::kRecAppend &&
+                        track->Layers->size()-1 == track->getActiveRecordingLayer()->index ){
                         --currentPlayBuffer;
                     }
                 }

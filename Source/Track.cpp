@@ -259,8 +259,10 @@ void Track::parameterChanged(const String &parameterID, float newValue) {
         processPlayChange();
         playArmed = state->getProperty("play");
     }else if(parameterID == "stop"){
-        processStopChange();
         stopArmed = state->getProperty("stop");
+        if(stopArmed){
+            processStopChange();
+        }
     }else if(parameterID == "monitor"){
         monitoring = state->getProperty("monitor");
     }else if(parameterID == "reverse"){
