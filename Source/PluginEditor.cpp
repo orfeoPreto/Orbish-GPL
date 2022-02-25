@@ -689,41 +689,8 @@ String OrbishAudioProcessorEditor::saveBuffer(int trackIdx
     return file.getFullPathName();
 }
 
-String OrbishAudioProcessorEditor::saveBuffer(std::shared_ptr<AudioBuffer<float> > buffer
-                                              , File dir
-                                              , String name
-                                              , bool overwrite){
-
-    if (!dir.exists()) {
-        juce::Result result = dir.createDirectory();
-        if (result.failed()) {
-            //logMessage(result.getErrorMessage());
-            return "";
-        }
-    }
-    File file = dir.getChildFile(name + ".wav");
-    if (overwrite && file.exists()) {
-        file.deleteFile();
-    }
-    file = dir.getNonexistentChildFile(name ,".wav");
-    WavAudioFormat form;
-    std::unique_ptr<AudioFormatWriter> writer;
-    writer.reset(form.createWriterFor(new FileOutputStream(file),
-                                      processor.context->sampleRate,
-                                      buffer->getNumChannels(),
-                                      24,
-                                      {},
-                                      0));
-    
-    writer->writeFromAudioSampleBuffer(*buffer, 0, buffer->getNumSamples());
-    
-    return file.getFullPathName();
-}
-
-
 String OrbishAudioProcessorEditor::saveBufferFromLoop(int trackIdx, int loopIdx) {
     auto track = tracks[trackIdx];
-    auto layerIdx = processor.tracks[trackIdx]->CurrentTop;
     File dir = File(File::getSpecialLocation(File::userHomeDirectory));
     dir = dir.getChildFile("Orbish");
     dir = dir.getChildFile("UsedByHost");
@@ -738,9 +705,7 @@ String OrbishAudioProcessorEditor::saveBufferFromLoop(int trackIdx, int loopIdx)
         }
         return saveBuffer(temp, dir, track->getName() + "_" + String(loopIdx), false);
     }
-
-    return saveBuffer(trackIdx, loopIdx, *processor.tracks[trackIdx]->CurrentTop
-                      , dir, track->getName() + "_" + String(loopIdx) + "_" + String(*layerIdx), false);
+    return "";
 }
 
 void OrbishAudioProcessorEditor::toggleRecord(){

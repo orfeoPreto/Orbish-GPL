@@ -537,7 +537,6 @@ void Track::StopRecordingBefore()
 
 void Track::StopRecordingAfter()
 {
-    
     const int recordedCount = CurrentRecordingIndex;
     
     // recorded beyond previous loop -> update duration, start playback at 0
