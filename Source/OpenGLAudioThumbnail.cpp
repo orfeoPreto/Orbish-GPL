@@ -11,7 +11,7 @@
 #include "Orbish.h"
 #include <JuceHeader.h>
 
-
+using namespace juce::gl;
 //==============================================================================
 
 

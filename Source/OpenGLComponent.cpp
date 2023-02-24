@@ -12,6 +12,7 @@
 #include "OpenGLComponent.h"
 //==============================================================================
 
+using namespace juce::gl;
 
 OpenGLComponent::OpenGLComponent (std::atomic<float>& offset, bool fraction):
 vertices{

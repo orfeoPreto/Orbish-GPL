@@ -708,6 +708,37 @@ String OrbishAudioProcessorEditor::saveBufferFromLoop(int trackIdx, int loopIdx)
     return "";
 }
 
+String OrbishAudioProcessorEditor::saveBuffer(std::shared_ptr<AudioBuffer<float> > buffer
+    , File dir
+    , String name
+    , bool overwrite) {
+
+    if (!dir.exists()) {
+        juce::Result result = dir.createDirectory();
+        if (result.failed()) {
+            //logMessage(result.getErrorMessage());
+            return "";
+        }
+    }
+    File file = dir.getChildFile(name + ".wav");
+    if (overwrite && file.exists()) {
+        file.deleteFile();
+    }
+    file = dir.getNonexistentChildFile(name, ".wav");
+    WavAudioFormat form;
+    std::unique_ptr<AudioFormatWriter> writer;
+    writer.reset(form.createWriterFor(new FileOutputStream(file),
+        processor.context->sampleRate,
+        buffer->getNumChannels(),
+        24,
+        {},
+        0));
+
+    writer->writeFromAudioSampleBuffer(*buffer, 0, buffer->getNumSamples());
+
+    return file.getFullPathName();
+}
+
 void OrbishAudioProcessorEditor::toggleRecord(){
     project.dirty = true;
     infoAndControlArea->controlArea.thumbnailAndGroupArea.thumbnailArea.inputDisplay.clear();

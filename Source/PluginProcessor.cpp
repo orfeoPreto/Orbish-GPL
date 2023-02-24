@@ -1031,7 +1031,7 @@ void OrbishAudioProcessor::captureTrigger(int& startRecordingSyncPoint){
         && !activeTrack->Triggered)
     {
         
-        const float** samples = context->buffer->getArrayOfReadPointers();
+         const float* const* samples = context->buffer->getArrayOfReadPointers();
         for (uint32 channel = 0; channel < context->audioInputsCount && startRecordingSyncPoint == -1; channel++)
             
             for (int i = 0; i < context->maxBlockSize && startRecordingSyncPoint == -1; i++)

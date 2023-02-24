@@ -3,7 +3,7 @@
 //  Orbish - Shared Code
 //
 //  Created by Duke Quarcoo on 09/11/2021.
-//  Copyright Â© 2021 exu. All rights reserved.
+//  Copyright © 2021 exu. All rights reserved.
 //
 
 #ifndef TrackLoader_h
@@ -13,8 +13,8 @@
 #include "PluginProcessor.h"
 
 
-class TrackLoader{
-    
+class TrackLoader {
+
 public:
     TrackLoader(OrbishAudioProcessor& processor);
     ~TrackLoader();
