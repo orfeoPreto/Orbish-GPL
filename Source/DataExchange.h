@@ -16,6 +16,7 @@ public:
     int layerIndex = -1;
     int trackIndex = -1;
     int loopIndex = -1;
+    
 };
 
 class MeasureBuffer{
@@ -57,7 +58,6 @@ public:
 
     boost::lockfree::spsc_queue<std::string*, boost::lockfree::capacity<10000> >* logReadMessageQueue;
     boost::lockfree::spsc_queue<std::string*, boost::lockfree::capacity<10000> >* logWriteMessageQueue;
-
     boost::lockfree::spsc_queue<std::shared_ptr<AudioBuffer<float> >, boost::lockfree::capacity<200> >* readBufferQueue;
     
     boost::lockfree::spsc_queue<std::shared_ptr<MeasureBuffer>, boost::lockfree::capacity<50> >* writeMeasureBufferQueue;

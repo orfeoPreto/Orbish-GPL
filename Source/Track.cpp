@@ -237,6 +237,7 @@ void Track::setActive(bool newValue){
 }
 
 void Track::parameterChanged(const String &parameterID, float newValue) {
+    try {
     state->setProperty(parameterID, newValue, nullptr);
     if(parameterID == "inputLevel"){
         auto p = params.getParameter("inputLevel");
@@ -308,7 +309,9 @@ void Track::parameterChanged(const String &parameterID, float newValue) {
     }else if (parameterID == "fixed") {
         fixedSize = int(newValue);
     }
-        
+    } catch (...) {
+        DBG("Exception in Track::parameterChanged for: " + parameterID);
+    }
 }
 
 
@@ -356,6 +359,7 @@ std::shared_ptr<Layer> Track::AddLayer(bool incrementTop) {
     LayersReady = false;
     ActiveLoop->AddLayer(incrementTop, context);
     LayersReady = true;
+    if (Layers->empty()) return nullptr;
     return Layers->back();
 }
 
@@ -394,12 +398,15 @@ int Track::BounceHistory(int startCheckPoint, int endCheckPoint) {
                 }
             }
         }
-        if ((*Layers)[i]->Checkpoint == endCheckPoint)
+        if ((*Layers)[i] && (*Layers)[i]->Checkpoint == endCheckPoint)
             break;
     }
-    auto l = (*Layers)[*CurrentTop];
-    setActivePlaybackLayer(l);
-    setActiveRecordingLayer(l);
+    int ct = safeCurrentTop();
+    if (ct >= 0) {
+        auto l = (*Layers)[ct];
+        setActivePlaybackLayer(l);
+        setActiveRecordingLayer(l);
+    }
 
     return startIdx;
 }
@@ -498,16 +505,30 @@ void Track::StartRecordingBefore()
         *LoopDuration = int(context->beatsToSamples(fixedSize));
     }
     if(Layers->size() == 0){
-        AddLayer(false);
-        setActiveRecordingLayer(Layers->at(0));
+        auto l = AddLayer(false);
+        if (l != nullptr) {
+            setActiveRecordingLayer(l);
+        }
+        // If l is nullptr (layerQueue empty), recording layer will be
+        // created in handleRecordBlock when the queue is populated.
     }else{
 //         || (getRecordMode() < 4
 //             && *CurrentTop == Layers->size() - uint(1)
 //             && (*Layers)[*CurrentTop]->dirty))) {
-            
-        auto l = (*Layers)[*CurrentTop];
-        setActivePlaybackLayer(l);
-        setActiveRecordingLayer(l);
+        int ct = safeCurrentTop();
+        if (ct >= 0) {
+            auto l = (*Layers)[ct];
+            setActivePlaybackLayer(l);
+            setActiveRecordingLayer(l);
+        } else {
+            // CurrentTop is invalid, reset to last layer
+            *CurrentTop = (int)Layers->size() - 1;
+            if (*CurrentTop >= 0) {
+                auto l = (*Layers)[*CurrentTop];
+                setActivePlaybackLayer(l);
+                setActiveRecordingLayer(l);
+            }
+        }
     }
 //    ActiveLoop->activeRecordingLayer = (*Layers)[*CurrentTop];
     // actually start Recording
@@ -546,7 +567,7 @@ void Track::StopRecordingAfter()
         if (getRecordMode() == kRecExtend  && *LoopDuration > 0) {
             const int tail = recordedCount % *LoopDuration;
             for (auto segments = recordedCount / *LoopDuration, h = 1; segments>0; --segments, ++h) {
-                for (int i = 0; i < *CurrentTop; i++) {
+                for (int i = 0; i < *CurrentTop && i < (int)Layers->size(); i++) {
                     for(uint j = 0; j < context->audioInputsCount;j++){
                         (*Layers)[i]->Buffer->copyFrom(j, h * *LoopDuration, (*Layers)[i]->Buffer->getReadPointer(j), (segments>0)?*LoopDuration:tail, 1);
                     }
@@ -615,7 +636,7 @@ void Track::StartPlaybackAfter()
     if(isActive() && currentPlayBuffer>=0){
         if(!(getRecordMode() == 1
            && Layers->size() == 1
-             && !Layers->at(0)->dirty)){
+             && !(*Layers)[0]->dirty)){
 //        UpdateLoopVisualizer();
         }
     }
@@ -767,7 +788,8 @@ void Track::ChangeLoopAfter(){
     if(WasRecording){
         setRecordingArmed(true);
         StartRecordingBefore();
-        std::swap(RunAfters[RunAfters.size()-1],RunAfters[RunAfters.size()-2]);
+        if (RunAfters.size() >= 2)
+            std::swap(RunAfters[RunAfters.size()-1],RunAfters[RunAfters.size()-2]);
         WasRecording = false;
     }
     if(guiAlive){
@@ -805,7 +827,7 @@ void Track::UpdateLoopVisualizer(Layer* l){
 
 void Track::UpdateLoopVisualizer(){
 
-    if (*CurrentTop >= 0) {
+    if (*CurrentTop >= 0 && *CurrentTop < (int)Layers->size()) {
         int index = std::max((*Layers)[*CurrentTop]->dirty ? *CurrentTop : *CurrentTop - 1, 0);
         UpdateLoopVisualizer((*Layers)[index].get());
     }else{
@@ -870,7 +892,10 @@ void Track::SetPreviousAfter(){
         }
         --(*CurrentTop);
     }
-    setActivePlaybackLayer((*Layers)[*CurrentTop]);
+    int ct = safeCurrentTop();
+    if (ct >= 0) {
+        setActivePlaybackLayer((*Layers)[ct]);
+    }
 }
 
 void Track::SetNextBefore(){
@@ -893,7 +918,9 @@ void Track::SetNextAfter(){
     if (*CurrentTop < limit) {
         ++(*CurrentTop);
     }
-    setActivePlaybackLayer((*Layers)[*CurrentTop]);
+    int ct = safeCurrentTop();
+    if (ct < 0) return;
+    setActivePlaybackLayer((*Layers)[ct]);
     getActivePlaybackLayer()->FirstLayerBuffer = true;
     if(guiAlive){
         (context->observer->*(context->observer->layerChange)) (this->Index, getActivePlaybackLayer()->index);
@@ -1201,8 +1228,9 @@ std::shared_ptr<Layer> Track::getActivePlaybackLayer(){
     }
     if(nullptr == ActiveLoop->activePlaybackLayer){
         *CurrentTop = getLimit();
-        if(*CurrentTop>=0){
-            setActivePlaybackLayer((*Layers)[*CurrentTop]);
+        int ct = safeCurrentTop();
+        if(ct >= 0){
+            setActivePlaybackLayer((*Layers)[ct]);
         }
     }
     

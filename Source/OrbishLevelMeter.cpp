@@ -33,19 +33,21 @@ void OrbishLevelMeter::resized(){
 
 void OrbishLevelMeter::timerCallback()
 {
+	if (source->getNumChannels() < 1) return;
+
 	auto newRMS = source->getRMSLevel(0);
     newRMS = abs(newRMS)>2?(float)rms:newRMS*2;
 
 //    source->getMaxLevel(0);
 //    source->getMaxOverallLevel(0);
-    
+
 	int64 stamp = Time::getApproximateMillisecondCounter();
 	if (stamp - lastRmsUpdate > source->getMaxHoldMS() || newRMS < rms) {
 		if (stamp - lastRmsUpdate <= source->getMaxHoldMS()) {
 			lastRmsUpdate = stamp;
 		}
 		lastRmsUpdate = stamp;
-        
+
 		rms = newRMS;
 	}
 	if (source->getNumChannels() > 1){

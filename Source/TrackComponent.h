@@ -75,14 +75,14 @@ public:
     bool horizontalLayout = false;
     bool armed = false;
     OwnedArray<LoopComponent> Loops;
-	int loopHeight;
+	int loopHeight = 0;
     Track* getAudioTrack();
     void setAudioTrack(Track*);
     void setGroup(String group, Colour colour);
     String getGroup();
     void setOpenGLContext(std::shared_ptr<OpenGLContext> context, bool owner);
     void setTopLevelComponent(Component* top) ;
-    Track* audioTrack;
+    Track* audioTrack = nullptr;
 
     std::unique_ptr<OpenGLAudioThumbnail> thumbnail{nullptr};
             
@@ -94,8 +94,8 @@ private:
 
     Blinker highlighter {};
     DrawablePath witness {};
-    int buttonSize;
-    int margin;
+    int buttonSize = 15;
+    int margin = 3;
     bool active = false;
     bool muted = false;
     bool recording = false;
@@ -105,7 +105,7 @@ private:
     bool soloArmed = false;
     bool playArmed = false;
     bool playing = false;
-    int index;
+    int index = 0;
     exu::Label trackNumberLabel;
     exu::Label trackNameLabel;
 	exu::Label groupLabel;

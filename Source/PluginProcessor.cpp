@@ -16,41 +16,6 @@
 using namespace std;
 
 
-//#include "Track.h"
-unique_ptr<RangedAudioParameter> OrbishAudioProcessor::createParamFromBool(AudioParameterBool* boolParam, bool defaultValue) {// return
-    auto p = make_unique<AudioProcessorValueTreeState::Parameter>(boolParam->paramID,
-                                                                       boolParam->name,
-                                                                       boolParam->label,
-                                                                       boolParam->getNormalisableRange(),
-                                                                       defaultValue,
-                                                                       [](bool v) { return v ? TRANS("On") : TRANS("Off"); },
-                                                                       nullptr,
-                                                                       true,
-                                                                       true,
-                                                                       true,
-                                                                       AudioProcessorParameter::genericParameter,
-                                                                       true);
-    delete boolParam;
-    return move(p);
-}
-
-unique_ptr<RangedAudioParameter> OrbishAudioProcessor::createParamFromInt(AudioParameterInt* intParam, int defaultValue) {
-    auto p = make_unique<AudioProcessorValueTreeState::Parameter>(intParam->paramID,
-                                                                       intParam->name,
-                                                                       intParam->label,
-                                                                       intParam->getNormalisableRange(),
-                                                                       defaultValue,
-                                                                       [](float v) { return String(int(v)); },
-                                                                       nullptr,
-                                                                       true,
-                                                                       true,
-                                                                       true,
-                                                                       AudioProcessorParameter::genericParameter,
-                                                                       true);
-    delete intParam;
-    return move(p);
-}
-
 float OrbishAudioProcessor::fromDBTo0To1(float start, float end, float dB){
     if(start == dB){
         return .0f;
@@ -129,7 +94,7 @@ AudioProcessor(BusesProperties()
 #endif
 context(std::make_shared<OrbishContext>()),
 parameters(*this, nullptr, "OrbishState", {
-    make_unique<AudioParameterFloat>("globalMix", "GlobalMix"
+    make_unique<AudioParameterFloat>(ParameterID { "globalMix",  1 }, "GlobalMix"
                                           ,NormalisableRange<float>(
                                                                     -60.0f
                                                                     , 12
@@ -142,7 +107,7 @@ parameters(*this, nullptr, "OrbishState", {
 )
                                          , 0.5f
                                          , "db")
-    , make_unique<AudioParameterFloat>("clickLevel", "clickLevel"
+    , make_unique<AudioParameterFloat>(ParameterID("clickLevel",1) , "ClickLevel"
                                        , NormalisableRange<float>(-120.0f, 6.0f
                                                                   , [](float start, float end, float gain) {
                                                                                                                 return Decibels::gainToDecibels(gain * Decibels::decibelsToGain(end) , start);
@@ -154,9 +119,9 @@ parameters(*this, nullptr, "OrbishState", {
                                                                   )
                                        , 0.5f
                                        , "db")
-    , make_unique<AudioParameterFloat>("latency", "Latency"
+    , make_unique<AudioParameterFloat>(ParameterID("latency",1) , "Latency"
                                             ,NormalisableRange<float>(-500.0f, 500.0f), 0, "ms")
-    , make_unique<AudioParameterFloat>("inputLevel", "InputLevel"
+    , make_unique<AudioParameterFloat>(ParameterID("inputLevel",1) , "InputLevel"
                                             , NormalisableRange<float>(-60.0f, 12.0f
                                                                        , [this](float start, float end, float gain) {
         return from0To1toDB(start, end, gain);
@@ -169,7 +134,7 @@ parameters(*this, nullptr, "OrbishState", {
 )
                                        , 0.5f
                                        , "db")
-    , make_unique<AudioParameterFloat>("outputLevel", "outputLevel"
+    , make_unique<AudioParameterFloat>(ParameterID("outputLevel",1) , "OutputLevel"
                                             , NormalisableRange<float>(-60.0f, 12.0f
                                                                        , [this](float start, float end, float gain) {
         return from0To1toDB(start, end, gain);
@@ -182,44 +147,43 @@ parameters(*this, nullptr, "OrbishState", {
                                                                        )
                                        , 0.5f
                                        , "db")
-    , createParamFromBool(new AudioParameterBool("click", "click", false), false)
-    , createParamFromBool(new AudioParameterBool("record", "Record", false), false)
-    , createParamFromBool(new AudioParameterBool("play", "Play", false), false)
-    , createParamFromBool(new AudioParameterBool("stop", "Stop", false), false)
-    , createParamFromBool(new AudioParameterBool("mute", "Mute", false), false)
-    , createParamFromBool(new AudioParameterBool("solo", "Solo", false), false)
-    , make_unique<AudioParameterBool>("monitor", "Monitor", false)
-    , make_unique<AudioParameterBool>("reverse", "Reverse", false)
-    , make_unique<AudioParameterBool>("undo", "Undo", false)
-    , make_unique<AudioParameterBool>("redo", "Redo", false)
-    , createParamFromBool(new AudioParameterBool("reset", "Reset", false), false)
-    , createParamFromBool(new AudioParameterBool("nextTrack", "NextTrack", false), false)
-    , createParamFromBool(new AudioParameterBool("previousTrack", "PreviousTrack", false), false)
-    , make_unique<AudioParameterBool>("newTrack", "NewTrack", false)
-    , createParamFromBool(new AudioParameterBool("removeTrack", "RemoveTrack", false), false)
-    , make_unique<AudioParameterBool>("trigger", "Trigger", false)
-    , createParamFromBool(new AudioParameterBool("muteAll", "MuteAll", false), false)
-    , createParamFromBool(new AudioParameterBool("stopAll", "StopAll", false), false)
-    , createParamFromBool(new AudioParameterBool("startAll", "StartAll", false), false)
-    , createParamFromBool(new AudioParameterBool("pauseAll", "PauseAll", false), false)
-    , createParamFromBool(new AudioParameterBool("resetAll", "ResetAll", false), false)
-    , make_unique<AudioParameterChoice>("snap", "Snap", StringArray("No Sync","Measure","Beat","Loop", "Host Loop"), 0.2)
-    , createParamFromBool(new AudioParameterBool("nextSnapMode", "NextSnapMode", false), false)
-    , make_unique<AudioParameterChoice>("mode", "Mode", StringArray("Overdub","Fixed","Repeat","Append","Overwrite","Punch"), 0)
-    , createParamFromBool(new AudioParameterBool("nextRecMode", "NextRecMode", false), false)
-    , createParamFromBool(new AudioParameterBool("incFixed", "IncFixed", false), false)
-    , createParamFromBool(new AudioParameterBool("bounce", "Bounce", false), false)
-    , createParamFromInt(new AudioParameterInt("trackSelect", "Track", 0, 100, 0), 0)
-    , createParamFromBool(new AudioParameterBool("nextLoop", "NextLoop", false), false)
-    , createParamFromBool(new AudioParameterBool("previousLoop", "PreviousLoop", false), false)
-    , make_unique<AudioParameterBool>("newLoop", "NewLoop", false)
-    , createParamFromBool(new AudioParameterBool("removeLoop", "RemoveLoop", false), false)
-    , createParamFromInt(new AudioParameterInt("loopSelect", "Loop", 0, 100, 0), 0)
-    , createParamFromInt(new AudioParameterInt("fixed", "fixedSizeLength", 1, 32, 0), 0)
-    // , createParamFromInt(new AudioParameterInt("selectGroup", "SelectGroup", 0, 10, 0), 0)
-    , make_unique<AudioParameterChoice>("selectGroup", "SelectGroup", StringArray("A","B","C","D","E","F","G","H","I","J"), 0)
-    , createParamFromBool(new AudioParameterBool("addToGroup", "AddToGroup", false), false)
-    , createParamFromBool(new AudioParameterBool("removeFromGroup", "RemoveFromGroup", false), false)
+    , make_unique<AudioParameterBool>(ParameterID("click", 1), "Click", false, AudioParameterBoolAttributes().withMeta (true))
+    , make_unique<AudioParameterBool>(ParameterID("record", 1), "Record", false, AudioParameterBoolAttributes().withMeta (true))
+    , make_unique<AudioParameterBool>(ParameterID("play", 1), "Play", false, AudioParameterBoolAttributes().withMeta (true))
+    , make_unique<AudioParameterBool>(ParameterID("stop", 1), "Stop", false, AudioParameterBoolAttributes().withMeta (true))
+    , make_unique<AudioParameterBool>(ParameterID("mute", 1), "Mute", false, AudioParameterBoolAttributes().withMeta (true))
+    , make_unique<AudioParameterBool>(ParameterID("solo", 1), "Solo", false, AudioParameterBoolAttributes().withMeta (true))
+    , make_unique<AudioParameterBool>(ParameterID("monitor", 1), "Monitor", false)
+    , make_unique<AudioParameterBool>(ParameterID("reverse", 1), "Reverse", false)
+    , make_unique<AudioParameterBool>(ParameterID("undo", 1), "Undo", false)
+    , make_unique<AudioParameterBool>(ParameterID("redo", 1), "Redo", false)
+    , make_unique<AudioParameterBool>(ParameterID("reset", 1), "Reset", false, AudioParameterBoolAttributes().withMeta (true))
+    , make_unique<AudioParameterBool>(ParameterID("nextTrack", 1), "NextTrack", false, AudioParameterBoolAttributes().withMeta (true))
+    , make_unique<AudioParameterBool>(ParameterID("previousTrack", 1), "PreviousTrack", false, AudioParameterBoolAttributes().withMeta (true))
+    , make_unique<AudioParameterBool>(ParameterID("newTrack", 1), "NewTrack", false)
+    , make_unique<AudioParameterBool>(ParameterID("removeTrack", 1), "RemoveTrack", false, AudioParameterBoolAttributes().withMeta (true))
+    , make_unique<AudioParameterBool>(ParameterID("trigger", 1), "Trigger", false)
+    , make_unique<AudioParameterBool>(ParameterID("muteAll", 1), "MuteAll", false, AudioParameterBoolAttributes().withMeta (true))
+    , make_unique<AudioParameterBool>(ParameterID("stopAll", 1), "StopAll", false, AudioParameterBoolAttributes().withMeta (true))
+    , make_unique<AudioParameterBool>(ParameterID("startAll", 1), "StartAll", false, AudioParameterBoolAttributes().withMeta (true))
+    , make_unique<AudioParameterBool>(ParameterID("pauseAll", 1), "PauseAll", false, AudioParameterBoolAttributes().withMeta (true))
+    , make_unique<AudioParameterBool>(ParameterID("resetAll", 1), "ResetAll", false, AudioParameterBoolAttributes().withMeta (true))
+    , make_unique<AudioParameterChoice>(ParameterID("snap", 1), "Snap", StringArray("No Sync","Measure","Beat","Loop", "Host Loop"), 0.2)
+    , make_unique<AudioParameterBool>(ParameterID("nextSnapMode", 1), "NextSnapMode", false, AudioParameterBoolAttributes().withMeta (true))
+    , make_unique<AudioParameterChoice>(ParameterID("mode", 1), "Mode", StringArray("Overdub","Fixed","Repeat","Append","Overwrite","Punch"), 0)
+    , make_unique<AudioParameterBool>(ParameterID("nextRecMode", 1), "NextRecMode", false, AudioParameterBoolAttributes().withMeta (true))
+    , make_unique<AudioParameterBool>(ParameterID("incFixed", 1), "IncFixed", false, AudioParameterBoolAttributes().withMeta (true))
+    , make_unique<AudioParameterBool>(ParameterID("bounce", 1), "Bounce", false, AudioParameterBoolAttributes().withMeta (true))
+    , make_unique<AudioParameterInt>(ParameterID("trackSelect", 1), "Track", 0, 100, 0, AudioParameterIntAttributes().withMeta (true))
+    , make_unique<AudioParameterBool>(ParameterID("nextLoop", 1), "NextLoop", false, AudioParameterBoolAttributes().withMeta (true))
+    , make_unique<AudioParameterBool>(ParameterID("previousLoop", 1), "PreviousLoop", false, AudioParameterBoolAttributes().withMeta (true))
+    , make_unique<AudioParameterBool>(ParameterID("newLoop", 1), "NewLoop", false)
+    , make_unique<AudioParameterBool>(ParameterID("removeLoop", 1), "RemoveLoop", false, AudioParameterBoolAttributes().withMeta (true))
+    , make_unique<AudioParameterInt>(ParameterID("loopSelect", 1), "Loop", 0, 100, 0, AudioParameterIntAttributes().withMeta (true))
+    , make_unique<AudioParameterInt>(ParameterID("fixed", 1), "fixedSizeLength", 1, 32, 0, AudioParameterIntAttributes().withMeta (true))
+    , make_unique<AudioParameterChoice>(ParameterID("selectGroup", 1), "SelectGroup", StringArray("A","B","C","D","E","F","G","H","I","J"), 0)
+    , make_unique<AudioParameterBool>(ParameterID("addToGroup", 1), "AddToGroup", false, AudioParameterBoolAttributes().withMeta (true))
+    , make_unique<AudioParameterBool>(ParameterID("removeFromGroup", 1), "RemoveFromGroup", false, AudioParameterBoolAttributes().withMeta (true))
 })
 {
     //_CrtSetDbgFlag(_CRTDBG_LEAK_CHECK_DF);
@@ -236,16 +200,16 @@ parameters(*this, nullptr, "OrbishState", {
     context->xchange = new DataExchange();
     
     initGroups();
-//    auto formatMgr = make_unique<AudioFormatManager>();
+    auto formatMgr = make_unique<AudioFormatManager>();
     
-//    formatMgr->registerBasicFormats();
-//    unique_ptr<AudioFormatReader> reader(formatMgr->createReaderFor(make_unique<MemoryInputStream>( BinaryData::low_dry_click_aif, BinaryData::low_dry_click_aifSize, false)));
-//    context->clickBuffer = make_unique<AudioSampleBuffer>(reader->numChannels, (int)reader->lengthInSamples);
-//    reader->read(context->clickBuffer.get(), 0, int(reader->lengthInSamples), 0, true, true);
+    formatMgr->registerBasicFormats();
+    unique_ptr<AudioFormatReader> reader(formatMgr->createReaderFor(make_unique<MemoryInputStream>( BinaryData::low_dry_click_aif, BinaryData::low_dry_click_aifSize, false)));
+    context->clickBuffer = make_unique<AudioSampleBuffer>(reader->numChannels, (int)reader->lengthInSamples);
+    reader->read(context->clickBuffer.get(), 0, int(reader->lengthInSamples), 0, true, true);
     
-//    unique_ptr<AudioFormatReader> reader2(formatMgr->createReaderFor(make_unique<MemoryInputStream>( BinaryData::high_dry_click_aif,BinaryData::high_dry_click_aifSize, false)));
-//    context->barStartClickBuffer = make_unique<AudioSampleBuffer>(reader2->numChannels, (int)reader2->lengthInSamples);
-//    reader2->read(context->barStartClickBuffer.get(), 0, int(reader2->lengthInSamples), 0, true, true);
+    unique_ptr<AudioFormatReader> reader2(formatMgr->createReaderFor(make_unique<MemoryInputStream>( BinaryData::high_dry_click_aif,BinaryData::high_dry_click_aifSize, false)));
+    context->barStartClickBuffer = make_unique<AudioSampleBuffer>(reader2->numChannels, (int)reader2->lengthInSamples);
+    reader2->read(context->barStartClickBuffer.get(), 0, int(reader2->lengthInSamples), 0, true, true);
 
     primarySynchronizer = make_unique<HostSynchronizer>(context);
     secondarySynchronizer =  make_unique<InternalSynchronizer>(context,nullptr);
@@ -306,7 +270,7 @@ parameters(*this, nullptr, "OrbishState", {
             }
             if(context->loggingActive){
                 int64 stamp = Time::getApproximateMillisecondCounter();
-                if (stamp - context->timestamp > 200) {
+                if (stamp - context->timestamp > 1) {
                     context->timestamp = stamp;
                     context->flushLogs();
                 }
@@ -374,6 +338,7 @@ OrbishAudioProcessor::~OrbishAudioProcessor()
 }
 
 void OrbishAudioProcessor::parameterChanged(const String& parameterID, float newValue) {
+    try {
     if (parameterID == "globalMix") {
         context->mix = Decibels::decibelsToGain(newValue);
     }
@@ -428,6 +393,9 @@ void OrbishAudioProcessor::parameterChanged(const String& parameterID, float new
     }
     if (parameterID == "removeFromGroup") {
         processRemoveFromGroup(activeTrack->Index);
+    }
+    } catch (...) {
+        DBG("Exception in OrbishAudioProcessor::parameterChanged for: " + parameterID);
     }
 }
 
@@ -542,7 +510,8 @@ void OrbishAudioProcessor::prepareToPlay(double sampleRate, int samplesPerBlock)
     if (context == nullptr) {
         context = std::make_shared<OrbishContext>();
     }
-    if (getTotalNumOutputChannels() != context->audioOutputsCount) {
+    if (getTotalNumOutputChannels() != context->audioOutputsCount
+        || getTotalNumInputChannels() != context->audioInputsCount) {
         context->audioInputsCount = getTotalNumInputChannels();
         context->audioOutputsCount = getTotalNumOutputChannels();
         context->buffer->setSize(context->audioInputsCount, samplesPerBlock);
@@ -652,7 +621,9 @@ bool OrbishAudioProcessor::isBusesLayoutSupported(const BusesLayout& layouts) co
     
     // This checks if the input layout matches the output layout
 #if ! JucePlugin_IsSynth
-    if (layouts.getMainOutputChannelSet() != layouts.getMainInputChannelSet())
+    // Allow zero inputs (e.g. standalone mode with no mic input)
+    if (layouts.getMainInputChannelSet() != AudioChannelSet::disabled()
+        && layouts.getMainOutputChannelSet() != layouts.getMainInputChannelSet())
         return false;
 #endif
     
@@ -835,12 +806,14 @@ void OrbishAudioProcessor::processTrackChange(uint newTrackIndex) {
 
 
 void OrbishAudioProcessor::processGroupSelect(int groupIdx) {
-    SelectedGroup = groups[groupIdx];
+    if (groupIdx >= 0 && groupIdx < (int)groups.size())
+        SelectedGroup = groups[groupIdx];
 }
 
+
 void OrbishAudioProcessor::processTempoChange(int bpm) {
-    int ratio = context->info->bpm / bpm;
-  //  stretcher->setTimeRatio(ratio);
+    // Time stretching is not yet initialized at Track creation.
+    // This will be re-enabled once RubberBand integration is fully wired up.
 }
 
 void OrbishAudioProcessor::initGroups() {
@@ -852,7 +825,6 @@ void OrbishAudioProcessor::initGroups() {
     }
     SelectedGroup = CurrentGroup = groups.front();
 }
-
 
 void OrbishAudioProcessor::processAddToGroup(int track) {
     CurrentGroup->RemoveTrack(tracks[track]);
@@ -870,6 +842,7 @@ void OrbishAudioProcessor::processMidi(const MidiBuffer& midi) {
     if (guiAlive) {
             (ctxt->observer->*(context->observer->handleMidi))(midi);
     }
+    
 }
 
 void OrbishAudioProcessor::changeTrack(int& nextTrackIndex) {
@@ -921,41 +894,107 @@ void OrbishAudioProcessor::initBlock(AudioBuffer<float>& buffer, MidiBuffer& mid
         processMidi(midiMessages);
     }
     ScopedNoDenormals noDenormals;
-    AudioPlayHead* head = getPlayHead();
-    AudioPlayHead::CurrentPositionInfo info{};
-    head->getCurrentPosition(info);
-    context->timeSigBottom = info.timeSigDenominator;
-    context->timeSigTop = info.timeSigNumerator;
-    context->samplesPerBeat = int(context->beatsToSamples(1.0));
-    context->samplesPerQuarter = int(context->quartersToSamples(1.0));
+    {
+        AudioPlayHead* head = getPlayHead();
+        Optional<AudioPlayHead::PositionInfo> info;
+        if (head != nullptr)
+            info = head->getPosition();
 
-    if (context->bpm != info.bpm
-        || context->timeSigTop != info.timeSigDenominator) {
-        context->bpm = info.bpm;
-        context->samplesPerBeat = int(std::round(context->beatsToSamples(1.0)));
+        // Detect real host transport: standalone wrapper may provide PositionInfo
+        // with default BPM but no PPQ position. Require both BPM and PPQ to
+        // distinguish a real DAW host from the standalone wrapper.
+        bool hasHostTransport = info.hasValue()
+            && info->getBpm().hasValue()
+            && info->getPpqPosition().hasValue();
+
+        if (hasHostTransport)
+        {
+            context->timeSigBottom = info->getTimeSignature().hasValue()
+                ? info->getTimeSignature()->denominator : 4;
+            context->timeSigTop = info->getTimeSignature().hasValue()
+                ? info->getTimeSignature()->numerator : 4;
+        }
+        else
+        {
+            // Standalone mode: use sensible defaults
+            if (context->bpm <= 0) context->bpm = 120.0;
+            if (context->timeSigBottom <= 0) context->timeSigBottom = 4;
+            if (context->timeSigTop <= 0) context->timeSigTop = 4;
+        }
+
+        context->samplesPerBeat = int(context->beatsToSamples(1.0));
         context->samplesPerQuarter = int(context->quartersToSamples(1.0));
-        //logMessage(String("bpm: ") + String(context->bpm));
-    }
-    context->maxBlockSize = buffer.getNumSamples();
-    context->info->bpm = info.bpm;
-    context->info->editOriginTime = info.editOriginTime;
-    context->info->isPlaying = info.isPlaying;
-    context->info->ppqPosition = info.ppqPosition;
-    context->info->timeInSamples = int64(context->quartersToSamples(float(info.ppqPosition)));
-    context->info->timeSigDenominator = info.timeSigDenominator;
-    context->info->timeSigNumerator = info.timeSigNumerator;
-    context->info->ppqPositionOfLastBarStart = info.ppqPositionOfLastBarStart;
-    context->info->ppqLoopEnd = info.ppqLoopEnd;
-    context->info->ppqLoopStart = info.ppqLoopStart;
-    context->info->isLooping = info.isLooping;
 
+        double hostBpm = hasHostTransport ? info->getBpm().orFallback(context->bpm) : context->bpm;
+        if (context->bpm != hostBpm
+            || context->timeSigTop != context->timeSigBottom) {
+            context->bpm = hostBpm;
+            processTempoChange(context->bpm);
+            context->samplesPerBeat = int(std::round(context->beatsToSamples(1.0)));
+            context->samplesPerQuarter = int(context->quartersToSamples(1.0));
+        }
+        context->maxBlockSize = buffer.getNumSamples();
+
+        if (hasHostTransport)
+        {
+            context->info->setBpm(info->getBpm());
+            context->info->setEditOriginTime(info->getEditOriginTime());
+            context->info->setIsPlaying(info->getIsPlaying());
+            context->info->setPpqPosition(info->getPpqPosition());
+
+            context->info->setTimeInSamples(int64(context->quartersToSamples(info->getPpqPosition().orFallback(0))));
+            AudioPlayHead::TimeSignature sig;
+            sig.denominator = info->getTimeSignature().hasValue() ? info->getTimeSignature()->denominator : 4;
+            sig.numerator = info->getTimeSignature().hasValue() ? info->getTimeSignature()->numerator : 4;
+            context->info->setTimeSignature(sig);
+            context->info->setPpqPosition(info->getPpqPositionOfLastBarStart());
+
+            if (info->getLoopPoints().hasValue()) {
+                AudioPlayHead::LoopPoints lp;
+                lp.ppqEnd = info->getLoopPoints()->ppqEnd;
+                lp.ppqStart = info->getLoopPoints()->ppqStart;
+                context->info->setLoopPoints(lp);
+            }
+            context->info->setIsLooping(info->getIsLooping());
+        }
+        else
+        {
+            // Standalone: enable click on first block
+            if (standaloneSamplePosition == 0) {
+                context->clickEnabled = true;
+            }
+            // Standalone: advance beat clock based on accumulated samples
+            standaloneSamplePosition += context->maxBlockSize;
+
+            context->info->setBpm(context->bpm);
+            context->info->setIsPlaying(true);
+
+            // Derive PPQ from accumulated samples
+            double currentPpq = context->samplesToQuarters(double(standaloneSamplePosition));
+
+            // Set timeInSamples from actual position (matches host path)
+            context->info->setTimeInSamples(standaloneSamplePosition);
+
+            // Compute bar start PPQ, then set ppqPosition to bar start (matches host path)
+            double qPerBar = context->quartersPerBar();
+            double barStartPpq = (qPerBar > 0) ? floor(currentPpq / qPerBar) * qPerBar : 0.0;
+            context->info->setPpqPosition(barStartPpq);
+            context->info->setPpqPositionOfLastBarStart(barStartPpq);
+
+            AudioPlayHead::TimeSignature sig;
+            sig.denominator = context->timeSigBottom;
+            sig.numerator = context->timeSigTop;
+            context->info->setTimeSignature(sig);
+            context->info->setIsLooping(false);
+        }
+    }
 #if DEBUG_LOG
     int diff = context->maxBlockSize - context->samplesPerBlock;
     if(diff != 0){
         //context->logMessage("buffer excess:" + String(diff));
     }
 #endif
-    if (context->info->isPlaying) {
+    if (context->info->getIsPlaying()) {
         trackHostSamples += context->maxBlockSize;
     }
 }
@@ -964,14 +1003,29 @@ void OrbishAudioProcessor::initBlock(AudioBuffer<float>& buffer, MidiBuffer& mid
 void OrbishAudioProcessor::handleClick(std::shared_ptr<OrbishContext> context, AudioSampleBuffer* output){
     int targetOffset = 0, sourceOffset = 0;
     
-    auto offsetFromClosestBeat = context->differenceFromClosestBeatInSamples(int(context->info->timeInSamples));
+    auto timeInSamples = int(context->info->getTimeInSamples().orFallback(0));
+    auto offsetFromClosestBeat = context->differenceFromClosestBeatInSamples(timeInSamples);
+    
+    // Debug: log click state periodically
+    static int clickDbgCounter = 0;
+    if (++clickDbgCounter >= 200) {
+        clickDbgCounter = 0;
+        DBG("handleClick: enabled=" + String(context->clickEnabled ? "Y" : "N")
+            + " playing=" + String(context->info->getIsPlaying() ? "Y" : "N")
+            + " samplesPerBeat=" + String(context->samplesPerBeat)
+            + " timeInSamples=" + String(timeInSamples)
+            + " offsetFromBeat=" + String(offsetFromClosestBeat)
+            + " maxBlock=" + String(context->maxBlockSize)
+            + " clickInProcess=" + String(clickInProcess ? "Y" : "N"));
+    }
+    
     if (!context->clickEnabled
-        || !context->info->isPlaying
+        || !context->info->getIsPlaying()
         || (abs(offsetFromClosestBeat) > context->maxBlockSize
             && !clickInProcess)) {
         return;
     }
-    auto hostPosInBeats = context->info->ppqPosition * (context->timeSigBottom * .25);
+    auto hostPosInBeats = context->info->getPpqPosition().orFallback(0) * (context->timeSigBottom * .25);
 
 #if DEBUG_LOG
     //context->logMessage("$offsetFormClosestBeat:" + String(context->samplesToBeats(offsetFromClosestBeat)));
@@ -1016,8 +1070,15 @@ void OrbishAudioProcessor::handleClick(std::shared_ptr<OrbishContext> context, A
     sourceOffset = numBuffersDoneForClick * b;
     numBuffersDoneForClick++;
 
+    // Clamp to avoid buffer overruns
+    if (sourceOffset + samplesToWrite > source->getNumSamples())
+        samplesToWrite = source->getNumSamples() - sourceOffset;
+    if (targetOffset + samplesToWrite > output->getNumSamples())
+        samplesToWrite = output->getNumSamples() - targetOffset;
+    
     if(samplesToWrite > 0){
-        for (auto c=0; c < source->getNumChannels(); ++c) {
+        auto channelsToWrite = jmin(source->getNumChannels(), output->getNumChannels());
+        for (auto c=0; c < channelsToWrite; ++c) {
             output->addFrom(c, targetOffset, source->getReadPointer(c, sourceOffset), samplesToWrite, context->clickLevel);
         }
     }
@@ -1298,7 +1359,7 @@ void OrbishAudioProcessor::processBlock(AudioBuffer<float>& buffer, MidiBuffer& 
 //        activeTrack->RefreshLoopVisualizer();
 //    }
     // no action if host doesn't play
-    if (!context->info->isPlaying) {
+    if (/* PLUGIN_MODE && */ !context->info->getIsPlaying()) {
         //        stopPlayback();
         if (activeTrack->Recording) {
             activeTrack->Recording = false;
@@ -1346,7 +1407,7 @@ void OrbishAudioProcessor::processBlock(AudioBuffer<float>& buffer, MidiBuffer& 
             context->inputBuffer->clear();
         }
         context->buffer->clear();
-        if (context->info->isPlaying) {
+        if (/* not !PLUGIN_MODE || */ context->info->getIsPlaying()) {
 #if DEBUG_LOG
             int64 startPlay = Time::getHighResolutionTicks();
 #endif
@@ -1365,7 +1426,7 @@ void OrbishAudioProcessor::processBlock(AudioBuffer<float>& buffer, MidiBuffer& 
         }
     }
 
-    if (!context->info->isPlaying) {
+    if (/*  PLUGIN_MODE && */ !context->info->getIsPlaying()) {
         // prevent input from ending up in the output buffer
         context->buffer->clear();
         if(!activeTrack->isMonitoring()){
@@ -1398,6 +1459,13 @@ void OrbishAudioProcessor::processBlock(AudioBuffer<float>& buffer, MidiBuffer& 
          smoothVolume(previousMixLevel, context->mix, context->maxBlockSize, context->buffer.get(), &buffer, c);
 //        DBG("outputBuffer: " + String(buffer.getMagnitude(0, 0, context->maxBlockSize)));
 
+    }
+    // Mix click into output buffer
+    if (context->clickBuffer != nullptr && context->barStartClickBuffer != nullptr) {
+        handleClick(context, &buffer);
+    } else {
+        DBG("Click buffers not loaded: clickBuffer=" + String(context->clickBuffer != nullptr ? "yes" : "no")
+            + " barStartClickBuffer=" + String(context->barStartClickBuffer != nullptr ? "yes" : "no"));
     }
 #if DEBUG_LOG
     int64 endFinal = Time::getHighResolutionTicks();
@@ -1446,7 +1514,7 @@ void OrbishAudioProcessor::processBlock(AudioBuffer<float>& buffer, MidiBuffer& 
 #endif
     if (guiAlive)
         if (context->observer != nullptr) {
-            (context->observer->*(context->observer->hostPositionChanged)) (int(context->info->timeInSamples));
+            (context->observer->*(context->observer->hostPositionChanged)) (int(context->info->getTimeInSamples().orFallback(0)));
         }
    // context->buffer.reset();
    // context->inputBuffer.reset();
@@ -1471,7 +1539,8 @@ void OrbishAudioProcessor::handleRecordBlock(int start, int stop) {
 #endif
     // in destructive mode make sure we write within bounds
     if (activeTrack->getRecordMode() > 3 && *activeTrack->CurrentTop < 0) {
-        *activeTrack->CurrentTop = 0;
+        if (!activeTrack->Layers->empty())
+            *activeTrack->CurrentTop = 0;
     }
     // start should always be 0.  Pre-snap samples are used for crossfade
     start = 0;
@@ -1494,7 +1563,7 @@ void OrbishAudioProcessor::handleRecordBlock(int start, int stop) {
         if ((activeTrack->getRecordMode() < 4)
             && ((activeTrack->CurrentRecordingIndex + context->maxBlockSize < *activeTrack->LoopDuration)
                 || (*activeTrack->LoopDuration == 0))){
-            for (auto i = 0;i<=*activeTrack->CurrentTop;++i) {
+            for (auto i = 0; i <= *activeTrack->CurrentTop && i < (int)activeTrack->Layers->size(); ++i) {
                 if(context->xchange->writeGainModifierQueue->read_available()
                    && context->xchange->readGainModifierQueue->write_available()){
                     auto gm = context->xchange->writeGainModifierQueue->front();
@@ -1505,12 +1574,13 @@ void OrbishAudioProcessor::handleRecordBlock(int start, int stop) {
                     context->xchange->readGainModifierQueue->push(gm);
                 }
             }
-            if (*activeTrack->CurrentTop < (*activeTrack->Layers).size() - int(1)) {
+            if (*activeTrack->CurrentTop >= 0 && *activeTrack->CurrentTop < (int)activeTrack->Layers->size() - 1) {
                 (*activeTrack->Layers)[*activeTrack->CurrentTop]->dirty = true;
                 activeTrack->setActivePlaybackLayer((*activeTrack->Layers)[*activeTrack->CurrentTop]);
                 activeTrack->setActiveRecordingLayer((*activeTrack->Layers)[*activeTrack->CurrentTop]);
             }else if((*activeTrack->Layers).size() == 0 || activeTrack->getActiveRecordingLayer()->dirty){
                 auto l = activeTrack->AddLayer(true);
+                if (l == nullptr) return; // layerQueue empty, skip this block
                 activeTrack->setActivePlaybackLayer(l);
                 activeTrack->setActiveRecordingLayer(l);
                 ////context->logMessage("1. adding layer at: " + String(activeTrack->CurrentRecordingIndex));
@@ -1529,8 +1599,11 @@ void OrbishAudioProcessor::handleRecordBlock(int start, int stop) {
 #endif
             }
         }else if(activeTrack->getRecordMode() >= kRecAppend){
-            activeTrack->setActivePlaybackLayer((*activeTrack->Layers)[*activeTrack->CurrentTop]);
-            activeTrack->setActiveRecordingLayer((*activeTrack->Layers)[*activeTrack->CurrentTop]);
+            int ct = activeTrack->safeCurrentTop();
+            if (ct >= 0) {
+                activeTrack->setActivePlaybackLayer((*activeTrack->Layers)[ct]);
+                activeTrack->setActiveRecordingLayer((*activeTrack->Layers)[ct]);
+            }
         }
         fadeIn = adjustedFadeTime;
 #if DEBUG_LOG
@@ -1649,7 +1722,7 @@ void OrbishAudioProcessor::handleRecordBlock(int start, int stop) {
 #endif
             {
             
-            for (auto i = 0;i<=*activeTrack->CurrentTop;++i) {
+            for (auto i = 0; i <= *activeTrack->CurrentTop && i < (int)activeTrack->Layers->size(); ++i) {
 #if DEBUG_LOG
                 start1 = Time::getHighResolutionTicks();
 #endif
@@ -1666,7 +1739,7 @@ void OrbishAudioProcessor::handleRecordBlock(int start, int stop) {
                 end1 = Time::getHighResolutionTicks();
 #endif
             }
-            if (*activeTrack->CurrentTop < (*activeTrack->Layers).size() - int(1)) {
+            if (*activeTrack->CurrentTop >= 0 && *activeTrack->CurrentTop < (int)activeTrack->Layers->size() - 1) {
                 (*activeTrack->Layers)[*activeTrack->CurrentTop]->dirty = true;
                 ++(*activeTrack->CurrentTop);
                 activeTrack->setActivePlaybackLayer((*activeTrack->Layers)[*activeTrack->CurrentTop]);
@@ -1677,6 +1750,7 @@ void OrbishAudioProcessor::handleRecordBlock(int start, int stop) {
 #endif
                 activeTrack->setActivePlaybackLayer(activeTrack->getActiveRecordingLayer());
                 auto l = activeTrack->AddLayer(true);
+                if (l == nullptr) return; // layerQueue empty, skip this block
                 activeTrack->setActiveRecordingLayer(l);
 #if DEBUG_LOG
 
@@ -1821,7 +1895,7 @@ void OrbishAudioProcessor::handlePlaybackBlock(int start, int stop) {
                         reverseSourceIndex = max(tmpIndex - stop, 0);
                     }
                     String s = String();
-                    for (int l = 0; currentPlayBuffer > -1 && l < currentPlayBuffer + 1; l++) {
+                    for (int l = 0; currentPlayBuffer > -1 && l < currentPlayBuffer + 1 && l < (int)track->Layers->size(); l++) {
                         auto buff = (*track->Layers)[l]->Buffer;
                         int64 start0, end0;
                         start0 = Time::getHighResolutionTicks();
@@ -1834,7 +1908,7 @@ void OrbishAudioProcessor::handlePlaybackBlock(int start, int stop) {
                             auto b = make_unique<AudioBuffer<float> >();
                             b->setSize(context->audioInputsCount, context->maxBlockSize);
                             b->clear();
-                            temp = move(b);
+                            temp = std::move(b);
                         }
                         end0 = Time::getHighResolutionTicks();
                         for (uint32 c = 0; c < context->audioInputsCount;++c) {
@@ -1926,6 +2000,7 @@ void OrbishAudioProcessor::handlePlaybackBlock(int start, int stop) {
                                               , tail); //max(0,tail- context->fadeTime));
                             }
                         }
+                        
                         if(temp->getReadPointer(0)==nullptr){
                             noNullPtrInTmpBuffer = false;
                         }

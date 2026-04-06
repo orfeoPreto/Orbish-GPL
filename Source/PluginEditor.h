@@ -65,6 +65,7 @@ enum CallBackFlags {
   shouldChangeLayer      = 0x400,
   shouldUpdateHostPosition  = 0x800,
   shouldRefreshThumbnail = 0x1000,
+  shouldChangePitch =   0x2000
 
 };
 
@@ -101,6 +102,7 @@ public:
 	void askToRefreshThumbnail() override;
     void removeTrack();
     void askToRemoveLoop() override;
+    void askToChangePitch(int) override;
     void removeLoop();
     void doRemoveLoop();
     void askToUpdatePlayState(int trackNumber) override;
@@ -174,7 +176,8 @@ public:
     void setupWitness();
     void markActiveTrackForRefresh(bool);
     void renderOpenGL() override;
-    
+    void doChangePitch();
+    void changePitch();
     void newOpenGLContextCreated() override;
     void openGLContextClosing() override;
     std::shared_ptr<OpenGLContext> getOpenGLContext();
@@ -274,6 +277,7 @@ private:
     int trackToRemove = -1;
     int trackToChange = -1;
     int updatedTrackNumber = -1;
+//    int trackWithPitchChange = -1;
 	int loopBecomingActive = -1;
     std::unordered_map<int, int> tracksWithLoopChange;
     std::vector<std::shared_ptr<OpenGLComponentReference>> references;

@@ -140,8 +140,7 @@ void OpenGLComponent::renderOpenGL() {
         shader->use();
         try {
             setUniforms();
-        } catch (int e) {
-            std::cout << "Exception occured:" << e << "\n";
+        } catch (...) {
         }
     }
 //     grbl = std::make_unique<OpenGLShaderProgram> (*openGLContext);

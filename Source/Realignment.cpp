@@ -109,9 +109,14 @@ void Realignment::BufferProcessed(){
 }
 
 void Realignment::realign(std::shared_ptr<OrbishContext> context, OwnedArray<Track, CriticalSection>* tracks, bool hostHasPlayed){
-    int df = int(context->quartersToSamples(context->info->ppqPosition)) % context->samplesPerQuarter;
-    if (context->info->isPlaying
-        && df < context->fadeTime) {
+    /* if !PLUGIN_MODE  */
+    // Derive actual host position from timeInSamples, since ppqPosition
+    // may be set to bar start (both in plugin and standalone modes)
+    double hostSysPosition = context->samplesToQuarters(
+        double(context->info->getTimeInSamples().orFallback(0)));
+    int df = int(context->quartersToSamples(hostSysPosition)) % context->samplesPerQuarter;
+    if (/* not !PLUGIN_MODE || */ context->info->getIsPlaying()
+        && (df < context->fadeTime)) {
         if (!hostHasPlayed)hostHasPlayed = true;
         for(auto track:*tracks){
             if (track->IsPlaying() && !track->Reverse && track->getSnapMode() != kSnapNone){
@@ -122,7 +127,7 @@ void Realignment::realign(std::shared_ptr<OrbishContext> context, OwnedArray<Tra
                 switch (track->getSnapMode()) {
                     case kSnapQuarter:
                         currentPosInQuarters = fmod(context->samplesToQuarters(currentPosition), 4 / context->timeSigBottom);
-                        currentHostPosInQuarters = fmod(context->info->ppqPosition, 4 / context->timeSigBottom);
+                        currentHostPosInQuarters = fmod(hostSysPosition, 4 / context->timeSigBottom);
                         diffQuarters = currentHostPosInQuarters - currentPosInQuarters;
                         if (abs(diffQuarters) > (.5 * 4 / context->timeSigBottom)) {
                             if(currentPosInQuarters < currentHostPosInQuarters){
@@ -135,7 +140,7 @@ void Realignment::realign(std::shared_ptr<OrbishContext> context, OwnedArray<Tra
                     case kSnapMeasure:
                     case kSnapLoop:
                         currentPosInQuarters = fmod(context->samplesToQuarters(currentPosition), context->quartersPerBar());
-                        currentHostPosInQuarters = fmod(context->info->ppqPosition, context->quartersPerBar());
+                        currentHostPosInQuarters = fmod(hostSysPosition, context->quartersPerBar());
                         diffQuarters = currentHostPosInQuarters - currentPosInQuarters;
                         if (abs(diffQuarters) > (context->quartersPerBar()*.5)) {
                             if(currentPosInQuarters < currentHostPosInQuarters){
@@ -161,12 +166,12 @@ void Realignment::realign(std::shared_ptr<OrbishContext> context, OwnedArray<Tra
                 
                 //            context->logMessage("#======================================");
                 //            context->logMessage(String("#current pos in quarters:") + String(currentPosInQuarters));
-                //            context->logMessage(String("#realign with host at:") + String(context->info->ppqPosition) + String("\tdiff:")+String(diff));
+                //            context->logMessage(String("#realign with host at:") + String(hostSysPosition) + String("\tdiff:")+String(diff));
                 //            context->logMessage(String("#current host pos in quarters:") + String(currentHostPosInQuarters));
                 //
                 //            context->logMessage(String("#diff in quarters:") + String(diffQuarters));
                 //            context->logMessage(String("#hostSamples:") + String(context->info->timeInSamples));
-                //            context->logMessage(String("#host position converted:") + String(int(context->quartersToSamples(context->info->ppqPosition))));
+                //            context->logMessage(String("#host position converted:") + String(int(context->quartersToSamples(hostSysPosition))));
                 //            context->logMessage(String("#host Samples tracked by p/i:") + String(trackHostSamples));
                 //            context->logMessage(String("#host samples gap:") + String(trackHostSamples - context->info->timeInSamples));
                 //            context->logMessage(String("#gap in quarters:") + String(context->samplesToQuarters(trackHostSamples - context->info->timeInSamples)));

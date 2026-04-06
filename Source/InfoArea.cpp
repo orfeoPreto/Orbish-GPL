@@ -33,8 +33,26 @@ InfoArea::InfoArea(){
     setOpaque(true);
 
 
-  //  clickButton.setTooltip("Enable/disable click");
-//    addAndMakeVisible(clickButton);
+    clickButton.setTooltip("Enable/disable click");
+    // Draw a simple metronome icon
+    {
+        const int sz = 32;
+        Image img(Image::ARGB, sz, sz, true);
+        Graphics g(img);
+        g.setColour(Colours::white);
+        // Metronome body (trapezoid)
+        Path body;
+        body.startNewSubPath(sz * 0.3f, sz * 0.9f);
+        body.lineTo(sz * 0.7f, sz * 0.9f);
+        body.lineTo(sz * 0.58f, sz * 0.15f);
+        body.lineTo(sz * 0.42f, sz * 0.15f);
+        body.closeSubPath();
+        g.strokePath(body, PathStrokeType(1.5f));
+        // Pendulum arm
+        g.drawLine(sz * 0.5f, sz * 0.75f, sz * 0.65f, sz * 0.2f, 1.5f);
+        clickButton.setIcon(img);
+    }
+    addAndMakeVisible(clickButton);
 }
 
 InfoArea::~InfoArea(){
@@ -88,7 +106,8 @@ void InfoArea::resized(){
     bounds.removeFromLeft(50);
     progressLabel.setBounds(bounds.removeFromTop(labelHeight));
     witness->setBounds(20, progressLabel.getY()-5, int(std::ceil(labelHeight)), int(std::ceil(labelHeight)));
-//    clickButton.setBounds(5, witness->getY(), witness->getHeight() * .7, witness->getHeight() *.7);
+    auto cbSize = witness->getHeight();
+    clickButton.setBounds(witness->getX(), witness->getBottom(), cbSize, cbSize);
     auto ratio = logo.getImage().getHeight() / 50;
     logo.setBounds(10,20, logo.getImage().getWidth()/ratio,50);
     logo.setAlpha(.8f);

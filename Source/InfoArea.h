@@ -59,7 +59,7 @@ public:
 //    void setTimeSigNumerator(int);
 //    void setTimeSigDenominator(int);
     std::shared_ptr<OpenGLClickWitness> witness;
-    CustomButton clickButton{ "", false };
+    CustomButton clickButton{ "", false, true };
 
 private:
     exu::Label projectLabel{};

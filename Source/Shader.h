@@ -10,7 +10,7 @@
 #include <JuceHeader.h>
 #include <stdio.h>
 #include <istream>
-#define SHADERS_FROM_BINARY_DATA 0
+#define SHADERS_FROM_BINARY_DATA 1
 #define GL_VERTEX_SHADER   0x8B31
 #define GL_FRAGMENT_SHADER  0x8B30
 using namespace juce;
@@ -62,7 +62,7 @@ class Shader{
     void loadFile(const char* fn, std::string &str, GLuint);
     void removeShader();
     String shaderPath = (SystemStats::getOperatingSystemType() & SystemStats::MacOSX)
-		? "/Users/dukequarcoo/GitHub/exu/Orbish/resources/shaders"
+		? "/Users/orfeopreto/Dev/Orbish/resources/shaders"
 		: (SystemStats::getOperatingSystemType() & SystemStats::Windows)
 		      ? "C:\\Users\\quarc\\source\\repos\\orfeoPreto\\Orbish\\resources\\shaders"
 		      : "";

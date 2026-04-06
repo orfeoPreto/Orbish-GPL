@@ -16,13 +16,16 @@ HostSynchronizer::~HostSynchronizer(){
 }
 
 int HostSynchronizer::getNextSynchronizationPoint(SnapMode snapMode){
-    double currentPos = Synchronizer::context->info->ppqPosition;
+    // Derive actual position from timeInSamples, since ppqPosition
+    // may be overwritten with bar start in initBlock
+    double currentPos = Synchronizer::context->samplesToQuarters(
+        double(Synchronizer::context->info->getTimeInSamples().orFallback(0)));
     double expectedPos = 0;
     switch(snapMode){
         // expected position is next down beat (except if buffer start is exactly on beat
         case kSnapMeasure:
         case kSnapLoop:{
-            expectedPos = Synchronizer::context->info->ppqPositionOfLastBarStart;
+            expectedPos = Synchronizer::context->info->getPpqPositionOfLastBarStart().orFallback(0);
             while (expectedPos < currentPos)
                 expectedPos += double(Synchronizer::context->timeSigTop) / double(Synchronizer::context->timeSigBottom) * 4.0;
             break;
@@ -39,10 +42,11 @@ int HostSynchronizer::getNextSynchronizationPoint(SnapMode snapMode){
             break;
         }
         case kSnapHostLoop:{
-            if (Synchronizer::context->info->isLooping) {
-                expectedPos = Synchronizer::context->info->ppqLoopEnd;
-                if(currentPos == Synchronizer::context->info->ppqLoopStart){
-                    currentPos = Synchronizer::context->info->ppqLoopEnd;
+            if (Synchronizer::context->info->getIsLooping()
+                && Synchronizer::context->info->getLoopPoints().hasValue()) {
+                expectedPos = Synchronizer::context->info->getLoopPoints()->ppqEnd;
+                if(currentPos == Synchronizer::context->info->getLoopPoints()->ppqStart){
+                    currentPos = Synchronizer::context->info->getLoopPoints()->ppqEnd;
                 }
             }else{
                 expectedPos = currentPos;

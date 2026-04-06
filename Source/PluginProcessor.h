@@ -22,6 +22,8 @@
 #include "TrackEventHandler.h"
 
 
+
+
 class OrbishAudioProcessor  : public AudioProcessor
                             , public AudioProcessorValueTreeState::Listener
                             , public TrackEventHandler
@@ -35,8 +37,6 @@ public:
     ~OrbishAudioProcessor();
 
     //==============================================================================
-    std::unique_ptr<RangedAudioParameter> createParamFromBool(AudioParameterBool* boolParam, bool defaultValue);
-    std::unique_ptr<RangedAudioParameter> createParamFromInt(AudioParameterInt* intParam, int defaultValue);
     std::unique_ptr<AudioParameterFloat> createDecibelsParameter (
                                                                                    String,
                                                                                    String,
@@ -155,6 +155,7 @@ public:
     double previousMixLevel = -1;
     bool changingTrack = false;
     int trackHostSamples = 0;
+    int64 standaloneSamplePosition = 0;
     std::atomic<bool> refreshAll;
     std::atomic<Track*> trackToAdd;
 

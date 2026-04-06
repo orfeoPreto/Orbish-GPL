@@ -46,6 +46,8 @@ public:
     HostPositionChanged hostPositionChanged = 0;
 	typedef void (Observer::* LayersRefreshed)();
 	LayersRefreshed layersRefreshed = 0;
+    typedef void (Observer::* PitchChanged)(int);
+    PitchChanged pitchChanged = 0;
 
 
     virtual void updateLoopVisualiser (std::shared_ptr<BufferForVisualisation>) {};
@@ -61,6 +63,7 @@ public:
     virtual void askToUpdatePlayState(int ) {};
     virtual void askToUpdateHostPosition(int ) {};
 	virtual void askToRefreshThumbnail() {};
+    virtual void askToChangePitch(int) {};
 
 };
 #endif /* Observer_hpp */

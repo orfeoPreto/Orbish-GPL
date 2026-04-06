@@ -3,7 +3,7 @@
 //  Orbish - Shared Code
 //
 //  Created by Duke Quarcoo on 09/11/2021.
-//  Copyright © 2021 exu. All rights reserved.
+//  Copyright ï¿½ 2021 exu. All rights reserved.
 //
 
 #include "TrackLoader.h"
@@ -80,7 +80,8 @@ bool TrackLoader::loadLoopFromValueTree(ValueTree* loopTree, Loop* loop, Track* 
             if (layerIdx == loop->Layers->size()) {
                 loop->AddLayer(true, context);
             }
-            std::shared_ptr<Layer> layer(loop->Layers.get()->at(layerIdx));
+            if (layerIdx >= (int)loop->Layers->size()) continue;
+            std::shared_ptr<Layer> layer((*loop->Layers)[layerIdx]);
             String filePath = lyChild.getProperty("file");
             if (filePath.isEmpty())return false;
             File file(filePath);
@@ -99,9 +100,8 @@ bool TrackLoader::loadLoopFromValueTree(ValueTree* loopTree, Loop* loop, Track* 
                     }
                     loop->LoopDuration = buffer->getNumSamples();
                 }
-                catch (int e) {
+                catch (...) {
                     context->logMessage("read of audio file failed: " + String(filePath));
-                    context->logMessage("Exception occured:" + String(e));
                 }
             }
             layer->makeVisualizationBuffer(loop->LoopDuration);
@@ -115,7 +115,7 @@ bool TrackLoader::loadLoopFromValueTree(ValueTree* loopTree, Loop* loop, Track* 
         loop->activePlaybackLayer = nullptr;
     }
     else {
-        loop->activePlaybackLayer = loop->Layers.get()->at(loop->CurrentTop);
+        loop->activePlaybackLayer = (*loop->Layers)[loop->CurrentTop];
     }
     return true;
 }

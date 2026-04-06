@@ -48,11 +48,11 @@ public Component{
 
     private:
         std::atomic<float>& progress;
-        int buttonSize;
-        int margin;
+        int buttonSize = 15;
+        int margin = 3;
         bool active = false;
         bool muted = false;
-        int index;
+        int index = 0;
 		bool becomingActive = false;
 };
 #endif

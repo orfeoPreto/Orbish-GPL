@@ -130,11 +130,16 @@ void OpenGLAudioThumbnail::renderOpenGL() {
                 glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
             }
         }else{
-            for(int i=std::max(0, int(layerNumber)-numberVisibleLayers); layerNumber<=sourceLoop->Layers->size() && i<layerNumber;++i){
+            auto localLayers = sourceLoop->Layers;
+            if (!localLayers) return;
+            int localSize = (int)localLayers->size();
+            int clampedLayerNum = std::min((int)layerNumber, localSize);
+            for(int i=std::max(0, clampedLayerNum-numberVisibleLayers); i<clampedLayerNum;++i){
                 {
+                    if (i >= (int)localLayers->size()) break;
                     GLfloat vb[BUFFER_READ_SIZE];
                     for (auto j=0; j<BUFFER_READ_SIZE; ++j) {
-                        vb[j] = sourceLoop->Layers->at(i)->visualizationBuffer[j];
+                        vb[j] = (*localLayers)[i]->visualizationBuffer[j];
                     }
                     //render waveform
                     shaderThumbnailWave->use();
@@ -166,8 +171,7 @@ void OpenGLAudioThumbnail::renderOpenGL() {
         }
 //         grbl = std::make_unique<OpenGLShaderProgram> (*openGLContext);
 
-    } catch (int e) {
-		//logMessage("Exception occured: "  + String(e) );
+    } catch (...) {
     }
 	//logMessage("end OpenGLAudioThumbnail::renderOpenGL()");
 

@@ -11,6 +11,8 @@
 #include "Orbish.h"
 #include "Loop.h"
 #include "InternalSynchronizer.h"
+#include "TimeStretchRubberBand.h"
+
 
 //forward declaration
 class Realignment;
@@ -72,6 +74,19 @@ public:
 	std::atomic<float>* Progress;
     Realignment* realignment;
     
+	// Safe layer access: returns nullptr if index is out of bounds
+	inline std::shared_ptr<Layer> safeLayer(int idx) const {
+		if (!Layers || idx < 0 || idx >= (int)Layers->size()) return nullptr;
+		return (*Layers)[idx];
+	}
+	// Safe CurrentTop value: returns -1 if invalid
+	inline int safeCurrentTop() const {
+		if (!CurrentTop || !Layers || Layers->empty()) return -1;
+		int ct = *CurrentTop;
+		if (ct < 0 || ct >= (int)Layers->size()) return -1;
+		return ct;
+	}
+
 	std::shared_ptr<Layer> AddLayer(bool incrementTop);
 
 	void RemoveTopLayer();
@@ -233,6 +248,13 @@ public:
     std::shared_ptr<FileLogger> logger;
     void setState(ValueTree*);
     std::atomic<bool> refresh;
+    
+    std::unique_ptr<TimeStretchRubberBand> timeStretcher;
+    float perTrackPitchRatio = 1.0f; // default 1.0 (no pitch change)
+    double originalTempo = 120.0; // initialize track's recording tempo if available
+
+
+    
 private:
 	AudioProcessorValueTreeState& params;
     bool active = false;
@@ -245,4 +267,6 @@ private:
     float input, output;
     int snap, recMode;
 };
+
+
 #endif

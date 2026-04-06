@@ -15,6 +15,15 @@
 
 typedef unsigned int uint;
 
+//template <typename Value>
+//Value get (juce::Optional<Value> opt, Value fallback = {})
+//{
+//    if (opt.hasValue())
+//        return *opt;
+//
+//    jassertfalse;
+//    return fallback;
+//}
 
 struct OrbishContext {
 	OrbishContext() {
@@ -37,11 +46,21 @@ struct OrbishContext {
 		fadeInc = 0;
 		samplesPerBeat = 0;
         samplesPerQuarter = 0;
-		bpm = 0;
-		timeSigBottom = 1;
-		timeSigTop = 1;
-		info = new AudioPlayHead::CurrentPositionInfo();
-    
+		bpm = 120;
+		timeSigBottom = 4;
+		timeSigTop = 4;
+
+        // Initialize info so it's never an empty Optional (standalone safety)
+        info = AudioPlayHead::PositionInfo();
+        info->setBpm(120.0);
+        info->setIsPlaying(false);
+        AudioPlayHead::TimeSignature sig;
+        sig.denominator = 4;
+        sig.numerator = 4;
+        info->setTimeSignature(sig);
+        info->setPpqPosition(0.0);
+        info->setTimeInSamples(0);
+        info->setIsLooping(false);
 	}
 	~OrbishContext() {
 
@@ -77,7 +96,7 @@ public:
 	Array<std::atomic<float>*> progress{};
 	std::mutex mtx;
 	int maxUndoHistory = -1;
-	AudioPlayHead::CurrentPositionInfo* info;
+	Optional<AudioPlayHead::PositionInfo> info;
 	bool init = false;
 	float feedback;
 	float fadeInc;
@@ -98,11 +117,13 @@ public:
     
     inline double quartersToSamples(double position)
     {
+        if (bpm <= 0 || samplesPerMinute <= 0) return 0;
         return position * samplesPerMinute / bpm;
     }
     
     inline double beatsToSamples(double position)
     {
+        if (bpm <= 0 || samplesPerMinute <= 0 || timeSigBottom <= 0) return 0;
         return position * samplesPerMinute / bpm / timeSigBottom * 4;
     }
     
@@ -125,7 +146,10 @@ public:
         return double(diff);
     }
     inline double quartersPerBar(){
-        return info->timeSigNumerator / (info->timeSigDenominator * .25);
+        int num = info->getTimeSignature().hasValue() ? info->getTimeSignature()->numerator : timeSigTop;
+        int den = info->getTimeSignature().hasValue() ? info->getTimeSignature()->denominator : timeSigBottom;
+        if (den <= 0) den = 4;
+        return num / (den * .25);
     }
     
     float samplesPerMinute = 0;

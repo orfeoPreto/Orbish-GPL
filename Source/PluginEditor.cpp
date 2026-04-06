@@ -1,5 +1,9 @@
 #include "PluginProcessor.h"
 #include "PluginEditor.h"
+#include <stdexcept>
+
+// Debug: track which callback is currently executing
+static const char* g_currentCallback = "none";
 
 
 //==============================================================================
@@ -19,10 +23,8 @@ nextLayerNumber(-1)
     //    setAlpha(0.5);
     setOpaque(true);
     
-    // openGLContext->attachTo(*getTopLevelComponent());
     openGLContext->setOpenGLVersionRequired(OpenGLContext::OpenGLVersion::openGL3_2);
     openGLContext->setRenderer (this);
-    openGLContext->attachTo (*this);
     
     // Define the Look and Feel of the application
     auto editorLookAndFeel = new OrbishLookAndFeel();
@@ -61,6 +63,10 @@ nextLayerNumber(-1)
     markActiveTrackForRefresh(true);
     //logMessage("leaving editor constructor");
     
+    // Attach OpenGL context AFTER all child components are set up,
+    // to avoid texture creation before the GL context is ready
+    openGLContext->attachTo (*this);
+    
 }
 
 std::shared_ptr<OpenGLContext> OrbishAudioProcessorEditor::getOpenGLContext(){
@@ -84,8 +90,10 @@ void OrbishAudioProcessorEditor::setupTracks(){
     for (auto track : processor.tracks) {
         doCreateTrack(track->Index);
     }
-    auto t = tracks[processor.activeTrack->Index];
-    t->setActive(true);
+    if (processor.activeTrack != nullptr && (int)processor.activeTrack->Index < tracks.size()) {
+        auto t = tracks[processor.activeTrack->Index];
+        t->setActive(true);
+    }
 }
 
 
@@ -218,7 +226,7 @@ void OrbishAudioProcessorEditor::openGLContextClosing()
 
 void OrbishAudioProcessorEditor::renderOpenGL()
 {
-    //logMessage("entering renderOpenGL");
+    g_currentCallback = "renderOpenGL";
     
     counter++;
     stamp = Time::getApproximateMillisecondCounter();
@@ -231,6 +239,7 @@ void OrbishAudioProcessorEditor::renderOpenGL()
     //    auto grbl = std::make_unique<OpenGLShaderProgram> (*openGLContext);
     lock.enterRead();
     for (auto reference : references){
+        try {
         if (!reference->asOpenGLComponent->isInitialized()) {
             reference->asOpenGLComponent->init();
         }
@@ -275,6 +284,11 @@ void OrbishAudioProcessorEditor::renderOpenGL()
             reference->asRenderer->renderOpenGL();
             //             grbl = std::make_unique<OpenGLShaderProgram> (*openGLContext);
             
+        }
+        } catch (const std::exception& e) {
+            DBG("Exception in renderOpenGL component: " + String(e.what()));
+        } catch (...) {
+            DBG("Unknown exception in renderOpenGL component");
         }
         
     }
@@ -334,12 +348,13 @@ void OrbishAudioProcessorEditor::createNewProject() {
     alert->enterModalState(true, nullptr, false);
     addAndMakeVisible(alert);
     alert->centreWithSize(300, 200);
-    if (alert->runModalLoop() != 0) // is they picked 'ok'
-        {
-        setProjectName(alert->getTextEditorContents("projectNameBox"));
-        alert->exitModalState(0);
-        alert->setVisible(false);
-        }
+//    alert->show
+//    if (alert->runModalLoop() != 0) // is they picked 'ok'
+//        {
+//        setProjectName(alert->getTextEditorContents("projectNameBox"));
+//        alert->exitModalState(0);
+//        alert->setVisible(false);
+//        }
     totalReset();
     infoAndControlArea->controlArea.groupControlArea.groupCombo.setSelectedId(1);
     project.newProject = true;
@@ -389,7 +404,6 @@ void OrbishAudioProcessorEditor::saveProject() {
             dir = dir.getChildFile("Orbish");
         }
         FileChooser fc("Save As", dir,"*.orb", false);
-        fc.browseForFileToSave(true);
         {
         project.directory = fc.getResult().getParentDirectory();
         setProjectName(fc.getResult().getFileNameWithoutExtension().replace(".orb","", true));
@@ -482,7 +496,7 @@ void OrbishAudioProcessorEditor::saveProject() {
         }
     }
     loopTree->appendChild(*gsv, nullptr);
-    loopTree->setProperty("bpm", processor.context->info->bpm, nullptr);
+    loopTree->setProperty("bpm", processor.context->info->getBpm().orFallback(0), nullptr);
     std::unique_ptr<XmlElement> el = loopTree->createXml();
     auto file = tempDir->getChildFile(project.name + ".xml");
     el->writeTo(file, XmlElement::TextFormat());
@@ -514,19 +528,20 @@ bool OrbishAudioProcessorEditor::showDialogWindow(
     alert->enterModalState(true, nullptr, false);
     addAndMakeVisible(alert);
     alert->centreWithSize(400, 200);
-    if (alert->runModalLoop() != 0) // is they picked 'ok'
-        {
-        alert->exitModalState(0);
-        alert->setVisible(false);
-        thumbnail->setVisible(true);
-        return true;
-        }
-    else {
-        alert->exitModalState(0);
-        alert->setVisible(false);
-        thumbnail->setVisible(true);
-        return false;
-    }
+//    if (alert->runModalLoop() != 0) // is they picked 'ok'
+//        {
+//        alert->exitModalState(0);
+//        alert->setVisible(false);
+//        thumbnail->setVisible(true);
+//        return true;
+//        }
+//    else {
+//        alert->exitModalState(0);
+//        alert->setVisible(false);
+//        thumbnail->setVisible(true);
+//        return false;
+//    }
+    return false;
 }
 
 void OrbishAudioProcessorEditor::askUserToOpenFile() {
@@ -541,10 +556,10 @@ void OrbishAudioProcessorEditor::askUserToOpenFile() {
     File dir = File(File::getSpecialLocation(File::userHomeDirectory));
     dir = dir.getChildFile("Orbish");
     FileChooser fc("Open Project", dir, "*.orb",false);
-    if (fc.browseForFileToOpen()){
-        project.directory = fc.getResult().getParentDirectory();
-        openFile(fc.getResult());
-    }
+//    if (fc.browseForFileToOpen()){
+//        project.directory = fc.getResult().getParentDirectory();
+//        openFile(fc.getResult());
+//    }
     project.newProject = false;
     project.dirty = false;
     markActiveTrackForRefresh(true);
@@ -572,8 +587,8 @@ bool OrbishAudioProcessorEditor::openFile(const File& file) {
             tracks[activeTrackIdx]->setActive(true);
         }
         float bpm = float(loopTree->getProperty("bpm"));
-        if(String(bpm, 0) != String(processor.context->info->bpm, 0)){
-            showDialogWindow("Tempo changed", "The current bpm (" + String(processor.context->info->bpm) + ") doesn't match the one of the loaded project (" + String(bpm, 0) + "). \nPlease change the host's bpm.", AlertWindow::AlertIconType::WarningIcon, "Ok, will change", "Never mind");
+        if(String(bpm, 0) != String(processor.context->info->getBpm().orFallback(0), 0)){
+            showDialogWindow("Tempo changed", "The current bpm (" + String(processor.context->info->getBpm().orFallback(0)) + ") doesn't match the one of the loaded project (" + String(bpm, 0) + "). \nPlease change the host's bpm.", AlertWindow::AlertIconType::WarningIcon, "Ok, will change", "Never mind");
         }
     }
     tempDir.deleteRecursively();
@@ -597,6 +612,7 @@ void OrbishAudioProcessorEditor::changeListenerCallback (ChangeBroadcaster* ){
 
 
 void OrbishAudioProcessorEditor::updateLoopVisualiser(std::shared_ptr<BufferForVisualisation> b){
+    if (processor.activeTrack == nullptr || activeTrackIdx >= tracks.size()) return;
     thumbnail->setSourceLoop(processor.activeTrack->ActiveLoop);
     auto t = tracks[activeTrackIdx];
     t->thumbnail->setSourceLoop(processor.activeTrack->ActiveLoop);
@@ -621,10 +637,13 @@ void OrbishAudioProcessorEditor::updateLoopVisualiser(std::shared_ptr<BufferForV
 }
 
 void OrbishAudioProcessorEditor::timerCallback(){
+    g_currentCallback = "timerCallback";
+    try {
     // run ACT methods in response to flags set by notification callbacks
     updatePlayHead();
     createTrack();
     changeTrack();
+    changePitch();
     createLoop();
     removeTrack();
     changeLoop();
@@ -633,6 +652,8 @@ void OrbishAudioProcessorEditor::timerCallback(){
     updatePlayState();
     refreshThumbnail();
     //    DBG(frameRate);
+    paintInfoSection();
+    if (processor.activeTrack == nullptr) return;
     auto transportControlArea = &infoAndControlArea->controlArea.buttonControlArea.transportControlArea;
     auto modeControlArea = &infoAndControlArea->controlArea.buttonControlArea.modeAndNavigationControlArea.modeControlArea;
     if (processor.activeTrack->Recording || processor.activeTrack->Playing) {
@@ -643,7 +664,11 @@ void OrbishAudioProcessorEditor::timerCallback(){
         modeControlArea->recModeCombo.setEnabled(true);
         transportControlArea->bounceButton.setEnabled(true);
     }
-    paintInfoSection();
+    } catch (const std::exception& e) {
+        DBG("Exception in timerCallback: " + String(e.what()));
+    } catch (...) {
+        DBG("Unknown exception in timerCallback");
+    }
 }
 
 String OrbishAudioProcessorEditor::saveBuffer(int trackIdx
@@ -658,8 +683,9 @@ String OrbishAudioProcessorEditor::saveBuffer(int trackIdx
     }
     auto l = t->loops[loopIdx];
     if (nullptr == l)return String();
-    if (l->Layers->size() <= layerIdx) { return String(); }
-    std::shared_ptr<Layer> layer = l->Layers.get()->at(layerIdx);
+    auto localLayers = l->Layers;
+    if (!localLayers || (int)localLayers->size() <= layerIdx) { return String(); }
+    std::shared_ptr<Layer> layer = (*localLayers)[layerIdx];
     if (layer->Buffer->getNumSamples() == 0) {
         return String();
     }
@@ -774,6 +800,8 @@ void OrbishAudioProcessorEditor::logMessage(String message){
 
 //==============================================================================
 void OrbishAudioProcessorEditor::paint (Graphics& g){
+    g_currentCallback = "paint";
+    try {
     g.fillAll(getLookAndFeel().findColour(ResizableWindow::backgroundColourId));
     
     paintInfoSection();
@@ -782,46 +810,64 @@ void OrbishAudioProcessorEditor::paint (Graphics& g){
     
     auto transportControlArea = &infoAndControlArea->controlArea.buttonControlArea.transportControlArea;
     
-    if(processor.activeTrack->Playing){
-        if(processor.activeTrack->isPlayArmed()){
-            if(!transportControlArea->playButton.getToggleState()) {
-                transportControlArea->playButton.triggerClick();
+    if(processor.activeTrack != nullptr && activeTrackIdx < tracks.size()) {
+        if(processor.activeTrack->Playing){
+            if(processor.activeTrack->isPlayArmed()){
+                if(!transportControlArea->playButton.getToggleState()) {
+                    transportControlArea->playButton.triggerClick();
+                }
             }
         }
-    }
-    else {
-        if (!processor.activeTrack->isPlayArmed()) {
-            if (transportControlArea->playButton.getToggleState()) {
-                transportControlArea->playButton.setToggleState(false, NotificationType::sendNotification);
-                transportControlArea->playButton.setState(Button::buttonNormal);
+        else {
+            if (!processor.activeTrack->isPlayArmed()) {
+                if (transportControlArea->playButton.getToggleState()) {
+                    transportControlArea->playButton.setToggleState(false, NotificationType::sendNotification);
+                    transportControlArea->playButton.setState(Button::buttonNormal);
+                }
             }
         }
+        if(processor.activeTrack->Muted != tracks[activeTrackIdx]->isMuted()) tracksDirty = true;
+        if(processor.activeTrack->Soloed != tracks[activeTrackIdx]->isSoloed()) tracksDirty = true;
+        if(processor.activeTrack->isMuteArmed() != tracks[activeTrackIdx]->isMutedArmed()) tracksDirty = true;
+        if(processor.activeTrack->isSoloArmed() != tracks[activeTrackIdx]->isSoloArmed()) tracksDirty = true;
     }
-    if(processor.activeTrack->Muted != tracks[activeTrackIdx]->isMuted()) tracksDirty = true;
-    if(processor.activeTrack->Soloed != tracks[activeTrackIdx]->isSoloed()) tracksDirty = true;
-    if(processor.activeTrack->isMuteArmed() != tracks[activeTrackIdx]->isMutedArmed()) tracksDirty = true;
-    if(processor.activeTrack->isSoloArmed() != tracks[activeTrackIdx]->isSoloArmed()) tracksDirty = true;
     
     if (tracksDirty) {
         trackArea.repaint();
         tracksDirty = false;
     }
+    } catch (const std::exception& e) {
+        DBG("Exception in paint: " + String(e.what()));
+    } catch (...) {
+        DBG("Unknown exception in paint");
+    }
 }
 
 void OrbishAudioProcessorEditor::paintInfoSection(){
-    String timeSig = String(processor.context->info->timeSigNumerator) + "/" + String(processor.context->info->timeSigDenominator);
+    int tsNum = processor.context->info->getTimeSignature().hasValue()
+        ? processor.context->info->getTimeSignature()->numerator : processor.context->timeSigTop;
+    int tsDen = processor.context->info->getTimeSignature().hasValue()
+        ? processor.context->info->getTimeSignature()->denominator : processor.context->timeSigBottom;
+    if (tsNum <= 0) tsNum = 4;
+    if (tsDen <= 0) tsDen = 4;
+
+    String timeSig = String(tsNum) + "/" + String(tsDen);
     if(timeSig != infoAndControlArea->infoArea.getTimeSignature()){
         infoAndControlArea->infoArea.setTimeSignature(timeSig);
     }
-    auto bpmStr = "bpm: " + String(processor.context->info->bpm, 1);
+    auto bpmStr = "bpm: " + String(processor.context->info->getBpm().orFallback(processor.context->bpm), 1);
     if(bpmStr != infoAndControlArea->infoArea.getBeatsPerMinute()){
         infoAndControlArea->infoArea.setBeatsPerMinute(bpmStr);
     }
     
-    float totalSubDiv = float(processor.context->samplesToBeats(*processor.activeTrack->CurrentPlayingIndex));
+    if (processor.activeTrack == nullptr || activeTrackIdx >= tracks.size()) return;
+
+    float totalSubDiv = (processor.activeTrack->CurrentPlayingIndex != nullptr)
+        ? float(processor.context->samplesToBeats(*processor.activeTrack->CurrentPlayingIndex))
+        : 0.0f;
     float garbage;
-    int bars = int(totalSubDiv / processor.context->info->timeSigNumerator + 1);
-    int beats = int(fmod(totalSubDiv,processor.context->info->timeSigNumerator) + 1);
+    int bars = int(totalSubDiv / tsNum + 1);
+    int beats = int(fmod(totalSubDiv, tsNum) + 1);
     float rest = std::modf(totalSubDiv, &garbage);
     int subSubDiv = int(rest) * 4 + 1;
     String progress = String(bars) + ". " + String(beats) + ". " + String(subSubDiv);
@@ -969,30 +1015,31 @@ void OrbishAudioProcessorEditor::sliderChanged(Slider* slider) {
 }
 
 void OrbishAudioProcessorEditor::buttonClicked(Button* button){
+    g_currentCallback = "buttonClicked";
+    try {
     auto navigationControlArea = &infoAndControlArea->controlArea.buttonControlArea.modeAndNavigationControlArea.navigationControlArea;
-    //logMessage("button clicked");
     if (button == &settingsPage->closeSettingsButton) {
         closeSettingsPage();
     }
 
     if (button == &navigationControlArea->nextLoopButton) {
-        //logMessage("next loop");
+        if (activeTrackIdx >= tracks.size()) return;
         auto t = tracks[activeTrackIdx];
-//        if (!t->audioTrack->loopChangeArmed)return;
         if (loopBecomingActive >= 0 && loopBecomingActive < t->Loops.size()) {
             t->Loops[loopBecomingActive]->unHighlightBecomingActive();
         }
         else {
             loopBecomingActive = t->getActiveLoopIdx();
         }
-        loopBecomingActive = (loopBecomingActive + 1) % t->Loops.size();
+        if (t->Loops.size() > 0)
+            loopBecomingActive = (loopBecomingActive + 1) % t->Loops.size();
         if (loopBecomingActive < t->Loops.size()) {
             t->Loops[loopBecomingActive]->highlightBecomingActive();
         }
     }
     if (button == &navigationControlArea->previousLoopButton) {
+        if (activeTrackIdx >= tracks.size()) return;
         auto t = tracks[activeTrackIdx];
-//        if (!t->audioTrack->loopChangeArmed)return;
         if (loopBecomingActive >= 0
             && loopBecomingActive < t->Loops.size() ) {
             t->Loops[loopBecomingActive]->unHighlightBecomingActive();
@@ -1000,14 +1047,21 @@ void OrbishAudioProcessorEditor::buttonClicked(Button* button){
         else {
             loopBecomingActive = t->getActiveLoopIdx();
         }
-        auto newIdx = (loopBecomingActive - 1) % t->Loops.size();
-        if ((loopBecomingActive - 1) < 0) {
-            newIdx = newIdx + t->Loops.size();
+        if (t->Loops.size() > 0) {
+            auto newIdx = (loopBecomingActive - 1) % t->Loops.size();
+            if ((loopBecomingActive - 1) < 0) {
+                newIdx = newIdx + t->Loops.size();
+            }
+            loopBecomingActive = newIdx;
         }
-        loopBecomingActive = newIdx;
         if (loopBecomingActive < t->Loops.size()) {
             t->Loops[loopBecomingActive]->highlightBecomingActive();
         }
+    }
+    } catch (const std::exception& e) {
+        DBG("Exception in buttonClicked: " + String(e.what()));
+    } catch (...) {
+        DBG("Unknown exception in buttonClicked");
     }
 }
 
@@ -1015,6 +1069,8 @@ void OrbishAudioProcessorEditor::sliderValueChanged(Slider* ){
 }
 
 void OrbishAudioProcessorEditor::mouseDown(const MouseEvent &event) {
+    g_currentCallback = "mouseDown";
+    try {
     for (auto track : tracks) {
         if(event.eventComponent->getParentComponent() == track){
             for (auto loop  : track->Loops) {
@@ -1028,11 +1084,19 @@ void OrbishAudioProcessorEditor::mouseDown(const MouseEvent &event) {
             }
         }
     }
+    } catch (const std::exception& e) {
+        DBG("Exception in mouseDown: " + String(e.what()));
+    } catch (...) {
+        DBG("Unknown exception in mouseDown");
+    }
 }
 
 void OrbishAudioProcessorEditor::mouseDrag(const MouseEvent& event) {
+    g_currentCallback = "mouseDrag";
+    try {
     for (auto track : tracks) {
         if (event.eventComponent->getParentComponent() == track) {
+            if (activeLoop < 0 || activeLoop >= track->Loops.size()) continue;
             auto l = track->Loops[activeLoop];
             if (!this->isDragAndDropActive()) {
                 this->startDragging("track", l, Image(), true);
@@ -1057,6 +1121,11 @@ void OrbishAudioProcessorEditor::mouseDrag(const MouseEvent& event) {
                 performExternalDragDropOfFiles({ s }, false, {  });
             }
         }
+    }
+    } catch (const std::exception& e) {
+        DBG("Exception in mouseDrag: " + String(e.what()));
+    } catch (...) {
+        DBG("Unknown exception in mouseDrag");
     }
 }
 
@@ -1116,6 +1185,7 @@ void OrbishAudioProcessorEditor::setUpObserverCallbacks(){
     layerChange = &Observer::askToChangeLayer;
     loopRemoval = &Observer::askToRemoveLoop;
     playChanged = &Observer::askToUpdatePlayState;
+    pitchChanged = &Observer::askToChangePitch;
     hostPositionChanged = &Observer::askToUpdateHostPosition;
     layersRefreshed = &Observer::askToRefreshThumbnail;
 }
@@ -1183,6 +1253,10 @@ void OrbishAudioProcessorEditor::askToRefreshThumbnail() {
     flags |= CallBackFlags::shouldRefreshThumbnail;
 };
 
+void OrbishAudioProcessorEditor::askToChangePitch(int trackNumber) {
+    flags |= CallBackFlags::shouldChangePitch;
+};
+
 // =============== ACT ===================
 
 void OrbishAudioProcessorEditor::refreshThumbnail() {
@@ -1220,6 +1294,7 @@ void OrbishAudioProcessorEditor::changeTrack(){
 }
 
 void OrbishAudioProcessorEditor::markActiveTrackForRefresh(bool shouldRefresh){
+    if (processor.activeTrack == nullptr) return;
     processor.activeTrack->refresh = shouldRefresh;
 }
 
@@ -1251,6 +1326,13 @@ void OrbishAudioProcessorEditor::changeLayer(){
     if(flags & CallBackFlags::shouldChangeLayer){
         doChangeLayer();
         flags &= ~CallBackFlags::shouldChangeLayer;
+    }
+}
+
+void OrbishAudioProcessorEditor::changePitch(){
+    if(flags & CallBackFlags::shouldChangePitch){
+        doChangePitch();
+        flags &= ~CallBackFlags::shouldChangePitch;
     }
 }
 
@@ -1370,6 +1452,7 @@ void OrbishAudioProcessorEditor::doCreateTrack(int trackNumber) {
         t->thumbnail->setContext(processor.context);
         references.push_back (std::make_shared<OpenGLComponentReference>(t->thumbnail.get()));
         for(auto l : *loops){
+            if ((int)l->Index >= t->Loops.size()) continue;
             auto lc = t->Loops[l->Index];
             lc->thumbnail->setSourceLoop(l);
             lc->thumbnail->setContext(processor.context);
@@ -1538,4 +1621,16 @@ void OrbishAudioProcessorEditor::doUpdatePlayState(){
     updatedTrack->setSoloArmed(updatedTrack->getAudioTrack()->isSoloArmed());
     
     updatedTrack->repaint();
+}
+
+void OrbishAudioProcessorEditor::doChangePitch(){
+    try {
+    for(auto track: processor.tracks){
+        if(track->timeStretcher) track->timeStretcher->setPitchRatio(track->perTrackPitchRatio);
+    }
+    } catch (const std::exception& e) {
+        DBG("Exception in doChangePitch: " + String(e.what()));
+    } catch (...) {
+        DBG("Unknown exception in doChangePitch");
+    }
 }
