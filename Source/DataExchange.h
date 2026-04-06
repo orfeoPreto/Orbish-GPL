@@ -49,7 +49,25 @@ public:
         layerQueue = new boost::lockfree::spsc_queue<std::shared_ptr<Layer>, boost::lockfree::capacity<3> >;
 	}
 	~DataExchange() {
-
+        // Drain log queues and free remaining std::string* pointers
+        if (logWriteMessageQueue) {
+            std::string* s = nullptr;
+            while (logWriteMessageQueue->pop(s)) { delete s; }
+        }
+        if (logReadMessageQueue) {
+            std::string* s = nullptr;
+            while (logReadMessageQueue->pop(s)) { delete s; }
+        }
+        delete writeVisualisationBufferQueue;
+        delete readVisualisationBufferQueue;
+        delete logWriteMessageQueue;
+        delete logReadMessageQueue;
+        delete readBufferQueue;
+        delete writeGainModifierQueue;
+        delete readGainModifierQueue;
+        delete writeMeasureBufferQueue;
+        delete readMeasureBufferQueue;
+        delete layerQueue;
 	}
 
 	boost::lockfree::spsc_queue<std::shared_ptr<BufferForVisualisation>, boost::lockfree::capacity<200> >* writeVisualisationBufferQueue;

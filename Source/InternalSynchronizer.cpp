@@ -17,6 +17,7 @@ InternalSynchronizer::~InternalSynchronizer(){
 }
 
 int InternalSynchronizer::getNextSynchronizationPoint(SnapMode snapMode){
+    if (currentPos == nullptr) return 0;
     int expectedPos = 0;
       // expected position is next down beat (except if buffer is exactly on beat
     switch(snapMode){
@@ -38,6 +39,7 @@ int InternalSynchronizer::getNextSynchronizationPoint(SnapMode snapMode){
             break;
         }
         case kSnapLoop:
+            if (loopEnd == nullptr) return 0;
             expectedPos = *loopEnd;
             break;
         case kSnapNone:

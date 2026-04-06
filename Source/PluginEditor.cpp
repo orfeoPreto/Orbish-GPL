@@ -597,6 +597,8 @@ bool OrbishAudioProcessorEditor::openFile(const File& file) {
 
 
 OrbishAudioProcessorEditor::~OrbishAudioProcessorEditor(){
+    stopTimer();
+    processor.context->observer = nullptr;
     processor.guiAlive = false;
     Thread::sleep(200);
     setLookAndFeel(nullptr);

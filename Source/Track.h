@@ -263,9 +263,9 @@ private:
     std::unique_ptr<Synchronizer> primarySynchronizer;
     std::unique_ptr<Synchronizer> secondarySynchronizer;
     int getLimit();
-    bool muteArmed, soloArmed, stopArmed, reverseArmed, recordingArmed, playArmed, monitoring, trigger;
-    float input, output;
-    int snap, recMode;
+    bool muteArmed = false, soloArmed = false, stopArmed = false, reverseArmed = false, recordingArmed = false, playArmed = false, monitoring = false, trigger = false;
+    float input = 0, output = 0;
+    int snap = 0, recMode = 0;
 };
 
 

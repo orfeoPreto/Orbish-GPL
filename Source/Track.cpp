@@ -21,8 +21,7 @@ Track::Track(uint index, bool a, AudioProcessorValueTreeState& p, std::shared_pt
 , context(c){
     Index = index;
     RunAfters.reserve(10);
-    int foo =0;
-    CurrentPlayingIndex = &foo;
+    CurrentPlayingIndex = &CurrentRecordingIndex;
     primarySynchronizer = std::make_unique<InternalSynchronizer>(context, CurrentPlayingIndex);
     secondarySynchronizer = std::make_unique<InternalSynchronizer>(context, &CurrentRecordingIndex);
 
@@ -109,6 +108,7 @@ Track::~Track() {
     
     RemoveAllLayers();
     setActive(false);
+    delete realignment;
     delete state;
     ActiveLoop = nullptr;
     loops.clear();

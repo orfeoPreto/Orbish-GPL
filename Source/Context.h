@@ -63,7 +63,8 @@ struct OrbishContext {
         info->setIsLooping(false);
 	}
 	~OrbishContext() {
-
+        delete xchange;
+        xchange = nullptr;
 	}
 public:
     bool firstRun = false;

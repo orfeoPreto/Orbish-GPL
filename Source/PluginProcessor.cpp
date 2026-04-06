@@ -92,7 +92,7 @@ AudioProcessor(BusesProperties()
 #endif
                ),
 #endif
-context(std::make_shared<OrbishContext>()),
+context(nullptr),
 parameters(*this, nullptr, "OrbishState", {
     make_unique<AudioParameterFloat>(ParameterID { "globalMix",  1 }, "GlobalMix"
                                           ,NormalisableRange<float>(
