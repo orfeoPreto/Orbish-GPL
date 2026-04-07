@@ -19,8 +19,9 @@ TEST_CASE("InternalSynchronizer currentPos valid after Track init", "[init][sync
 
     // getNextSynchronizationPoint dereferences currentPos internally.
     // This must not crash (would crash if pointing to dead stack).
+    // Returns -1 when Track is neither recording nor playing.
     int result = track->getNextSynchronizationPoint(kSnapNone);
-    CHECK(result == 0);
+    CHECK(result == -1);
 }
 
 TEST_CASE("InternalSynchronizer handles nullptr currentPos gracefully", "[init][sync]") {

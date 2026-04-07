@@ -82,12 +82,75 @@ struct MinimalProcessorFixture {
 
     static juce::AudioProcessorValueTreeState::ParameterLayout createParameterLayout() {
         std::vector<std::unique_ptr<juce::RangedAudioParameter>> p;
+        // Float parameters
+        p.push_back(std::make_unique<juce::AudioParameterFloat>(
+            juce::ParameterID("globalMix", 1), "GlobalMix",
+            juce::NormalisableRange<float>(-60.0f, 12.0f), 0.0f));
+        p.push_back(std::make_unique<juce::AudioParameterFloat>(
+            juce::ParameterID("clickLevel", 1), "ClickLevel",
+            juce::NormalisableRange<float>(-120.0f, 6.0f), 0.0f));
+        p.push_back(std::make_unique<juce::AudioParameterFloat>(
+            juce::ParameterID("latency", 1), "Latency",
+            juce::NormalisableRange<float>(-500.0f, 500.0f), 0.0f));
         p.push_back(std::make_unique<juce::AudioParameterFloat>(
             juce::ParameterID("inputLevel", 1), "InputLevel",
             juce::NormalisableRange<float>(-60.0f, 12.0f), 0.7f));
         p.push_back(std::make_unique<juce::AudioParameterFloat>(
             juce::ParameterID("outputLevel", 1), "OutputLevel",
             juce::NormalisableRange<float>(-60.0f, 12.0f), 0.5f));
+        // Bool parameters
+        auto addBool = [&](const char* id, const char* name) {
+            p.push_back(std::make_unique<juce::AudioParameterBool>(
+                juce::ParameterID(id, 1), name, false));
+        };
+        addBool("click", "Click");
+        addBool("record", "Record");
+        addBool("play", "Play");
+        addBool("stop", "Stop");
+        addBool("mute", "Mute");
+        addBool("solo", "Solo");
+        addBool("monitor", "Monitor");
+        addBool("reverse", "Reverse");
+        addBool("undo", "Undo");
+        addBool("redo", "Redo");
+        addBool("reset", "Reset");
+        addBool("nextTrack", "NextTrack");
+        addBool("previousTrack", "PreviousTrack");
+        addBool("newTrack", "NewTrack");
+        addBool("removeTrack", "RemoveTrack");
+        addBool("trigger", "Trigger");
+        addBool("muteAll", "MuteAll");
+        addBool("stopAll", "StopAll");
+        addBool("startAll", "StartAll");
+        addBool("pauseAll", "PauseAll");
+        addBool("resetAll", "ResetAll");
+        addBool("nextSnapMode", "NextSnapMode");
+        addBool("nextRecMode", "NextRecMode");
+        addBool("incFixed", "IncFixed");
+        addBool("bounce", "Bounce");
+        addBool("nextLoop", "NextLoop");
+        addBool("previousLoop", "PreviousLoop");
+        addBool("newLoop", "NewLoop");
+        addBool("removeLoop", "RemoveLoop");
+        addBool("addToGroup", "AddToGroup");
+        addBool("removeFromGroup", "RemoveFromGroup");
+        // Choice parameters
+        p.push_back(std::make_unique<juce::AudioParameterChoice>(
+            juce::ParameterID("snap", 1), "Snap",
+            juce::StringArray("No Sync", "Measure", "Beat", "Loop", "Host Loop"), 0));
+        p.push_back(std::make_unique<juce::AudioParameterChoice>(
+            juce::ParameterID("mode", 1), "Mode",
+            juce::StringArray("Overdub", "Fixed", "Repeat", "Append", "Overwrite", "Punch"), 0));
+        p.push_back(std::make_unique<juce::AudioParameterChoice>(
+            juce::ParameterID("selectGroup", 1), "SelectGroup",
+            juce::StringArray("A", "B", "C", "D", "E", "F", "G", "H", "I", "J"), 0));
+        // Int parameters
+        p.push_back(std::make_unique<juce::AudioParameterInt>(
+            juce::ParameterID("trackSelect", 1), "Track", 0, 100, 0));
+        p.push_back(std::make_unique<juce::AudioParameterInt>(
+            juce::ParameterID("loopSelect", 1), "Loop", 0, 100, 0));
+        p.push_back(std::make_unique<juce::AudioParameterInt>(
+            juce::ParameterID("fixed", 1), "fixedSizeLength", 1, 32, 1));
         return { p.begin(), p.end() };
     }
 
