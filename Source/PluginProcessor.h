@@ -24,8 +24,11 @@
 #include "AllocatorThread.h"
 #include "ClickGenerator.h"
 
-
-
+#ifdef _MSC_VER
+  #define ORBISH_FORCEINLINE __forceinline
+#else
+  #define ORBISH_FORCEINLINE inline __attribute__((always_inline))
+#endif
 
 class OrbishAudioProcessor  : public AudioProcessor
                             , public AudioProcessorValueTreeState::Listener
@@ -76,8 +79,7 @@ public:
     void getStateInformation (MemoryBlock& destData) override;
     void setStateInformation (const void* data, int sizeInBytes) override;
     void initBlock(AudioBuffer<float>& buffer, MidiBuffer& midiMessages);
-    void renderClick();
-    void smoothVolume(double& origin, double destination, int samplesToRead, AudioBuffer<float>* source, AudioBuffer<float>* target, int channel);
+    ORBISH_FORCEINLINE void smoothVolume(double& origin, double destination, int samplesToRead, AudioBuffer<float>* source, AudioBuffer<float>* target, int channel);
     
     void captureTrigger(int& startRecordingSample) override;
     void processMuteAllChange(bool mute);
