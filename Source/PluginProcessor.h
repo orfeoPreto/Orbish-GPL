@@ -20,6 +20,7 @@
 #include "HostSynchronizer.h"
 #include "Realignment.h"
 #include "TrackEventHandler.h"
+#include "ProcessorState.h"
 
 
 
@@ -37,17 +38,6 @@ public:
     ~OrbishAudioProcessor();
 
     //==============================================================================
-    std::unique_ptr<AudioParameterFloat> createDecibelsParameter (
-                                                                                   String,
-                                                                                   String,
-                                                                                   String,
-                                                                                   float,
-                                                                                   float,
-                                                                                   float,
-                                                                                   float,
-                                                                                   std::function<String (float)>,
-                                                                                   std::function<float (const String& )>
-                                                             );
     void prepareToPlay (double sampleRate, int samplesPerBlock) override;
     void releaseResources() override;
     void parameterChanged(const String &parameterID, float newValue) override;
@@ -119,12 +109,7 @@ public:
 
     void handleClick(std::shared_ptr<OrbishContext> context, AudioSampleBuffer*);
 	void initGroups();
-    float fromDBTo0To1(float, float, float);
-    float from0To1toDB(float, float, float);
-    bool clickInProcess = false;
-    int clickSourcePosition = 0;
-    AudioSampleBuffer* activeClickSource = nullptr;
-    std::atomic<float> downbeat{0.0f};  // 1.0 on bar start click, 0.0 otherwise
+    ClickState clickState;
     std::shared_ptr<OrbishContext> context;
     TrackGroup* CurrentGroup;
 	TrackGroup* SelectedGroup;
@@ -138,8 +123,9 @@ public:
 	private:
     FFAU::LevelMeterSource inputMeterSource;
     FFAU::LevelMeterSource outputMeterSource;
-    int nextTrack = -1;
-    int trackToRemove = -1;
+    TrackChangeState trackChange;
+    MixState mixState;
+    SyncState syncState;
     void startPlayback();
     void stopPlayback();
     void resumePlayback();
@@ -150,14 +136,7 @@ public:
     MidiProcessor* midiProcessor;
     MessageManager* messenger;
     AudioProcessorValueTreeState parameters;
-    bool hostHasPlayed = false;
 	bool keepRunning = true;
-    bool queuesEmpty = false;
-    bool aTrackIsSoloed = false;
-    double previousMixLevel = -1;
-    bool changingTrack = false;
-    int trackHostSamples = 0;
-    int64 standaloneSamplePosition = 0;
     std::atomic<bool> refreshAll;
     std::atomic<Track*> trackToAdd;
 
