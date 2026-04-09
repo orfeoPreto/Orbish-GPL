@@ -84,7 +84,6 @@ public:
 	const double triggerThreshold = .005;
 	int allocatedLength;
 	int fadeTime; // 1ms fade time
-	std::thread allocatorThread;
 	int defaultLoopLength; // 60 seconds max activeTrack.Recording
 	float timeRatio;
 	std::shared_ptr<AudioBuffer<float> > buffer = nullptr;

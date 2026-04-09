@@ -21,6 +21,8 @@
 #include "Realignment.h"
 #include "TrackEventHandler.h"
 #include "ProcessorState.h"
+#include "AllocatorThread.h"
+#include "ClickGenerator.h"
 
 
 
@@ -107,9 +109,8 @@ public:
     void processTempoChange(double);
     TrackGroup* getTrackGroup(Track* t);
 
-    void handleClick(std::shared_ptr<OrbishContext> context, AudioSampleBuffer*);
 	void initGroups();
-    ClickState clickState;
+    ClickGenerator clickGen;
     std::shared_ptr<OrbishContext> context;
     TrackGroup* CurrentGroup;
 	TrackGroup* SelectedGroup;
@@ -136,7 +137,7 @@ public:
     MidiProcessor* midiProcessor;
     MessageManager* messenger;
     AudioProcessorValueTreeState parameters;
-	bool keepRunning = true;
+    AllocatorThread allocator;
     std::atomic<bool> refreshAll;
     std::atomic<Track*> trackToAdd;
 
