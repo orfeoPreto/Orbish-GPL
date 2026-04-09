@@ -11,14 +11,14 @@ namespace BinaryData
     extern const char*   viewport_background_png;
     const int            viewport_background_pngSize = 737935;
 
-    extern const char*   low_dry_click_aif;
-    const int            low_dry_click_aifSize = 19698;
+    extern const char*   Low_click_aif;
+    const int            Low_click_aifSize = 11316;
 
-    extern const char*   high_dry_click_aif;
-    const int            high_dry_click_aifSize = 7290;
+    extern const char*   High_Click_aif;
+    const int            High_Click_aifSize = 13362;
 
     extern const char*   circle_fs;
-    const int            circle_fsSize = 544;
+    const int            circle_fsSize = 608;
 
     extern const char*   circle_vs;
     const int            circle_vsSize = 82;

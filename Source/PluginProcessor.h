@@ -114,7 +114,7 @@ public:
     bool handleSoloEvent(int) override;
     void handleLoopChangeEvent(int) override;
     void handleEvents(Events&);
-    void processTempoChange(int);
+    void processTempoChange(double);
     TrackGroup* getTrackGroup(Track* t);
 
     void handleClick(std::shared_ptr<OrbishContext> context, AudioSampleBuffer*);
@@ -122,7 +122,9 @@ public:
     float fromDBTo0To1(float, float, float);
     float from0To1toDB(float, float, float);
     bool clickInProcess = false;
-    int numBuffersDoneForClick = 0;
+    int clickSourcePosition = 0;
+    AudioSampleBuffer* activeClickSource = nullptr;
+    std::atomic<float> downbeat{0.0f};  // 1.0 on bar start click, 0.0 otherwise
     std::shared_ptr<OrbishContext> context;
     TrackGroup* CurrentGroup;
 	TrackGroup* SelectedGroup;

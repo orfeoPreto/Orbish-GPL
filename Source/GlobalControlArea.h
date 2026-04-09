@@ -32,6 +32,8 @@ public:
     CustomButton startAllButton{ "Start", true};
     CustomButton pauseAllButton{ "Pause", false};
     CustomButton clearAllButton{ "Clear", true};
+    CustomButton tempoTestButton{ "Tempo+", true };
+    CustomButton pitchTestButton{ "Pitch+", true };
     DrawableButton tracksLayoutLeft{"Layout-Left", DrawableButton::ImageStretched };
     DrawableButton tracksLayoutRight{ "Layout-Right", DrawableButton::ImageStretched };
 

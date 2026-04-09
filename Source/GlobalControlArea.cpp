@@ -39,6 +39,14 @@ GlobalControlArea::GlobalControlArea(){
     pauseAllButton.setIcon(ImageFileFormat::loadFrom(BinaryData::pauseicon_png, BinaryData::pauseicon_pngSize));
     addAndMakeVisible(pauseAllButton);
 
+    tempoTestButton.addListener(this);
+    tempoTestButton.setTooltip("Test: increase tempo by 10 BPM");
+    addAndMakeVisible(tempoTestButton);
+
+    pitchTestButton.addListener(this);
+    pitchTestButton.setTooltip("Test: shift pitch up by 1 semitone");
+    addAndMakeVisible(pitchTestButton);
+
     createTracksLayoutButton();
 }
 
@@ -60,13 +68,14 @@ void GlobalControlArea::resized(){
     juce::Grid grid;
     
 
-    grid.templateRows = { Track(Fr(1)), Track(Fr(1)), Track(Fr(1)) };
+    grid.templateRows = { Track(Fr(1)), Track(Fr(1)), Track(Fr(1)), Track(Fr(1)) };
     grid.templateColumns = { Track(Fr(1)), Track(Fr(1)) };
 
     grid.items = {
         juce::GridItem(muteAllButton), juce::GridItem(startAllButton),
         juce::GridItem(stopAllButton), juce::GridItem(clearAllButton),
-        juce::GridItem(pauseAllButton), juce::GridItem(trackLayoutButtonArea)
+        juce::GridItem(pauseAllButton), juce::GridItem(trackLayoutButtonArea),
+        juce::GridItem(tempoTestButton), juce::GridItem(pitchTestButton)
     };
 
     grid.performLayout(bounds);
@@ -147,6 +156,12 @@ void GlobalControlArea::buttonClicked(Button* button){
         editor->setTracksDirty();
         editor->repaint();
         editor->resized();
+    }
+    if (button == &tempoTestButton) {
+        editor->testTempoChange();
+    }
+    if (button == &pitchTestButton) {
+        editor->testPitchChange();
     }
 }
 

@@ -178,6 +178,8 @@ public:
     void renderOpenGL() override;
     void doChangePitch();
     void changePitch();
+    void testTempoChange();
+    void testPitchChange();
     void newOpenGLContextCreated() override;
     void openGLContextClosing() override;
     std::shared_ptr<OpenGLContext> getOpenGLContext();
@@ -230,6 +232,7 @@ private:
     std::unique_ptr<ButtonAttachment> monitorAttachment;
     std::unique_ptr<ButtonAttachment> reverseAttachment;
     std::unique_ptr<ButtonAttachment> clickAttachment;
+    std::unique_ptr<SliderAttachment> clickLevelAttachment;
 
     ToggleState reverseState = Off;
     std::unique_ptr<ButtonAttachment> undoAttachment;

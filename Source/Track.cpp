@@ -486,6 +486,15 @@ void Track::StartResetAfter(){
         (context->observer->*(context->observer->updatePlayPosition)) (0, Reverse);
     }
     realignment->setRealigned(true);
+    // Reset stretcher to clear stale buffered audio
+    if (timeStretcher) {
+        timeStretcher->prepare(context->sampleRate, context->audioInputsCount,
+                               context->samplesPerBlock);
+        timeStretcher->primeWithSilence();
+        stretcherStartDelay = timeStretcher->getStartDelay();
+        stretcherDelayConsumed = 0;
+    }
+    originalTempo = 0.0;
 }
 
 void Track::StartRecordingBefore()
@@ -505,6 +514,7 @@ void Track::StartRecordingBefore()
         *LoopDuration = int(context->beatsToSamples(fixedSize));
     }
     if(Layers->size() == 0){
+        originalTempo = context->bpm;
         auto l = AddLayer(false);
         if (l != nullptr) {
             setActiveRecordingLayer(l);

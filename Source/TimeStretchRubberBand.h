@@ -6,13 +6,10 @@
 //  Copyright © 2025 exu. All rights reserved.
 //
 
-#ifndef TimeStretchRubberBand_h
-#define TimeStretchRubberBand_h
-
-
-#endif /* TimeStretchRubberBand_h */
 #pragma once
 #include "rubberband/rubberband/RubberBandStretcher.h"
+#include <vector>
+#include <cmath>
 using RubberBand::RubberBandStretcher;
 
 class TimeStretchRubberBand {
@@ -20,51 +17,95 @@ public:
     TimeStretchRubberBand() : stretcher(nullptr), sampleRate(44100), channels(2) {}
     ~TimeStretchRubberBand() { reset(); }
 
-    void prepare(int sr, int ch) {
+    void prepare(int sr, int ch, int maxBlockSize = 2048) {
         sampleRate = sr; channels = ch;
         reset();
         if (sr <= 0 || ch <= 0) return;
         int options = RubberBandStretcher::OptionProcessRealTime
-                    | RubberBandStretcher::OptionTransientsCrisp
+                    | RubberBandStretcher::OptionEngineFiner
                     | RubberBandStretcher::OptionPitchHighConsistency
-                    | RubberBandStretcher::OptionThreadingAuto;
+                    | RubberBandStretcher::OptionWindowShort
+                    | RubberBandStretcher::OptionFormantPreserved
+                    | RubberBandStretcher::OptionChannelsTogether
+                    | RubberBandStretcher::OptionThreadingNever;
         stretcher = std::make_unique<RubberBandStretcher>(sampleRate, channels, options, 1.0, 1.0);
-        // Set small window/hop for low-latency:
         stretcher->setTimeRatio(1.0);
         stretcher->setPitchScale(1.0);
-        // Request minimal internal latency where possible
-        stretcher->setMaxProcessSize(2048); // keep relatively small
+        stretcher->setMaxProcessSize(maxBlockSize);
     }
 
     void reset() {
         stretcher.reset();
     }
 
-    // set tempo/time ratio: newTempo / originalTempo
+    // Clear internal buffers while retaining current ratios.
+    void resetState() {
+        if (stretcher) stretcher->reset();
+    }
+
+    // Pre-feed silence to satisfy RubberBand's preferred start pad.
+    // Must be called from a non-RT thread (allocates internally).
+    void primeWithSilence() {
+        if (!stretcher) return;
+        size_t pad = stretcher->getPreferredStartPad();
+        if (pad == 0) return;
+        std::vector<std::vector<float>> silenceBufs(channels, std::vector<float>(pad, 0.0f));
+        std::vector<const float*> ptrs(channels);
+        for (int c = 0; c < channels; ++c)
+            ptrs[c] = silenceBufs[c].data();
+        stretcher->process(ptrs.data(), pad, false);
+    }
+
     void setTimeRatio(double ratio) {
         if (stretcher) stretcher->setTimeRatio(ratio);
     }
 
-    // set pitch as linear ratio (1.0 = no change)
     void setPitchRatio(double pitchRatio) {
         if (stretcher) stretcher->setPitchScale(pitchRatio);
     }
 
-    // process interleaved channel buffers: input pointers length samplesPerChannel
-    // rubberband accepts deinterleaved per-channel pointers as const float* const*
+    // Returns true when either ratio differs from unity
+    bool isActive() const {
+        if (!stretcher) return false;
+        double tr = stretcher->getTimeRatio();
+        double ps = stretcher->getPitchScale();
+        return (std::abs(tr - 1.0) > 0.001 || std::abs(ps - 1.0) > 0.001);
+    }
+
+    double getTimeRatio() const {
+        if (!stretcher) return 1.0;
+        return stretcher->getTimeRatio();
+    }
+
+    double getPitchScale() const {
+        if (!stretcher) return 1.0;
+        return stretcher->getPitchScale();
+    }
+
+    size_t getStartDelay() const {
+        if (!stretcher) return 0;
+        return stretcher->getStartDelay();
+    }
+
+    int available() const {
+        if (!stretcher) return 0;
+        return stretcher->available();
+    }
+
+    // Feed deinterleaved per-channel audio into the stretcher
     void process(const float* const* inPtrs, int frames, bool finalBlock = false) {
         if (!stretcher) return;
         stretcher->process(inPtrs, frames, finalBlock);
     }
 
-    // retrieve up to frames samples into outPtrs; returns how many frames were retrieved
+    // Retrieve up to maxFrames of processed audio; returns frames actually retrieved
     int retrieve(float** outPtrs, int maxFrames) {
         if (!stretcher) return 0;
-        int got = stretcher->retrieve(outPtrs, maxFrames);
-        return got;
+        return stretcher->retrieve(outPtrs, maxFrames);
     }
-    private:
+
+private:
     std::unique_ptr<RubberBandStretcher> stretcher;
-        int sampleRate;
-        int channels;
-    };
+    int sampleRate;
+    int channels;
+};

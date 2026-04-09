@@ -28,6 +28,8 @@ public OpenGLComponent
 public:
     OpenGLClickWitness(std::atomic<float> &);
 
+    void setUniforms() override;
+    std::atomic<float> downbeat{0.0f};
 
 private:
 

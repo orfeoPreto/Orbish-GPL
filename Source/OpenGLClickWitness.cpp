@@ -22,6 +22,12 @@ OpenGLClickWitness::OpenGLClickWitness (std::atomic<float> &offset):
     shaderName = "circle";
 }
 
+void OpenGLClickWitness::setUniforms(){
+    OpenGLComponent::setUniforms();
+    if (shader && shader->uniforms && shader->uniforms->downbeat)
+        shader->uniforms->downbeat->set((GLfloat) downbeat.load());
+}
+
 
 
 

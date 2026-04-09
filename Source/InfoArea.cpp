@@ -53,6 +53,14 @@ InfoArea::InfoArea(){
         clickButton.setIcon(img);
     }
     addAndMakeVisible(clickButton);
+
+    clickLevelSlider.setSliderStyle(Slider::LinearHorizontal);
+    clickLevelSlider.setTextBoxStyle(Slider::NoTextBox, true, 0, 0);
+    clickLevelSlider.setTooltip("Click volume");
+    auto yellow = Colour(0xfffed70f);
+    clickLevelSlider.setColour(Slider::trackColourId, yellow);
+    clickLevelSlider.setColour(Slider::backgroundColourId, yellow.withAlpha(0.3f));
+    addAndMakeVisible(clickLevelSlider);
 }
 
 InfoArea::~InfoArea(){
@@ -108,6 +116,7 @@ void InfoArea::resized(){
     witness->setBounds(20, progressLabel.getY()-5, int(std::ceil(labelHeight)), int(std::ceil(labelHeight)));
     auto cbSize = witness->getHeight();
     clickButton.setBounds(witness->getX(), witness->getBottom(), cbSize, cbSize);
+    clickLevelSlider.setBounds(clickButton.getRight() + 4, clickButton.getY(), 80, cbSize);
     auto ratio = logo.getImage().getHeight() / 50;
     logo.setBounds(10,20, logo.getImage().getWidth()/ratio,50);
     logo.setAlpha(.8f);

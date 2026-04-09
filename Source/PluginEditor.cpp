@@ -122,6 +122,7 @@ void OrbishAudioProcessorEditor::setupTransportControls(ButtonControlArea* butto
     
     recordAttachment.reset (new ButtonAttachment (valueTreeState, "record", transportControlArea->recordButton));
     clickAttachment.reset (new ButtonAttachment (valueTreeState, "click", infoAndControlArea->infoArea.clickButton));
+    clickLevelAttachment.reset (new SliderAttachment (valueTreeState, "clickLevel", infoAndControlArea->infoArea.clickLevelSlider));
     
     playAttachment.reset (new ButtonAttachment (valueTreeState, "play", transportControlArea->playButton));
     stopAttachment.reset(new ButtonAttachment(valueTreeState, "stop", transportControlArea->stopButton));
@@ -1006,7 +1007,7 @@ void OrbishAudioProcessorEditor::sliderChanged(Slider* slider) {
         processor.context->maxUndoHistory = int(slider->getValue());
     }
     if (slider == &settingsPage->latencySlider) {
-        processor.context->delayCompensation = int(slider->getValue());
+        processor.context->delayCompensation = int(slider->getValue() * processor.context->sampleRate * 0.001f);
     }
     if (slider == &settingsPage->tracksPerRowSlider) {
         nbrTracksInARow = int(slider->getValue());
@@ -1246,7 +1247,16 @@ void OrbishAudioProcessorEditor::askToUpdatePlayState(int trackNumber)
 
 void OrbishAudioProcessorEditor::askToUpdateHostPosition(int hostPos) {
     ////logMessage("before setting host position");
-    hostPosition = float(processor.context->samplesToBeats(hostPos));
+    float beats = float(processor.context->samplesToBeats(hostPos));
+    hostPosition = beats;
+    // Determine downbeat using PPQ relative to bar start (same logic as handleClick)
+    double barStartPpq = processor.context->info->getPpqPosition().orFallback(0);
+    double currentPpq = processor.context->samplesToQuarters(double(hostPos));
+    double quartersPerBeat = 4.0 / processor.context->timeSigBottom;
+    int beatInBar = (quartersPerBeat > 0)
+        ? int(floor((currentPpq - barStartPpq) / quartersPerBeat + 0.5)) % processor.context->timeSigTop
+        : 0;
+    witness->downbeat = (beatInBar == 0) ? 1.0f : 0.0f;
     flags |= CallBackFlags::shouldUpdateHostPosition;
 };
 
@@ -1626,13 +1636,38 @@ void OrbishAudioProcessorEditor::doUpdatePlayState(){
 }
 
 void OrbishAudioProcessorEditor::doChangePitch(){
-    try {
-    for(auto track: processor.tracks){
-        if(track->timeStretcher) track->timeStretcher->setPitchRatio(track->perTrackPitchRatio);
+    // Pitch ratio is now applied on the audio thread in handlePlaybackBlock().
+    // perTrackPitchRatio is set by UI controls; the audio thread reads it directly.
+}
+
+void OrbishAudioProcessorEditor::testTempoChange(){
+    // Increment BPM by 10, wrapping 200 → 60
+    double currentBpm = processor.context->bpm;
+    double newBpm = currentBpm + 10.0;
+    if (newBpm > 200.0) newBpm = 60.0;
+
+    processor.context->bpm = newBpm;
+    // Directly update time ratios on all tracks for immediate effect
+    for (auto track : processor.tracks) {
+        if (track->timeStretcher && track->originalTempo > 0.0) {
+            double ratio = track->originalTempo / newBpm;
+            track->timeStretcher->setTimeRatio(ratio);
+        }
     }
-    } catch (const std::exception& e) {
-        DBG("Exception in doChangePitch: " + String(e.what()));
-    } catch (...) {
-        DBG("Unknown exception in doChangePitch");
-    }
+    DBG("Tempo changed to " + String(newBpm) + " BPM");
+}
+
+void OrbishAudioProcessorEditor::testPitchChange(){
+    // Shift pitch up by 1 semitone on the active track, wrapping +6 → -6
+    auto* activeTrack = processor.activeTrack;
+    if (activeTrack == nullptr) return;
+
+    // Convert current ratio to semitones, increment, convert back
+    float currentRatio = activeTrack->perTrackPitchRatio;
+    double semitones = 12.0 * std::log2((double)currentRatio);
+    semitones = std::round(semitones) + 1.0;
+    if (semitones > 6.0) semitones = -6.0;
+
+    activeTrack->perTrackPitchRatio = (float)std::pow(2.0, semitones / 12.0);
+    DBG("Pitch changed to " + String(semitones) + " semitones (ratio: " + String(activeTrack->perTrackPitchRatio) + ")");
 }

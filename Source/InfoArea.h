@@ -60,6 +60,7 @@ public:
 //    void setTimeSigDenominator(int);
     std::shared_ptr<OpenGLClickWitness> witness;
     CustomButton clickButton{ "", false, true };
+    Slider clickLevelSlider;
 
 private:
     exu::Label projectLabel{};

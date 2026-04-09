@@ -250,8 +250,12 @@ public:
     std::atomic<bool> refresh;
     
     std::unique_ptr<TimeStretchRubberBand> timeStretcher;
-    float perTrackPitchRatio = 1.0f; // default 1.0 (no pitch change)
-    double originalTempo = 120.0; // initialize track's recording tempo if available
+    float perTrackPitchRatio = 1.0f;
+    double originalTempo = 120.0;
+    std::unique_ptr<AudioBuffer<float>> stretchInputBuffer; // pre-allocated for speed-up scenarios
+    size_t stretcherStartDelay = 0;
+    size_t stretcherDelayConsumed = 0;
+    bool stretcherWasActive = false;
 
 
     
