@@ -59,6 +59,19 @@ nextLayerNumber(-1)
     setupGroupingButtons();
     setupTransportControls(buttonControlArea);
     setupNavigationControls(buttonControlArea);
+
+    // Move global transport buttons into the header bar
+    headerArea.adoptGlobalControls(&buttonControlArea->globalControlArea);
+
+    // Move click controls into the utility strip (slider removed from strip)
+    buttonControlArea->adoptClickControls(
+        infoAndControlArea->infoArea.witness.get(),
+        &infoAndControlArea->infoArea.clickButton);
+
+    // Move group controls into the utility strip (centred)
+    buttonControlArea->adoptGroupControls(
+        &infoAndControlArea->controlArea.groupControlArea);
+
     setSize (1300, 800);
     markActiveTrackForRefresh(true);
     //logMessage("leaving editor constructor");
@@ -317,7 +330,7 @@ void OrbishAudioProcessorEditor::removeReference(OpenGLComponent* r){
 void OrbishAudioProcessorEditor::showSettingsPage() {
     //    thumbnail->stop();
     //    thumbnail->setVisible(false);
-    settingsPage = std::make_shared<SettingsPage>(processor.context->postMixMonitoring, processor.context->loggingActive, processor.context->maxUndoHistory, nbrTracksInARow, processor.context->delayCompensation, processor.context->numVisibleLayers );
+    settingsPage = std::make_shared<SettingsPage>(processor.context->postMixMonitoring, processor.context->loggingActive, processor.context->maxUndoHistory, nbrTracksInARow, processor.context->delayCompensation, processor.context->numVisibleLayers, processor.context->themeId.load() );
     settingsPage->addListener(this);
     settingsPage->setLookAndFeel(&getLookAndFeel());
     addAndMakeVisible(*settingsPage);
@@ -642,6 +655,8 @@ void OrbishAudioProcessorEditor::updateLoopVisualiser(std::shared_ptr<BufferForV
 void OrbishAudioProcessorEditor::timerCallback(){
     g_currentCallback = "timerCallback";
     try {
+    // Poll MIDI learn state
+    pollMidiLearn();
     // run ACT methods in response to flags set by notification callbacks
     updatePlayHead();
     createTrack();
@@ -808,8 +823,8 @@ void OrbishAudioProcessorEditor::paint (Graphics& g){
     g.fillAll(getLookAndFeel().findColour(ResizableWindow::backgroundColourId));
     
     paintInfoSection();
-    g.setColour(Colours::black);
-    g.drawRoundedRectangle(tracksViewport.getBoundsInParent().expanded(5).toFloat(), 4.0f, 1.0f);
+    g.setColour(findColour(juce::TextButton::ColourIds::buttonOnColourId).withAlpha(0.08f));
+    g.drawRoundedRectangle(tracksViewport.getBoundsInParent().expanded(5).toFloat(), 10.0f, 0.5f);
     
     auto transportControlArea = &infoAndControlArea->controlArea.buttonControlArea.transportControlArea;
     
@@ -862,7 +877,7 @@ void OrbishAudioProcessorEditor::paintInfoSection(){
     if(bpmStr != infoAndControlArea->infoArea.getBeatsPerMinute()){
         infoAndControlArea->infoArea.setBeatsPerMinute(bpmStr);
     }
-    
+
     if (processor.activeTrack == nullptr || activeTrackIdx >= tracks.size()) return;
 
     float totalSubDiv = (processor.activeTrack->CurrentPlayingIndex != nullptr)
@@ -873,15 +888,52 @@ void OrbishAudioProcessorEditor::paintInfoSection(){
     int beats = int(fmod(totalSubDiv, tsNum) + 1);
     float rest = std::modf(totalSubDiv, &garbage);
     int subSubDiv = int(rest) * 4 + 1;
-    String progress = String(bars) + ". " + String(beats) + ". " + String(subSubDiv);
+    String progress = String(bars) + "." + String(beats) + "." + String(subSubDiv);
     if (progress !=  infoAndControlArea->infoArea.getProgress()) {
         infoAndControlArea->infoArea.setProgress(progress);
     }
+
+    // Update header bar readouts
+    auto bpm = processor.context->info->getBpm().orFallback(processor.context->bpm);
+    headerArea.updateReadouts(project.name, bpm, tsNum, tsDen, progress);
+
+    // Update utility strip BPM and pitch readouts
+    {
+        auto& gc = infoAndControlArea->controlArea.buttonControlArea.globalControlArea;
+        gc.bpmReadout.setText(String(bpm, 1), NotificationType::dontSendNotification);
+        float pitchRatio = (processor.activeTrack != nullptr) ? processor.activeTrack->perTrackPitchRatio : 1.0f;
+        int semitones = (pitchRatio > 0.0f) ? juce::roundToInt(12.0 * std::log2((double)pitchRatio)) : 0;
+        String pitchStr = (semitones >= 0 ? "+" : "") + String(semitones) + " st";
+        gc.pitchReadout.setText(pitchStr, NotificationType::dontSendNotification);
+    }
+
+    // Update waveform time display (position / total as mm:ss:cs)
+    {
+        auto samplesToMMSSCS = [](int samples, int sr) -> String {
+            if (sr <= 0 || samples <= 0) return "00:00:00";
+            double totalSec = (double)samples / (double)sr;
+            int m = (int)(totalSec / 60.0);
+            int s = (int)totalSec % 60;
+            int cs = (int)(std::fmod(totalSec, 1.0) * 100.0);
+            return String(m).paddedLeft('0', 2) + ":" +
+                   String(s).paddedLeft('0', 2) + ":" +
+                   String(cs).paddedLeft('0', 2);
+        };
+        int sr = processor.context->sampleRate;
+        int currentPos = (processor.activeTrack->CurrentPlayingIndex != nullptr)
+            ? *processor.activeTrack->CurrentPlayingIndex : 0;
+        int loopDuration = (processor.activeTrack->ActiveLoop != nullptr)
+            ? processor.activeTrack->ActiveLoop->LoopDuration : 0;
+        infoAndControlArea->controlArea.thumbnailAndGroupArea.updateTimeDisplay(
+            samplesToMMSSCS(currentPos, sr), samplesToMMSSCS(loopDuration, sr));
+    }
+
     auto trackNbr = "Track: "+String(processor.activeTrack->Index + 1);
     if (trackNbr != infoAndControlArea->infoArea.getTrackNumber()) {
         infoAndControlArea->infoArea.setTrackNumber(trackNbr);
     }
-    auto loopNbr = "Loop: "+String(tracks[activeTrackIdx]->getActiveLoopIdx() + 1);
+    auto loopIdx = tracks[activeTrackIdx]->getActiveLoopIdx() + 1;
+    auto loopNbr = "Loop: "+String(loopIdx);
     if (loopNbr != infoAndControlArea->infoArea.getLoopNumber()) {
         infoAndControlArea->infoArea.setLoopNumber(loopNbr);
     }
@@ -898,22 +950,36 @@ void OrbishAudioProcessorEditor::paintInfoSection(){
         groupName = grp->Name;
         grpCol = groupColours[grp->Index];
     }
-    groupName = "Group: " + String(groupName);
-    if (infoAndControlArea->infoArea.getGroupNumber() != groupName){
-        infoAndControlArea->infoArea.setGroupNumber(groupName);
+    auto groupDisplay = "Group: " + String(groupName);
+    if (infoAndControlArea->infoArea.getGroupNumber() != groupDisplay){
+        infoAndControlArea->infoArea.setGroupNumber(groupDisplay);
         infoAndControlArea->infoArea.setGroupColour(grpCol);
     }
+
+    // Update transport panel info readout
+    infoAndControlArea->controlArea.buttonControlArea.transportControlArea.updateInfo(
+        (int)processor.activeTrack->Index + 1, loopIdx, layerIdx, groupName);
 }
 
 void OrbishAudioProcessorEditor::resized() {
     if (nullptr != settingsPage.get()) {
         settingsPage->setBounds(getX(), getY(), getWidth(), getHeight());
     }
-    auto bounds = getLocalBounds();
-    auto headerHeight = 30;
-    headerArea.setBounds(bounds.removeFromTop(headerHeight));
-    infoAndControlArea->setBounds(bounds.removeFromTop(juce::jmax(80, bounds.getHeight()/2)));
-    tracksViewport.setBounds(bounds.reduced(15));
+    auto bounds = getLocalBounds().reduced(20, 14);
+
+    // Band 1: Top bar (56px)
+    headerArea.setBounds(bounds.removeFromTop(56));
+
+    // Band 5: Status bar (28px) - reserve from bottom
+    // (statusBar not yet a component - just reserve space for tracks)
+    auto statusBarHeight = 28;
+    auto tracksBounds = bounds.removeFromBottom(bounds.getHeight() * 2 / 5);
+
+    // Band 2+3: Waveform + Control rail (remaining space)
+    infoAndControlArea->setBounds(bounds);
+
+    // Band 4: Tracks
+    tracksViewport.setBounds(tracksBounds.reduced(0, 4));
     makeTracks();
 }
 
@@ -1014,6 +1080,30 @@ void OrbishAudioProcessorEditor::sliderChanged(Slider* slider) {
     }
     if (slider == &settingsPage->visibleLayersSlider) {
         thumbnail->setNumberVisibleLayers(processor.context->numVisibleLayers = int(slider->getValue()));
+    }
+}
+
+void OrbishAudioProcessorEditor::comboChanged(ComboBox* combo) {
+    if (combo == &settingsPage->themeCombo) {
+        int themeIdx = combo->getSelectedId() - 1;
+        auto themeId = static_cast<OrbishThemeId>(themeIdx);
+        processor.context->themeId.store(themeIdx, std::memory_order_relaxed);
+
+        // Update the LookAndFeel
+        auto* laf = dynamic_cast<OrbishLookAndFeel*>(&getLookAndFeel());
+        if (laf) {
+            laf->applyTheme(themeId);
+
+            // Update thumbnail backgrounds
+            auto theme = orbishThemeColours(themeId);
+            if (thumbnail) {
+                thumbnail->activate(); // resets to active bg
+            }
+
+            // Force full repaint
+            repaint();
+            if (settingsPage) settingsPage->repaint();
+        }
     }
 }
 
@@ -1640,34 +1730,132 @@ void OrbishAudioProcessorEditor::doChangePitch(){
     // perTrackPitchRatio is set by UI controls; the audio thread reads it directly.
 }
 
-void OrbishAudioProcessorEditor::testTempoChange(){
-    // Increment BPM by 10, wrapping 200 → 60
-    double currentBpm = processor.context->bpm;
-    double newBpm = currentBpm + 10.0;
-    if (newBpm > 200.0) newBpm = 60.0;
-
-    processor.context->bpm = newBpm;
-    // Directly update time ratios on all tracks for immediate effect
-    for (auto track : processor.tracks) {
-        if (track->timeStretcher && track->originalTempo > 0.0) {
-            double ratio = track->originalTempo / newBpm;
-            track->timeStretcher->setTimeRatio(ratio);
-        }
-    }
-    DBG("Tempo changed to " + String(newBpm) + " BPM");
+void OrbishAudioProcessorEditor::tempoUp(){
+    processor.executeTempoUp();
 }
 
-void OrbishAudioProcessorEditor::testPitchChange(){
-    // Shift pitch up by 1 semitone on the active track, wrapping +6 → -6
-    auto* activeTrack = processor.activeTrack;
-    if (activeTrack == nullptr) return;
+void OrbishAudioProcessorEditor::tempoDown(){
+    processor.executeTempoDown();
+}
 
-    // Convert current ratio to semitones, increment, convert back
-    float currentRatio = activeTrack->perTrackPitchRatio;
-    double semitones = 12.0 * std::log2((double)currentRatio);
-    semitones = std::round(semitones) + 1.0;
-    if (semitones > 6.0) semitones = -6.0;
+void OrbishAudioProcessorEditor::pitchUp(){
+    processor.executePitchUp();
+}
 
-    activeTrack->perTrackPitchRatio = (float)std::pow(2.0, semitones / 12.0);
-    DBG("Pitch changed to " + String(semitones) + " semitones (ratio: " + String(activeTrack->perTrackPitchRatio) + ")");
+void OrbishAudioProcessorEditor::pitchDown(){
+    processor.executePitchDown();
+}
+
+// ---- MIDI Learn ----
+
+void OrbishAudioProcessorEditor::toggleMidiLearn(){
+    if (midiLearnMode) {
+        // Cancel learn mode
+        midiLearnMode = false;
+        cancelMidiLearn();
+        auto& globalArea = infoAndControlArea->controlArea.buttonControlArea.globalControlArea;
+        globalArea.setMidiLearnActive(false);
+        return;
+    }
+
+    // Show popup menu with all mappable actions
+    PopupMenu menu;
+    PopupMenu learnSubmenu;
+    PopupMenu clearSubmenu;
+
+    for (int i = 0; i < static_cast<int>(MidiAction::COUNT); ++i) {
+        auto action = static_cast<MidiAction>(i);
+        String name = midiActionDisplayName(action);
+
+        // Check if this action already has a mapping
+        String suffix;
+        int count = processor.midiMappings.count.load(std::memory_order_acquire);
+        for (int j = 0; j < count; ++j) {
+            if (processor.midiMappings.entries[j].action == static_cast<uint16_t>(i)) {
+                auto& e = processor.midiMappings.entries[j];
+                suffix = " [" + String(e.type == 0 ? "CC" : "Note") + " #" + String(e.number) + "]";
+                break;
+            }
+        }
+
+        learnSubmenu.addItem(1000 + i, name + suffix);
+        if (!suffix.isEmpty()) {
+            clearSubmenu.addItem(2000 + i, name + suffix);
+        }
+    }
+
+    menu.addSubMenu("Learn mapping...", learnSubmenu);
+    if (clearSubmenu.getNumItems() > 0) {
+        menu.addSubMenu("Clear mapping...", clearSubmenu);
+        menu.addItem(3000, "Clear all mappings");
+    }
+
+    menu.showMenuAsync(PopupMenu::Options(), [this](int result) {
+        if (result >= 2000 && result < 3000) {
+            clearMidiMappingForAction(static_cast<MidiAction>(result - 2000));
+        } else if (result == 3000) {
+            processor.midiMappings.clear();
+            DBG("MIDI Learn: all mappings cleared");
+        } else if (result >= 1000 && result < 2000) {
+            auto action = static_cast<MidiAction>(result - 1000);
+            midiLearnMode = true;
+            infoAndControlArea->controlArea.buttonControlArea.globalControlArea.setMidiLearnActive(true);
+            startMidiLearnForAction(action);
+        }
+    });
+}
+
+bool OrbishAudioProcessorEditor::isMidiLearnActive() const {
+    return midiLearnMode;
+}
+
+void OrbishAudioProcessorEditor::startMidiLearnForAction(MidiAction action){
+    auto& learn = processor.midiLearnState;
+    learn.targetAction.store(static_cast<uint16_t>(action), std::memory_order_relaxed);
+    learn.captured.store(0, std::memory_order_relaxed);
+    learn.active.store(1, std::memory_order_release);
+    DBG("MIDI Learn: waiting for MIDI input for action " + String(midiActionDisplayName(action)));
+}
+
+void OrbishAudioProcessorEditor::cancelMidiLearn(){
+    auto& learn = processor.midiLearnState;
+    learn.active.store(0, std::memory_order_relaxed);
+    learn.captured.store(0, std::memory_order_relaxed);
+}
+
+void OrbishAudioProcessorEditor::pollMidiLearn(){
+    if (!midiLearnMode) return;
+    auto& learn = processor.midiLearnState;
+    if (learn.captured.load(std::memory_order_acquire) == 0) return;
+
+    // Build mapping entry from captured MIDI
+    MidiMappingEntry entry{};
+    entry.channel = learn.capturedChannel.load(std::memory_order_relaxed);
+    entry.type = learn.capturedType.load(std::memory_order_relaxed);
+    entry.number = learn.capturedNumber.load(std::memory_order_relaxed);
+    entry.action = learn.targetAction.load(std::memory_order_relaxed);
+
+    processor.midiMappings.add(entry);
+    DBG("MIDI Learn: mapped " + String(entry.type == 0 ? "CC" : "Note")
+        + " #" + String(entry.number) + " ch " + String(entry.channel)
+        + " -> " + String(midiActionDisplayName(static_cast<MidiAction>(entry.action))));
+
+    // Reset learn state
+    learn.active.store(0, std::memory_order_relaxed);
+    learn.captured.store(0, std::memory_order_relaxed);
+
+    // Exit learn mode after successful mapping
+    midiLearnMode = false;
+    auto& globalArea = infoAndControlArea->controlArea.buttonControlArea.globalControlArea;
+    globalArea.setMidiLearnActive(false);
+}
+
+void OrbishAudioProcessorEditor::clearMidiMappingForAction(MidiAction action){
+    auto& table = processor.midiMappings;
+    int count = table.count.load(std::memory_order_acquire);
+    for (int i = count - 1; i >= 0; --i) {
+        if (table.entries[i].action == static_cast<uint16_t>(action)) {
+            table.remove(i);
+        }
+    }
 }

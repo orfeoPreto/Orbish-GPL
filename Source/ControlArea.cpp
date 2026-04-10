@@ -28,10 +28,15 @@ void ControlArea::paint (juce::Graphics&){
 
 void ControlArea::resized(){
     auto bounds = getLocalBounds();
-    auto r = bounds.removeFromTop(bounds.getHeight() / 2);
-    thumbnailAndGroupArea.setBounds( r.removeFromLeft(juce::jmax((r.getWidth() * (3/4)), r.getWidth() - 160)));
-    groupControlArea.setBounds(r);
 
+    // Band 2: Waveform - full width, ~1/3 of available height
+    auto waveformHeight = juce::jmax(100, (int)(bounds.getHeight() / 3));
+    thumbnailAndGroupArea.setBounds(bounds.removeFromTop(waveformHeight));
+
+    // GroupControlArea hidden (group controls move to nav panel)
+    groupControlArea.setBounds(0, 0, 0, 0);
+
+    // Band 3: Control rail - remaining space
     buttonControlArea.setBounds(bounds);
 }
 

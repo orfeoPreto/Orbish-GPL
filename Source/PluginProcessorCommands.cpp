@@ -1,5 +1,5 @@
 // PluginProcessorCommands.cpp
-// Split compilation unit for OrbishAudioProcessor — non-RT command handlers.
+// Split compilation unit for OrbishAudioProcessor - non-RT command handlers.
 // These run on the message thread in response to parameter changes.
 
 #include "PluginProcessor.h"

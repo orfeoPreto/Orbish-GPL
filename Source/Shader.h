@@ -32,6 +32,8 @@ struct Uniforms
         reverse.reset (createUniform(openGLContext, shaderProgram, "reverse"));
         origin.reset (createUniform(openGLContext, shaderProgram, "origin"));
         downbeat.reset (createUniform(openGLContext, shaderProgram, "downbeat"));
+        waveColour.reset (createUniform(openGLContext, shaderProgram, "waveColour"));
+        bgColour.reset (createUniform(openGLContext, shaderProgram, "bgColour"));
     }
     ~Uniforms(){
         totalScope.reset();
@@ -43,8 +45,10 @@ struct Uniforms
         reverse.reset();
         origin.reset();
         downbeat.reset();
+        waveColour.reset();
+        bgColour.reset();
     }
-    std::unique_ptr<OpenGLShaderProgram::Uniform> totalScope, offset, resolution, audioSampleData, tex, windowForLog, reverse, origin, downbeat;
+    std::unique_ptr<OpenGLShaderProgram::Uniform> totalScope, offset, resolution, audioSampleData, tex, windowForLog, reverse, origin, downbeat, waveColour, bgColour;
     
 private:
     static OpenGLShaderProgram::Uniform* createUniform (OpenGLContext& openGLContext,

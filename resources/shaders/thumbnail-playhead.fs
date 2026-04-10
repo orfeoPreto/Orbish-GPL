@@ -6,12 +6,29 @@ uniform vec2 resolution;
 uniform float offset;
 uniform bool reverse;
 uniform vec2  origin;
+uniform vec3  waveColour;
+uniform vec3  bgColour;
 
 
 void main()
 {
     vec2 pixelLocal = gl_FragCoord.xy - origin;
 
+    // Rounded corner SDF (10px radius)
+    float radius = 10.0;
+    vec2 p = pixelLocal;
+    vec2 sz = resolution;
+    vec2 q = abs(p - sz * 0.5) - (sz * 0.5 - vec2(radius));
+    float dist = length(max(q, 0.0)) - radius;
+    float cornerAlpha = 1.0 - smoothstep(-1.0, 1.0, dist);
+
+    // Outside rounded rect: fully transparent (shows parent bg from clear)
+    if (cornerAlpha < 0.01) {
+        gl_FragColor = vec4(0.0, 0.0, 0.0, 0.0);
+        return;
+    }
+
+    // Playhead intensity
     float ratio = totalScope / resolution.x;
     float position;
     float flip = (reverse)?1:-1;
@@ -32,5 +49,12 @@ void main()
             intensity = (logResult + window) / (window * 2);
         }
     }
-     gl_FragColor = vec4 (0.9921875, 0.8398438, 0.0585938, 1-intensity);
+
+    // Composite: inner bg + playhead overlay, masked by rounded corners
+    // The bg fill covers the cleared outer bg inside the rounded rect
+    vec3 base = bgColour;
+    // Blend playhead tint on top of bg
+    float playheadAlpha = 1.0 - intensity;
+    vec3 color = mix(base, waveColour, playheadAlpha);
+    gl_FragColor = vec4(color, cornerAlpha);
 }

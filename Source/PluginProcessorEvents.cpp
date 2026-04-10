@@ -1,5 +1,5 @@
 // PluginProcessorEvents.cpp
-// Split compilation unit for OrbishAudioProcessor — RT event handlers.
+// Split compilation unit for OrbishAudioProcessor - RT event handlers.
 // These are called from processBlock via the TrackEventHandler system.
 
 #include "PluginProcessor.h"

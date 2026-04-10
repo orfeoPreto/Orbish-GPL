@@ -16,6 +16,10 @@
 #include "GlobalControlArea.h"
 #include "OutputControlArea.h"
 #include "InputControlArea.h"
+#include "OpenGLComponents.h"
+#include "CustomButton.h"
+
+class GroupControlArea;
 
 //==============================================================================
 /*
@@ -28,7 +32,11 @@ public:
 
     void paint (juce::Graphics&) override;
     void resized() override;
-//    void setLookAndFeel (LookAndFeel* const newLookAndFeel);
+
+    // Adopt click controls from InfoArea into the utility strip
+    void adoptClickControls(OpenGLClickWitness* witness, CustomButton* clickBtn);
+    // Adopt group controls into the utility strip
+    void adoptGroupControls(GroupControlArea* groupArea);
 
     TransportControlArea transportControlArea{};
     ModeAndNavigationControlArea modeAndNavigationControlArea{};
@@ -37,6 +45,10 @@ public:
     InputControlArea inputControlArea{};
 
 private:
+    // Adopted controls (owned elsewhere)
+    OpenGLClickWitness* clickWitness = nullptr;
+    CustomButton* clickButton = nullptr;
+    GroupControlArea* groupControls = nullptr;
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (ButtonControlArea)
 };

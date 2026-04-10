@@ -32,6 +32,7 @@
 #include <mutex>
 #include <chrono>
 #include "TrackLoader.h"
+#include "MidiMapping.h"
 
 //==============================================================================
 /**
@@ -130,6 +131,7 @@ public:
     String saveBuffer(std::shared_ptr<AudioBuffer<float> > buffer, File dir, String name, bool overwrite);
 	void clicked(Button*) override;
 	void sliderChanged(Slider*) override;
+	void comboChanged(ComboBox*) override;
     void buttonClicked (Button* button) override;
     void sliderValueChanged (Slider* slider) override;
     void changeListenerCallback (ChangeBroadcaster* source) override;
@@ -178,15 +180,25 @@ public:
     void renderOpenGL() override;
     void doChangePitch();
     void changePitch();
-    void testTempoChange();
-    void testPitchChange();
+    void tempoUp();
+    void tempoDown();
+    void pitchUp();
+    void pitchDown();
     void newOpenGLContextCreated() override;
     void openGLContextClosing() override;
     std::shared_ptr<OpenGLContext> getOpenGLContext();
     void removeReference(OpenGLComponent*);
     void totalReset();
-    
-    
+
+    // MIDI Learn
+    void toggleMidiLearn();
+    bool isMidiLearnActive() const;
+    void startMidiLearnForAction(MidiAction action);
+    void cancelMidiLearn();
+    void pollMidiLearn();
+    void clearMidiMappingForAction(MidiAction action);
+
+
 private:
     std::mutex rendererVectorMutex;
     std::atomic<uint> flags;
@@ -286,6 +298,7 @@ private:
     std::vector<std::shared_ptr<OpenGLComponentReference>> references;
     std::mutex renderingTargetsLock;
     ReadWriteLock lock{};
+    bool midiLearnMode = false;
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (OrbishAudioProcessorEditor)
 };
 

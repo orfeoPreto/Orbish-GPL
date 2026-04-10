@@ -9,6 +9,7 @@
 */
 
 #include "OpenGLAudioMeter.h"
+#include "OrbishTheme.h"
 
 //==============================================================================
 
@@ -20,11 +21,15 @@ offset2(offset2)
 	setName("audiometer");
 
     shaderName = "meterBar";
-    bgColour = juce::Colour(0xff707070);
-    //getLookAndFeel().findColour(FFAU::LevelMeter::lmMeterBackgroundColour);
+    bgColour = juce::Colour(0xff16161c);
 }
 
 void OpenGLAudioMeter::renderOpenGL() {
+    // Update meter bg from theme
+    if (orbishContext) {
+        auto theme = orbishThemeColours(static_cast<OrbishThemeId>(orbishContext->themeId.load(std::memory_order_relaxed)));
+        bgColour = theme.meterBg;
+    }
     channelNumber = 1;
     for (channelNumber = 0; channelNumber<2; ++channelNumber) {
         OpenGLComponent::renderOpenGL();
@@ -47,4 +52,9 @@ void OpenGLAudioMeter::setUniforms(){
         shader->uniforms->offset->set ((GLfloat) offset.get());
     }
     shader->uniforms->origin->set ((GLfloat) x, (GLfloat) y);
+    if (shader->uniforms->waveColour) {
+        auto theme = orbishContext ? orbishThemeColours(static_cast<OrbishThemeId>(orbishContext->themeId.load(std::memory_order_relaxed)))
+                                   : orbishThemeColours(OrbishThemeId::ObsidianGold);
+        shader->uniforms->waveColour->set(theme.waveR, theme.waveG, theme.waveB);
+    }
 }

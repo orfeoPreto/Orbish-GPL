@@ -39,13 +39,93 @@ GlobalControlArea::GlobalControlArea(){
     pauseAllButton.setIcon(ImageFileFormat::loadFrom(BinaryData::pauseicon_png, BinaryData::pauseicon_pngSize));
     addAndMakeVisible(pauseAllButton);
 
-    tempoTestButton.addListener(this);
-    tempoTestButton.setTooltip("Test: increase tempo by 10 BPM");
-    addAndMakeVisible(tempoTestButton);
+    // Tempo icons: angular chevrons - time domain shape language
+    tempoDownButton.addListener(this);
+    tempoDownButton.setTooltip("Decrease tempo by 10 BPM");
+    {
+        const int sz = 24;
+        Image img(Image::ARGB, sz, sz, true);
+        Graphics g(img);
+        g.setColour(Colours::white);
+        Path p;
+        p.startNewSubPath(6.0f, 8.0f);
+        p.lineTo(12.0f, 18.0f);
+        p.lineTo(18.0f, 8.0f);
+        g.strokePath(p, PathStrokeType(1.8f, PathStrokeType::mitered, PathStrokeType::rounded));
+        tempoDownButton.setIcon(img);
+    }
+    addAndMakeVisible(tempoDownButton);
 
-    pitchTestButton.addListener(this);
-    pitchTestButton.setTooltip("Test: shift pitch up by 1 semitone");
-    addAndMakeVisible(pitchTestButton);
+    tempoUpButton.addListener(this);
+    tempoUpButton.setTooltip("Increase tempo by 10 BPM");
+    {
+        const int sz = 24;
+        Image img(Image::ARGB, sz, sz, true);
+        Graphics g(img);
+        g.setColour(Colours::white);
+        Path p;
+        p.startNewSubPath(6.0f, 16.0f);
+        p.lineTo(12.0f, 6.0f);
+        p.lineTo(18.0f, 16.0f);
+        g.strokePath(p, PathStrokeType(1.8f, PathStrokeType::mitered, PathStrokeType::rounded));
+        tempoUpButton.setIcon(img);
+    }
+    addAndMakeVisible(tempoUpButton);
+
+    bpmReadout.setJustificationType(Justification::centred);
+    bpmReadout.setFont(Font(11.0f, Font::plain));
+    bpmReadout.setText("120.0", NotificationType::dontSendNotification);
+    bpmReadout.setInterceptsMouseClicks(false, false);
+    addAndMakeVisible(bpmReadout);
+
+    pitchReadout.setJustificationType(Justification::centred);
+    pitchReadout.setFont(Font(11.0f, Font::plain));
+    pitchReadout.setText("0 st", NotificationType::dontSendNotification);
+    pitchReadout.setInterceptsMouseClicks(false, false);
+    addAndMakeVisible(pitchReadout);
+
+    // Pitch icons: curved sine waves - shape-language distinction from tempo chevrons.
+    // Angular = time domain (tempo), curved = frequency domain (pitch).
+    pitchDownButton.addListener(this);
+    pitchDownButton.setTooltip("Shift pitch down by 1 semitone");
+    {
+        // Descending sine: M 3 8 Q 6 14 9 11 Q 12 8 15 14 Q 18 20 21 17
+        const int sz = 24;
+        Image img(Image::ARGB, sz, sz, true);
+        Graphics g(img);
+        g.setColour(Colours::white);
+        Path p;
+        p.startNewSubPath(3.0f, 8.0f);
+        p.quadraticTo(6.0f, 14.0f, 9.0f, 11.0f);
+        p.quadraticTo(12.0f, 8.0f, 15.0f, 14.0f);
+        p.quadraticTo(18.0f, 20.0f, 21.0f, 17.0f);
+        g.strokePath(p, PathStrokeType(1.8f, PathStrokeType::curved, PathStrokeType::rounded));
+        pitchDownButton.setIcon(img);
+    }
+    addAndMakeVisible(pitchDownButton);
+
+    pitchUpButton.addListener(this);
+    pitchUpButton.setTooltip("Shift pitch up by 1 semitone");
+    {
+        // Ascending sine: M 3 16 Q 6 10 9 13 Q 12 16 15 10 Q 18 4 21 7
+        const int sz = 24;
+        Image img(Image::ARGB, sz, sz, true);
+        Graphics g(img);
+        g.setColour(Colours::white);
+        Path p;
+        p.startNewSubPath(3.0f, 16.0f);
+        p.quadraticTo(6.0f, 10.0f, 9.0f, 13.0f);
+        p.quadraticTo(12.0f, 16.0f, 15.0f, 10.0f);
+        p.quadraticTo(18.0f, 4.0f, 21.0f, 7.0f);
+        g.strokePath(p, PathStrokeType(1.8f, PathStrokeType::curved, PathStrokeType::rounded));
+        pitchUpButton.setIcon(img);
+    }
+    addAndMakeVisible(pitchUpButton);
+
+    midiLearnButton.addListener(this);
+    midiLearnButton.setTooltip("Toggle MIDI Learn mode - click a button then send a MIDI CC/Note to map it");
+    midiLearnButton.setClickingTogglesState(true);
+    addAndMakeVisible(midiLearnButton);
 
     createTracksLayoutButton();
 }
@@ -53,12 +133,13 @@ GlobalControlArea::GlobalControlArea(){
 GlobalControlArea::~GlobalControlArea(){
 }
 
-void GlobalControlArea::paint (juce::Graphics&){
+void GlobalControlArea::paint (juce::Graphics& g){
 }
 
 void GlobalControlArea::resized(){
-    auto bounds = getLocalBounds().reduced(15);
+    auto bounds = getLocalBounds().reduced(10);
     globalLabel.setBounds(bounds.removeFromTop(15));
+    bounds.removeFromTop(4);
 
     using Track = juce::Grid::TrackInfo;
     using Fr = juce::Grid::Fr;
@@ -66,16 +147,18 @@ void GlobalControlArea::resized(){
     Component trackLayoutButtonArea{};
 
     juce::Grid grid;
-    
+    grid.setGap(juce::Grid::Px(4));
 
-    grid.templateRows = { Track(Fr(1)), Track(Fr(1)), Track(Fr(1)), Track(Fr(1)) };
+    grid.templateRows = { Track(Fr(1)), Track(Fr(1)), Track(Fr(1)), Track(Fr(1)), Track(Fr(1)), Track(Fr(2)) };
     grid.templateColumns = { Track(Fr(1)), Track(Fr(1)) };
 
     grid.items = {
         juce::GridItem(muteAllButton), juce::GridItem(startAllButton),
         juce::GridItem(stopAllButton), juce::GridItem(clearAllButton),
         juce::GridItem(pauseAllButton), juce::GridItem(trackLayoutButtonArea),
-        juce::GridItem(tempoTestButton), juce::GridItem(pitchTestButton)
+        juce::GridItem(tempoDownButton), juce::GridItem(tempoUpButton),
+        juce::GridItem(pitchDownButton), juce::GridItem(pitchUpButton),
+        juce::GridItem(midiLearnButton).withArea({}, juce::GridItem::Span(2))
     };
 
     grid.performLayout(bounds);
@@ -91,34 +174,37 @@ void GlobalControlArea::setEditor(OrbishAudioProcessorEditor* pluginEditor){
 }
 
 void GlobalControlArea::createTracksLayoutButton(){
-    auto leftBase = new DrawableImage();
-    leftBase->setImage(ImageFileFormat::loadFrom(BinaryData::layoutchangeleftbase_png, BinaryData::layoutchangeleftbase_pngSize));
-    auto leftHover = new DrawableImage();
-    leftHover->setImage(ImageFileFormat::loadFrom(BinaryData::layoutchangelefthover_png, BinaryData::layoutchangelefthover_pngSize));
-    auto leftClicked = new DrawableImage();
-    leftClicked->setImage(ImageFileFormat::loadFrom(BinaryData::layoutchangeleftclicked_png, BinaryData::layoutchangeleftclicked_pngSize));
-    auto leftActive = new DrawableImage();
-    leftActive->setImage(ImageFileFormat::loadFrom(BinaryData::layoutchangeleftactive_png, BinaryData::layoutchangeleftactive_pngSize));
-
-    tracksLayoutLeft.setImages(leftBase, leftHover, leftClicked, nullptr, leftActive, leftHover, leftClicked, nullptr);
-    tracksLayoutLeft.setTooltip("Toggles between horizontal and vertical layout of the tracks");
+    // Left button = horizontal layout (rows icon: 3 horizontal bars)
+    {
+        const int sz = 32;
+        Image img(Image::ARGB, sz, sz, true);
+        Graphics g(img);
+        g.setColour(Colours::white);
+        float barH = 4.0f, gap = 3.0f;
+        float startY = (sz - (3 * barH + 2 * gap)) * 0.5f;
+        for (int i = 0; i < 3; ++i)
+            g.fillRoundedRectangle(sz * 0.2f, startY + i * (barH + gap), sz * 0.6f, barH, 1.5f);
+        tracksLayoutLeft.setIcon(img);
+    }
+    tracksLayoutLeft.setTooltip("Horizontal layout - tracks in rows");
     tracksLayoutLeft.setToggleState(true, NotificationType::dontSendNotification);
     tracksLayoutLeft.addListener(this);
     tracksLayoutLeft.setConnectedEdges(Button::ConnectedEdgeFlags::ConnectedOnRight);
     addAndMakeVisible(tracksLayoutLeft);
 
-
-    auto rightBase = new DrawableImage();
-    rightBase->setImage(ImageFileFormat::loadFrom(BinaryData::layoutchangerightbase_png, BinaryData::layoutchangerightbase_pngSize));
-    auto rightHover = new DrawableImage();
-    rightHover->setImage(ImageFileFormat::loadFrom(BinaryData::layoutchangerighthover_png, BinaryData::layoutchangerighthover_pngSize));
-    auto rightClicked = new DrawableImage();
-    rightClicked->setImage(ImageFileFormat::loadFrom(BinaryData::layoutchangerightclicked_png, BinaryData::layoutchangerightclicked_pngSize));
-    auto rightActive = new DrawableImage();
-    rightActive->setImage(ImageFileFormat::loadFrom(BinaryData::layoutchangerightactive_png, BinaryData::layoutchangerightactive_pngSize));
-
-    tracksLayoutRight.setImages(rightBase, rightHover, rightClicked, nullptr, rightActive, rightHover, rightClicked, nullptr);
-    tracksLayoutRight.setTooltip("Toggles between horizontal and vertical layout of the tracks");
+    // Right button = vertical layout (columns icon: 3 vertical bars)
+    {
+        const int sz = 32;
+        Image img(Image::ARGB, sz, sz, true);
+        Graphics g(img);
+        g.setColour(Colours::white);
+        float barW = 4.0f, gap = 3.0f;
+        float startX = (sz - (3 * barW + 2 * gap)) * 0.5f;
+        for (int i = 0; i < 3; ++i)
+            g.fillRoundedRectangle(startX + i * (barW + gap), sz * 0.2f, barW, sz * 0.6f, 1.5f);
+        tracksLayoutRight.setIcon(img);
+    }
+    tracksLayoutRight.setTooltip("Vertical layout - tracks in columns");
     tracksLayoutRight.setToggleState(false, NotificationType::dontSendNotification);
     tracksLayoutRight.addListener(this);
     tracksLayoutRight.setConnectedEdges(Button::ConnectedEdgeFlags::ConnectedOnLeft);
@@ -157,12 +243,25 @@ void GlobalControlArea::buttonClicked(Button* button){
         editor->repaint();
         editor->resized();
     }
-    if (button == &tempoTestButton) {
-        editor->testTempoChange();
+    if (button == &tempoDownButton) {
+        editor->tempoDown();
     }
-    if (button == &pitchTestButton) {
-        editor->testPitchChange();
+    if (button == &tempoUpButton) {
+        editor->tempoUp();
     }
+    if (button == &pitchDownButton) {
+        editor->pitchDown();
+    }
+    if (button == &pitchUpButton) {
+        editor->pitchUp();
+    }
+    if (button == &midiLearnButton) {
+        editor->toggleMidiLearn();
+    }
+}
+
+void GlobalControlArea::setMidiLearnActive(bool active) {
+    midiLearnButton.setToggleState(active, NotificationType::dontSendNotification);
 }
 
 void GlobalControlArea::toggleMuteAll(bool) {

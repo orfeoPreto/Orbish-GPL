@@ -14,8 +14,16 @@
 
 //==============================================================================
 TransportControlArea::TransportControlArea(){
-    activeLabel.setText("Active Track", NotificationType::dontSendNotification);
+    activeLabel.setText("ACTIVE TRACK", NotificationType::dontSendNotification);
+    activeLabel.setFont(juce::Font(14.0f, juce::Font::bold));
+    activeLabel.setColour(juce::Label::textColourId, juce::Colour(0xffd4af37));
     addAndMakeVisible(activeLabel);
+
+    infoLabel.setFont(juce::Font(11.0f, juce::Font::plain));
+    infoLabel.setColour(juce::Label::textColourId, juce::Colours::white.withAlpha(0.55f));
+    infoLabel.setJustificationType(juce::Justification::centredRight);
+    infoLabel.setInterceptsMouseClicks(false, false);
+    addAndMakeVisible(infoLabel);
 
     recordButton.addListener(this);
     recordButton.setTooltip("Start/Stop recording on the active track");
@@ -75,27 +83,43 @@ TransportControlArea::~TransportControlArea(){
 
 }
 
-void TransportControlArea::paint (juce::Graphics&){
+void TransportControlArea::paint (juce::Graphics& g){
 }
 
 void TransportControlArea::resized(){
 
-    auto bounds = getLocalBounds().reduced(15);
-    activeLabel.setBounds(bounds.removeFromTop(15));
-    
+    auto bounds = getLocalBounds().reduced(14, 10);
+
+    // Header row: "ACTIVE TRACK" label + info label side by side
+    auto headerRow = bounds.removeFromTop(26);
+    activeLabel.setBounds(headerRow.removeFromLeft(120));
+    infoLabel.setBounds(headerRow);
+    bounds.removeFromTop(4);
+
     juce::Grid grid;
     using Track = juce::Grid::TrackInfo;
     using Fr = juce::Grid::Fr;
+    using Px = juce::Grid::Px;
 
+    grid.rowGap = Px(3);
+    grid.columnGap = Px(3);
+
+    // Compact rows
     grid.templateRows = { Track(Fr(1)), Track(Fr(1)), Track(Fr(1)) };
-    grid.templateColumns = { Track(Fr(1)), Track(Fr(1)), Track(Fr(1)), Track(Fr(1)) };
+    grid.templateColumns = { Track(Fr(1)), Track(Fr(1)), Track(Fr(1)), Track(Fr(1)), Track(Fr(1)) };
 
     grid.items = {
-        juce::GridItem(recordButton), juce::GridItem(playButton), juce::GridItem(stopButton), juce::GridItem(clearButton),
-        juce::GridItem(muteButton), juce::GridItem(soloButton), juce::GridItem(undoButton), juce::GridItem(redoButton),
-        juce::GridItem(monitorButton), juce::GridItem(reverseButton), juce::GridItem(bounceButton), juce::GridItem(autoTriggerButton),
+        // Row A: primary transport
+        juce::GridItem(recordButton), juce::GridItem(playButton), juce::GridItem(stopButton),
+        juce::GridItem(clearButton).withArea({}, juce::GridItem::Span(2)),
+        // Row B: secondary state + undo/redo
+        juce::GridItem(muteButton), juce::GridItem(soloButton), juce::GridItem(monitorButton),
+        juce::GridItem(undoButton), juce::GridItem(redoButton),
+        // Row C: effects
+        juce::GridItem(reverseButton), juce::GridItem(bounceButton), juce::GridItem(autoTriggerButton),
+        juce::GridItem(), juce::GridItem()
     };
-    
+
     grid.performLayout(bounds);
 }
 
@@ -131,4 +155,12 @@ void TransportControlArea::buttonClicked(Button* button){
 
 void TransportControlArea::setEditor(OrbishAudioProcessorEditor* pluginEditor){
     editor = pluginEditor;
+}
+
+void TransportControlArea::updateInfo(int trackIdx, int loopIdx, int layerIdx, const juce::String& groupName) {
+    auto text = "Track:" + String(trackIdx) + "  Loop:" + String(loopIdx) + "  Layer:" + String(layerIdx);
+    if (groupName.isNotEmpty())
+        text += "  Group:" + groupName;
+    if (infoLabel.getText() != text)
+        infoLabel.setText(text, NotificationType::dontSendNotification);
 }

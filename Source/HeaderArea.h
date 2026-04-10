@@ -13,7 +13,10 @@
 #include <JuceHeader.h>
 #include "MainMenu.h"
 #include "CommandIDs.h"
+#include "exu/Label.hpp"
+#include "CustomButton.h"
 class OrbishAudioProcessorEditor;
+class GlobalControlArea;
 //==============================================================================
 
 class HeaderArea  : public juce::Component, public MenuManager, public ApplicationCommandTarget{
@@ -26,6 +29,9 @@ public:
 
     void setEditor(OrbishAudioProcessorEditor* editor);
 
+    // Adopt global control buttons into the header's transport pill
+    void adoptGlobalControls(GlobalControlArea* globalArea);
+
     void initCommandManager();
     ApplicationCommandTarget* getNextCommandTarget() override;
     void getAllCommands(Array< CommandID >& commands) override;
@@ -35,13 +41,29 @@ public:
     MenuBarModel* getMenuModel();
     StringArray getMenuNames();
     void createMenu(PopupMenu&, const String& menuName) override;
-	
+
     void createFileMenu(PopupMenu& menu);
     void createEditMenu(PopupMenu& menu);
     void createSettingsMenu(PopupMenu& menu);
 
+    // Brand logo and project name
+    juce::ImageComponent brandLogo;
+    juce::Label projectNameLabel;
+
+    // Readout labels for the top bar
+    juce::Label tempoTitleLabel;
+    juce::Label tempoValueLabel;
+    juce::Label meterTitleLabel;
+    juce::Label meterValueLabel;
+    juce::Label positionTitleLabel;
+    juce::Label positionValueLabel;
+
+    void updateReadouts(const juce::String& sessionName, double tempo,
+                        int tsNum, int tsDen, const juce::String& position);
+
 private:
-    OrbishAudioProcessorEditor* editor;
+    OrbishAudioProcessorEditor* editor = nullptr;
+    GlobalControlArea* globalControls = nullptr;
 
     std::unique_ptr<MainMenu> mainMenu;
     std::unique_ptr<MenuBarComponent> menuBar;

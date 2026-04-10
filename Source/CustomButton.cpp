@@ -12,10 +12,6 @@
 
 CustomButton::CustomButton(const String& name, bool isPushButton) : TextButton(name) {
     pushButton = isPushButton;
-    if (pushButton) {
-        setColour(TextButton::ColourIds::textColourOnId, juce::Colour(0xff707070));
-    }
-
     setToggleState(false, NotificationType::sendNotification);
     setClickingTogglesState(true);
 }
@@ -23,10 +19,6 @@ CustomButton::CustomButton(const String& name, bool isPushButton) : TextButton(n
 CustomButton::CustomButton(const String& name, bool isPushButton, bool isSquareButton) : TextButton(name) {
     pushButton = isPushButton;
     squareButton = isSquareButton;
-    if (pushButton) {
-        setColour(TextButton::ColourIds::textColourOnId, juce::Colour(0xff707070));
-    }
-
     setToggleState(false, NotificationType::sendNotification);
     setClickingTogglesState(true);
 }
@@ -51,6 +43,11 @@ void CustomButton::setIcon(Image iconImage){
     iconButton = true;
 }
 
+void CustomButton::setIconOff(Image iconImage){
+    iconOff = iconImage;
+    hasIconOff = true;
+}
+
 void CustomButton::paintButton(Graphics& g, bool shouldDrawButtonAsHighlighted, bool shouldDrawButtonAsDown){
     auto& lf = getLookAndFeel();
 
@@ -62,19 +59,23 @@ void CustomButton::paintButton(Graphics& g, bool shouldDrawButtonAsHighlighted, 
         auto bounds = getLocalBounds();
         bounds.reduce(getWidth() * 3 / 10, getHeight() * 3 / 10);
 
-        if (shouldDrawButtonAsDown || (!isPushButton() && getToggleState())){
-            g.setColour(findColour(TextButton::ColourIds::buttonOnColourId));
-            g.drawImage(icon, bounds.toFloat(), RectanglePlacement::centred, true);
+        auto accent = findColour(TextButton::ColourIds::buttonOnColourId);
+        auto text   = findColour(TextButton::ColourIds::textColourOffId);
+        bool active = !isPushButton() && getToggleState();
+        auto& img = (hasIconOff && !active) ? iconOff : icon;
+
+        if (shouldDrawButtonAsDown || active){
+            g.setColour(accent);
+            g.drawImage(img, bounds.toFloat(), RectanglePlacement::centred, true);
         }
         else if(shouldDrawButtonAsHighlighted) {
-            g.setColour(Colours::whitesmoke);
-            g.drawImage(icon, bounds.toFloat(), RectanglePlacement::centred, true);
+            g.setColour(text.brighter(0.3f));
+            g.drawImage(img, bounds.toFloat(), RectanglePlacement::centred, true);
         }
         else {
-            g.drawImage(icon, bounds.toFloat(), RectanglePlacement::centred, false);
+            g.setColour(text.withAlpha(0.7f));
+            g.drawImage(img, bounds.toFloat(), RectanglePlacement::centred, true);
         }
-
-        
     }
     else {
         lf.drawButtonText(g, *this, shouldDrawButtonAsHighlighted, shouldDrawButtonAsDown);

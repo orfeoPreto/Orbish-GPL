@@ -68,6 +68,8 @@ public:
 	void unPrepareActivation();
 
     
+    juce::Colour innerBgColour { 0xff070709 };
+
 private:
     bool reverse = true;
     int frameRate = 0;

@@ -4,7 +4,7 @@
 #include "ProcessorState.h"
 #include "Context.h"
 
-// Self-contained click generator. All methods inline — zero call overhead.
+// Self-contained click generator. All methods inline - zero call overhead.
 // Owns the ClickState and produces click audio into an output buffer.
 class ClickGenerator {
 public:

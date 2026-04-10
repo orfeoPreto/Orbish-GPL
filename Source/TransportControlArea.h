@@ -40,9 +40,11 @@ public:
     CustomButton bounceButton{ "Bounce", true };
     CustomButton autoTriggerButton{ "Trigger", false };
 
-    exu::Label activeLabel{ "Active Track" };
+    juce::Label activeLabel{ "Active Track" };
+    juce::Label infoLabel;
 
     void setEditor(OrbishAudioProcessorEditor* editor);
+    void updateInfo(int trackIdx, int loopIdx, int layerIdx, const juce::String& groupName);
 
 private:
     OrbishAudioProcessorEditor* editor;

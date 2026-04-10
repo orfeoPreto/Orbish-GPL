@@ -92,17 +92,18 @@ ModeControlArea::~ModeControlArea(){
 
 void ModeControlArea::paint (juce::Graphics& g){
     auto bounds = getLocalBounds().reduced(5);
-    g.drawRoundedRectangle(bounds.toFloat(), 4.0f, 0.5f);
+    g.setColour(findColour(juce::TextButton::ColourIds::buttonOnColourId).withAlpha(0.06f));
+    g.drawRoundedRectangle(bounds.toFloat(), 7.0f, 0.5f);
 }
 
 void ModeControlArea::resized(){
 
-    auto bounds = getLocalBounds().reduced(15);
+    auto bounds = getLocalBounds().reduced(16, 12);
 
     juce::Grid grid;
     using Track = juce::Grid::TrackInfo;
     using Fr = juce::Grid::Fr;
-    grid.setGap(Grid::Px(10));
+    grid.setGap(Grid::Px(12));
 
     grid.templateRows = { Track(Fr(1)), Track(Fr(3)) };
     grid.templateColumns = { Track(Fr(3)), Track(Fr(2)), Track(Fr(3)) };

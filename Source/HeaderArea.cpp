@@ -10,6 +10,7 @@
 
 #include <JuceHeader.h>
 #include "HeaderArea.h"
+#include "GlobalControlArea.h"
 #include "PluginEditor.h"
 
 //==============================================================================
@@ -19,6 +20,40 @@ HeaderArea::HeaderArea(){
     MenuBarModel* mm = mainMenu.get();
     menuBar = std::make_unique<MenuBarComponent>(mm);
     addAndMakeVisible(menuBar.get());
+
+    // Brand logo
+    auto logoImage = juce::ImageFileFormat::loadFrom(BinaryData::logo_orbish_x_small_png, BinaryData::logo_orbish_x_small_pngSize);
+    brandLogo.setImage(logoImage, juce::RectanglePlacement::centred | juce::RectanglePlacement::onlyReduceInSize);
+    brandLogo.setInterceptsMouseClicks(false, false);
+    addAndMakeVisible(brandLogo);
+
+    // Project name below logo
+    projectNameLabel.setText("Untitled", juce::NotificationType::dontSendNotification);
+    projectNameLabel.setFont(juce::Font(9.0f, juce::Font::plain));
+    projectNameLabel.setColour(juce::Label::textColourId, juce::Colours::white.withAlpha(0.45f));
+    projectNameLabel.setJustificationType(juce::Justification::centred);
+    projectNameLabel.setInterceptsMouseClicks(false, false);
+    addAndMakeVisible(projectNameLabel);
+
+    // Readout titles
+    auto setupTitle = [this](juce::Label& label, const juce::String& text) {
+        label.setText(text, juce::NotificationType::dontSendNotification);
+        label.setJustificationType(juce::Justification::centred);
+        addAndMakeVisible(label);
+    };
+    setupTitle(tempoTitleLabel, "TEMPO");
+    setupTitle(meterTitleLabel, "METER");
+    setupTitle(positionTitleLabel, "POSITION");
+
+    // Readout values
+    auto setupValue = [this](juce::Label& label, const juce::String& text) {
+        label.setText(text, juce::NotificationType::dontSendNotification);
+        label.setJustificationType(juce::Justification::centred);
+        addAndMakeVisible(label);
+    };
+    setupValue(tempoValueLabel, "120.0");
+    setupValue(meterValueLabel, "4/4");
+    setupValue(positionValueLabel, "1.1.1");
 }
 
 HeaderArea::~HeaderArea(){
@@ -27,25 +62,91 @@ HeaderArea::~HeaderArea(){
 MenuManager::~MenuManager(){
 }
 
+void HeaderArea::adoptGlobalControls(GlobalControlArea* globalArea) {
+    globalControls = globalArea;
+    if (globalControls == nullptr) return;
+
+    // Reparent the global transport buttons into this header
+    addAndMakeVisible(globalControls->pauseAllButton);
+    addAndMakeVisible(globalControls->startAllButton);
+    addAndMakeVisible(globalControls->stopAllButton);
+    addAndMakeVisible(globalControls->muteAllButton);
+    addAndMakeVisible(globalControls->clearAllButton);
+}
+
+void HeaderArea::updateReadouts(const juce::String& sessionName, double tempo,
+                                int tsNum, int tsDen, const juce::String& position) {
+    projectNameLabel.setText(sessionName, juce::NotificationType::dontSendNotification);
+    tempoValueLabel.setText(juce::String(tempo, 1), juce::NotificationType::dontSendNotification);
+    meterValueLabel.setText(juce::String(tsNum) + "/" + juce::String(tsDen), juce::NotificationType::dontSendNotification);
+    positionValueLabel.setText(position, juce::NotificationType::dontSendNotification);
+}
 
 void HeaderArea::paint (juce::Graphics& g){
+    g.fillAll(getLookAndFeel().findColour(juce::ResizableWindow::backgroundColourId));
 
-    g.fillAll (getLookAndFeel().findColour (juce::ResizableWindow::backgroundColourId));   // clear the background
+    auto accent = findColour(juce::TextButton::ColourIds::buttonOnColourId);
+    auto btnSurf = findColour(juce::TextButton::ColourIds::buttonColourId);
 
-    g.setColour (juce::Colours::blue);
-    g.drawRect (getLocalBounds(), 1);   // draw an outline around the component
+    // Bottom divider
+    g.setColour(accent.withAlpha(0.08f));
+    g.drawHorizontalLine(getHeight() - 1, 0.0f, (float)getWidth());
 
-    g.setColour (juce::Colours::white);
-    g.setFont (14.0f);
-    g.drawText ("HeaderArea", getLocalBounds(),
-                juce::Justification::centred, true);   // draw some placeholder text
+    // Transport pill background (right side)
+    if (globalControls != nullptr) {
+        // Find the pill bounds from the first to last global button
+        auto firstBtn = globalControls->pauseAllButton.getBoundsInParent();
+        auto lastBtn  = globalControls->clearAllButton.getBoundsInParent();
+        auto pillBounds = firstBtn.getUnion(lastBtn).expanded(4, 2).toFloat();
+
+        g.setColour(btnSurf.withAlpha(0.3f));
+        g.fillRoundedRectangle(pillBounds, 8.0f);
+        g.setColour(accent.withAlpha(0.10f));
+        g.drawRoundedRectangle(pillBounds, 8.0f, 0.5f);
+    }
 }
 
 void HeaderArea::resized()
 {
-    // This method is where you should set the bounds of any child
-    // components that your component contains..
-    menuBar->setBounds(getLocalBounds());
+    auto bounds = getLocalBounds();
+
+    // Menu bar at top (compact, 22px)
+    menuBar->setBounds(bounds.removeFromTop(22));
+
+    // Readout row below menu
+    auto readoutRow = bounds;
+
+    // Brand logo + project name stacked vertically
+    auto brandCol = readoutRow.removeFromLeft(80);
+    brandLogo.setBounds(brandCol.removeFromTop(brandCol.getHeight() - 14).reduced(4, 2));
+    projectNameLabel.setBounds(brandCol.reduced(2, 0));
+    readoutRow.removeFromLeft(6);
+
+    // Readout columns: Tempo, Meter, Position
+    auto colWidth = 64;
+    auto setupColumn = [&](juce::Label& title, juce::Label& value) {
+        auto col = readoutRow.removeFromLeft(colWidth);
+        auto top = col.removeFromTop(col.getHeight() / 2);
+        title.setBounds(top.reduced(2, 0));
+        value.setBounds(col.reduced(2, 0));
+        readoutRow.removeFromLeft(4);
+    };
+
+    setupColumn(tempoTitleLabel, tempoValueLabel);
+    setupColumn(meterTitleLabel, meterValueLabel);
+    setupColumn(positionTitleLabel, positionValueLabel);
+
+    // Global transport pill - right-aligned
+    if (globalControls != nullptr) {
+        auto btnW = juce::jmin(36, readoutRow.getWidth() / 9);
+
+        // Transport buttons: right-aligned
+        globalControls->clearAllButton.setBounds(readoutRow.removeFromRight(btnW).reduced(1, 2));
+        globalControls->muteAllButton.setBounds(readoutRow.removeFromRight(btnW).reduced(1, 2));
+        globalControls->stopAllButton.setBounds(readoutRow.removeFromRight(btnW).reduced(1, 2));
+        globalControls->startAllButton.setBounds(readoutRow.removeFromRight(btnW).reduced(1, 2));
+        globalControls->pauseAllButton.setBounds(readoutRow.removeFromRight(btnW).reduced(1, 2));
+    }
 }
 
 void HeaderArea::setEditor(OrbishAudioProcessorEditor* pluginEditor){
@@ -104,23 +205,23 @@ void HeaderArea::getCommandInfo(CommandID commandID, ApplicationCommandInfo& res
 
 bool HeaderArea::perform(const InvocationInfo& info){
     switch (info.commandID) {
-    case CommandIDs::newProject: 
+    case CommandIDs::newProject:
         editor->createNewProject();
         break;
-    case CommandIDs::open: 
+    case CommandIDs::open:
         editor->askUserToOpenFile();
         break;
-    case CommandIDs::saveProject: 
+    case CommandIDs::saveProject:
         editor->saveProject();
         break;
-    case CommandIDs::saveProjectAs: 
-        editor->project.newProject = true; 
+    case CommandIDs::saveProjectAs:
+        editor->project.newProject = true;
         editor->saveProject();
         break;
-    case CommandIDs::showProjectSettings:     
+    case CommandIDs::showProjectSettings:
         editor->showSettingsPage();
         break;
-    default:                                    
+    default:
         return false;
     }
     return true;
@@ -137,9 +238,8 @@ StringArray HeaderArea::getMenuNames(){
 void HeaderArea::createMenu(PopupMenu& menu, const String& menuName){
     if (menuName == "File") createFileMenu(menu);
     else if (menuName == "Settings") createSettingsMenu(menu);
-    else jassertfalse; // names have changed?
+    else jassertfalse;
 }
-
 
 void HeaderArea::createFileMenu(PopupMenu& menu){
     menu.addCommandItem(commandManager.get(), CommandIDs::newProject);
@@ -147,16 +247,7 @@ void HeaderArea::createFileMenu(PopupMenu& menu){
     menu.addCommandItem(commandManager.get(), CommandIDs::saveProjectAs);
     menu.addCommandItem(commandManager.get(), CommandIDs::saveProject);
     menu.addSeparator();
-
 #if ! JUCE_MAC
-    /*
-        menu.addCommandItem(commandManager.get(), CommandIDs::showAboutWindow);
-        menu.addCommandItem(commandManager.get(), CommandIDs::showAppUsageWindow);
-        menu.addCommandItem(commandManager.get(), CommandIDs::checkForNewVersion);
-        menu.addCommandItem(commandManager.get(), CommandIDs::showGlobalPathsWindow);
-        menu.addSeparator();
-        */
-        //menu.addCommandItem(commandManager.get(), StandardApplicationCommandIDs::quit);
 #endif
 }
 
@@ -173,6 +264,5 @@ void HeaderArea::createEditMenu(PopupMenu& menu){
 }
 
 void HeaderArea::createSettingsMenu(PopupMenu& menu){
-
     menu.addCommandItem(commandManager.get(), CommandIDs::showProjectSettings);
 }

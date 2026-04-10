@@ -26,9 +26,12 @@ public:
     void paint (juce::Graphics&) override;
     void resized() override;
 
+    void updateTimeDisplay(const juce::String& positionTime, const juce::String& totalTime);
+
     ThumbnailArea thumbnailArea{};
-   // GroupControlArea groupControlArea{};
 
 private:
+    juce::Label timeLabel;
+
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (ThumbnailAndGroupArea)
 };

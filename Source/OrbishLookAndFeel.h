@@ -13,6 +13,7 @@
 #include "JuceHeader.h"
 #include "TrackComponent.h"
 #include "CustomButton.h"
+#include "OrbishTheme.h"
 
 enum class ButtonShape {
 	SQUARE,
@@ -31,6 +32,7 @@ class OrbishLookAndFeel : public juce::LookAndFeel_V3, public FFAU::LevelMeter::
 public:
 	OrbishLookAndFeel();
 	~OrbishLookAndFeel();
+	void applyTheme(OrbishThemeId themeId);
 
 	void drawButtonBackground(juce::Graphics& g, juce::Button& button, const juce::Colour& backgroundColour, bool something, bool isButtonDown) override;
 	void drawProgressBar(Graphics&, ProgressBar&, int width, int height, double progress, const String& textToShow) override;

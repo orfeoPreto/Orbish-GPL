@@ -23,6 +23,7 @@
 #include "ProcessorState.h"
 #include "AllocatorThread.h"
 #include "ClickGenerator.h"
+#include "MidiMapping.h"
 
 #ifdef _MSC_VER
   #define ORBISH_FORCEINLINE __forceinline
@@ -110,6 +111,15 @@ public:
     void handleEvents(Events&);
     void processTempoChange(double);
     TrackGroup* getTrackGroup(Track* t);
+
+    // MIDI mapping system
+    void executeMidiAction(MidiAction action, uint8_t value);
+    void executeTempoUp();
+    void executeTempoDown();
+    void executePitchUp();
+    void executePitchDown();
+    MidiMappingTable midiMappings;
+    MidiLearnState midiLearnState;
 
 	void initGroups();
     ClickGenerator clickGen;

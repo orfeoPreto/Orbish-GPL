@@ -14,12 +14,10 @@
 //==============================================================================
 ImageViewport::ImageViewport()
 {
-    // In your constructor, you should add any child components, and
-    // initialise any special settings that your component needs.
-    background.setImage(ImageFileFormat::loadFrom(BinaryData::viewport_background_png, BinaryData::viewport_background_pngSize));
+    background.setImage(ImageFileFormat::loadFrom(BinaryData::orbishlogowebdown_png, BinaryData::orbishlogowebdown_pngSize));
     background.setOpaque(false);
     background.toBack();
-    background.setAlpha(0.07);
+    background.setAlpha(0.04f);
 }
 
 ImageViewport::~ImageViewport()

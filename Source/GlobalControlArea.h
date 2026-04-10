@@ -13,6 +13,7 @@
 #include <JuceHeader.h>
 #include "CustomButton.h"
 #include "exu/Label.hpp"
+#include "MidiMapping.h"
 class OrbishAudioProcessorEditor;
 
 //==============================================================================
@@ -32,12 +33,18 @@ public:
     CustomButton startAllButton{ "Start", true};
     CustomButton pauseAllButton{ "Pause", false};
     CustomButton clearAllButton{ "Clear", true};
-    CustomButton tempoTestButton{ "Tempo+", true };
-    CustomButton pitchTestButton{ "Pitch+", true };
-    DrawableButton tracksLayoutLeft{"Layout-Left", DrawableButton::ImageStretched };
-    DrawableButton tracksLayoutRight{ "Layout-Right", DrawableButton::ImageStretched };
+    CustomButton tempoDownButton{ "Tempo-", true };
+    CustomButton tempoUpButton{ "Tempo+", true };
+    juce::Label bpmReadout;
+    CustomButton pitchDownButton{ "Pitch-", true };
+    CustomButton pitchUpButton{ "Pitch+", true };
+    juce::Label pitchReadout;
+    CustomButton midiLearnButton{ "MIDI Learn", false };
+    CustomButton tracksLayoutLeft{ "Layout-Left", false };
+    CustomButton tracksLayoutRight{ "Layout-Right", false };
 
     void setEditor(OrbishAudioProcessorEditor* editor);
+    void setMidiLearnActive(bool active);
 
 private:
     OrbishAudioProcessorEditor* editor;

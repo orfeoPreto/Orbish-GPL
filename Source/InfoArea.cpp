@@ -34,32 +34,44 @@ InfoArea::InfoArea(){
 
 
     clickButton.setTooltip("Enable/disable click");
-    // Draw a simple metronome icon
+    // Pendulum metronome icon - asymmetric mid-swing feel
+    // Drawn in a 24×24 viewBox, scaled to button size
     {
-        const int sz = 32;
-        Image img(Image::ARGB, sz, sz, true);
-        Graphics g(img);
-        g.setColour(Colours::white);
-        // Metronome body (trapezoid)
-        Path body;
-        body.startNewSubPath(sz * 0.3f, sz * 0.9f);
-        body.lineTo(sz * 0.7f, sz * 0.9f);
-        body.lineTo(sz * 0.58f, sz * 0.15f);
-        body.lineTo(sz * 0.42f, sz * 0.15f);
-        body.closeSubPath();
-        g.strokePath(body, PathStrokeType(1.5f));
-        // Pendulum arm
-        g.drawLine(sz * 0.5f, sz * 0.75f, sz * 0.65f, sz * 0.2f, 1.5f);
-        clickButton.setIcon(img);
+        const int sz = 24;
+        // ON icon: pendulum arm + weight + base
+        {
+            Image img(Image::ARGB, sz, sz, true);
+            Graphics g(img);
+            g.setColour(Colours::white);
+            // Diagonal arm from (6,20) to (15,4)
+            g.drawLine(6.0f, 20.0f, 15.0f, 4.0f, 1.8f);
+            // Pendulum weight at top of arm
+            g.fillEllipse(15.0f - 1.8f, 4.0f - 1.8f, 3.6f, 3.6f);
+            // Base line
+            g.drawLine(4.0f, 20.0f, 18.0f, 20.0f, 1.5f);
+            clickButton.setIcon(img);
+        }
+        // OFF icon: same pendulum + red mute slash from (3,3) to (21,21)
+        {
+            Image img(Image::ARGB, sz, sz, true);
+            Graphics g(img);
+            g.setColour(Colours::white);
+            g.drawLine(6.0f, 20.0f, 15.0f, 4.0f, 1.8f);
+            g.fillEllipse(15.0f - 1.8f, 4.0f - 1.8f, 3.6f, 3.6f);
+            g.drawLine(4.0f, 20.0f, 18.0f, 20.0f, 1.5f);
+            // Mute slash in record-red
+            g.setColour(Colour(0xffe84545));
+            g.drawLine(3.0f, 3.0f, 21.0f, 21.0f, 1.5f);
+            clickButton.setIconOff(img);
+        }
     }
     addAndMakeVisible(clickButton);
 
     clickLevelSlider.setSliderStyle(Slider::LinearHorizontal);
     clickLevelSlider.setTextBoxStyle(Slider::NoTextBox, true, 0, 0);
     clickLevelSlider.setTooltip("Click volume");
-    auto yellow = Colour(0xfffed70f);
-    clickLevelSlider.setColour(Slider::trackColourId, yellow);
-    clickLevelSlider.setColour(Slider::backgroundColourId, yellow.withAlpha(0.3f));
+    // Click slider colors are driven by the LookAndFeel accent (Slider::thumbColourId)
+    // and will be set when the theme is applied
     addAndMakeVisible(clickLevelSlider);
 }
 

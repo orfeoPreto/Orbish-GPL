@@ -1,5 +1,5 @@
 // PluginProcessorLifecycle.cpp
-// Split compilation unit for OrbishAudioProcessor — lifecycle, boilerplate,
+// Split compilation unit for OrbishAudioProcessor - lifecycle, boilerplate,
 // JUCE overrides, state persistence, and utility methods.
 
 #include "PluginProcessor.h"
@@ -336,15 +336,53 @@ void OrbishAudioProcessor::getStateInformation(MemoryBlock& destData)
 {
     auto state = parameters.copyState();
     unique_ptr<XmlElement> xml(state.createXml());
+
+    // Persist theme
+    xml->setAttribute("themeId", context->themeId.load(std::memory_order_relaxed));
+
+    // Persist MIDI mappings
+    auto* midiMappingsXml = xml->createNewChildElement("MidiMappings");
+    int count = midiMappings.count.load(std::memory_order_acquire);
+    for (int i = 0; i < count; ++i) {
+        auto& e = midiMappings.entries[i];
+        auto* mapXml = midiMappingsXml->createNewChildElement("Map");
+        mapXml->setAttribute("ch", (int)e.channel);
+        mapXml->setAttribute("type", (int)e.type);
+        mapXml->setAttribute("num", (int)e.number);
+        mapXml->setAttribute("action", (int)e.action);
+        mapXml->setAttribute("flags", (int)e.flags);
+    }
+
     copyXmlToBinary(*xml, destData);
 }
 
 void OrbishAudioProcessor::setStateInformation(const void* data, int sizeInBytes)
 {
     unique_ptr<XmlElement> xmlState(getXmlFromBinary(data, sizeInBytes));
-    if (xmlState.get() != nullptr)
+    if (xmlState.get() != nullptr) {
+        // Restore theme
+        if (xmlState->hasAttribute("themeId"))
+            context->themeId.store(xmlState->getIntAttribute("themeId", 0), std::memory_order_relaxed);
+
+        // Restore MIDI mappings
+        if (auto* midiMappingsXml = xmlState->getChildByName("MidiMappings")) {
+            midiMappings.clear();
+            for (auto* mapXml : midiMappingsXml->getChildIterator()) {
+                MidiMappingEntry entry{};
+                entry.channel = (uint8_t)mapXml->getIntAttribute("ch", 0);
+                entry.type = (uint8_t)mapXml->getIntAttribute("type", 0);
+                entry.number = (uint8_t)mapXml->getIntAttribute("num", 0);
+                entry.action = (uint16_t)mapXml->getIntAttribute("action", 0);
+                entry.flags = (uint16_t)mapXml->getIntAttribute("flags", 0);
+                midiMappings.add(entry);
+            }
+            xmlState->removeChildElement(midiMappingsXml, true);
+        }
+        xmlState->removeAttribute("themeId");
+
         if (xmlState->hasTagName(parameters.state.getType()))
             parameters.replaceState(ValueTree::fromXml(*xmlState));
+    }
 }
 
 void OrbishAudioProcessor::printBuffer(AudioBuffer<float> *buffer, String name){

@@ -18,7 +18,7 @@ class OrbishAudioProcessorEditor;
 //==============================================================================
 /*
 */
-class GroupControlArea  : public juce::Component, juce::Button::Listener
+class GroupControlArea  : public juce::Component, juce::Button::Listener, juce::ComboBox::Listener
 {
 public:
     GroupControlArea();
@@ -29,7 +29,10 @@ public:
 
     CustomButton addToGroupButton{ "Group", true };
     CustomButton removeFromGroupButton{ "UnGroup", true };
+    CustomButton previousGroupButton{ "<", true, true };
+    CustomButton nextGroupButton{ ">", true, true };
     exu::Label groupLabel;
+    juce::Label activeGroupLabel{ "1" };
     ComboBox groupCombo;
 
     void setEditor(OrbishAudioProcessorEditor*);
@@ -38,5 +41,6 @@ private:
     OrbishAudioProcessorEditor* editor;
 
     void buttonClicked(Button*) override;
+    void comboBoxChanged(ComboBox*) override;
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (GroupControlArea)
 };

@@ -188,26 +188,29 @@ String TrackComponent::getGroup(){
 }
 
 void TrackComponent::updateLoopColours(){
+    auto accent = getLookAndFeel().findColour(juce::TextButton::ColourIds::buttonOnColourId);
+    auto bg = getLookAndFeel().findColour(juce::ResizableWindow::backgroundColourId);
+    auto text = getLookAndFeel().findColour(juce::Label::textColourId);
+
     for (auto l : Loops) {
         if (active) {
             if (activeLoopIdx == l->getIndex()) {
-                l->setColour(juce::ProgressBar::foregroundColourId, juce::Colour(0xfffddc11));
-                l->setColour(juce::ProgressBar::backgroundColourId, juce::Colour(0xff707070));
+                l->setColour(juce::ProgressBar::foregroundColourId, accent);
+                l->setColour(juce::ProgressBar::backgroundColourId, text);
             }
             else {
-                l->setColour(juce::ProgressBar::foregroundColourId, juce::Colour(0xfff2e499));
-                l->setColour(juce::ProgressBar::backgroundColourId, juce::Colour(0xff42403a));
+                l->setColour(juce::ProgressBar::foregroundColourId, accent.withAlpha(0.6f));
+                l->setColour(juce::ProgressBar::backgroundColourId, bg.contrasting(0.1f));
             }
         }
         else {
             if (activeLoopIdx == l->getIndex()) {
-                l->setColour(juce::ProgressBar::foregroundColourId, juce::Colour(0xffc1a402));
-                l->setColour(juce::ProgressBar::backgroundColourId, juce::Colour(0xff42403a));
+                l->setColour(juce::ProgressBar::foregroundColourId, accent.withAlpha(0.7f));
+                l->setColour(juce::ProgressBar::backgroundColourId, bg.contrasting(0.1f));
             }
             else {
-
-                l->setColour(juce::ProgressBar::foregroundColourId, juce::Colour(0xffb49e53));
-                l->setColour(juce::ProgressBar::backgroundColourId, juce::Colour(0xff42403a));
+                l->setColour(juce::ProgressBar::foregroundColourId, accent.withAlpha(0.4f));
+                l->setColour(juce::ProgressBar::backgroundColourId, bg.contrasting(0.1f));
             }
         }
     }

@@ -17,8 +17,24 @@ GroupControlArea::GroupControlArea(){
     groupLabel.setText("Group", juce::NotificationType::dontSendNotification);
     addAndMakeVisible(groupLabel);
 
+    // Hidden combo still used for APVTS attachment
     groupCombo.setTooltip("Select a group, then add or remove tracks. \nAll tracks in the same group will act simultaneously for certain commands");
-    addAndMakeVisible(groupCombo);
+    groupCombo.setVisible(false);
+    groupCombo.addListener(this);
+    addChildComponent(groupCombo);
+
+    // Navigation buttons
+    previousGroupButton.setTooltip("Previous group");
+    previousGroupButton.addListener(this);
+    addAndMakeVisible(previousGroupButton);
+
+    activeGroupLabel.setText("1", juce::NotificationType::dontSendNotification);
+    activeGroupLabel.setJustificationType(juce::Justification::centred);
+    addAndMakeVisible(activeGroupLabel);
+
+    nextGroupButton.setTooltip("Next group");
+    nextGroupButton.addListener(this);
+    addAndMakeVisible(nextGroupButton);
 
     addToGroupButton.setTooltip("Add the active track to the selected group");
     addToGroupButton.addListener(this);
@@ -35,10 +51,7 @@ GroupControlArea::~GroupControlArea(){
 }
 
 void GroupControlArea::paint (juce::Graphics& g){
-    g.fillAll (getLookAndFeel().findColour (juce::ResizableWindow::backgroundColourId));   // clear the background
-
-    g.setColour (juce::Colours::black);
-    g.drawRoundedRectangle(getLocalBounds().reduced(5).toFloat(), 4.0f, 1.0f);
+    // GroupControlArea is currently hidden - group controls in nav panel
 }
 
 void GroupControlArea::resized(){
@@ -58,10 +71,27 @@ void GroupControlArea::buttonClicked(Button* button){
     if (editor == nullptr){
         return;
     }
+    if (button == &previousGroupButton) {
+        auto current = groupCombo.getSelectedId();
+        if (current > 1)
+            groupCombo.setSelectedId(current - 1);
+    }
+    if (button == &nextGroupButton) {
+        auto current = groupCombo.getSelectedId();
+        if (current < groupCombo.getNumItems())
+            groupCombo.setSelectedId(current + 1);
+    }
     if (button == &addToGroupButton) {
         editor->makeTracks();
     }
     if (button == &removeFromGroupButton) {
         editor->makeTracks();
     }
+    // Update displayed group name
+    activeGroupLabel.setText(groupCombo.getText(), juce::NotificationType::dontSendNotification);
+}
+
+void GroupControlArea::comboBoxChanged(ComboBox* combo) {
+    if (combo == &groupCombo)
+        activeGroupLabel.setText(groupCombo.getText(), juce::NotificationType::dontSendNotification);
 }

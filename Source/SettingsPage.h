@@ -7,16 +7,18 @@
 #include <JuceHeader.h>
 #include "OrbishSlider.h"
 #include "CustomButton.h"
+#include "OrbishTheme.h"
 
 
 class SettingsPage:public Component,
 	public ChangeListener,
 	public Button::Listener,
 	public Slider::Listener,
-	public Label::Listener {
+	public Label::Listener,
+	public ComboBox::Listener {
 public:
 	SettingsPage();
-	SettingsPage(bool, bool , int , int , int, int );
+	SettingsPage(bool, bool , int , int , int, int, int themeId = 0 );
 
 	
 	~SettingsPage();
@@ -28,6 +30,7 @@ public:
 	void sliderValueChanged(Slider* slider) override;
 	void changeListenerCallback(ChangeBroadcaster* source) override;
 	void labelTextChanged(Label* label) override;
+	void comboBoxChanged(ComboBox* comboBox) override;
 	void parentSizeChanged() override;
 
 	Component settingsCentre;
@@ -48,6 +51,8 @@ public:
     OrbishSlider tracksPerRowSlider{ "Tracks per row" };
     Label visibleLayersLabel{ "Visible Layers" };
     OrbishSlider visibleLayersSlider{ "Number of audio layers displayed as waveform" };
+    Label themeLabel{ "Theme" };
+    ComboBox themeCombo;
 	class  Listener
 	{
 	public:
@@ -57,8 +62,11 @@ public:
 		/** Called when a button is clicked. */
 		virtual void clicked(Button*) = 0;
 
-		/** Called when a button is clicked. */
+		/** Called when a slider changes. */
 		virtual void sliderChanged(Slider*) = 0;
+
+		/** Called when a combo box changes. */
+		virtual void comboChanged(ComboBox*) {};
 	};
 
 	void addListener(Listener* newListener);

@@ -10,137 +10,138 @@
 
 #include "OrbishLookAndFeel.h"
 
-
-//    static Colour createBaseColour (Colour buttonColour,
-//                                    bool hasKeyboardFocus,
-//                                    bool shouldDrawButtonAsHighlighted,
-//                                    bool shouldDrawButtonAsDown) noexcept
-//    {
-//        const float sat = hasKeyboardFocus ? 1.3f : 0.9f;
-//        const Colour baseColour (buttonColour.withMultipliedSaturation (sat));
-//
-//        if (shouldDrawButtonAsDown)        return baseColour.contrasting (0.2f);
-//        if (shouldDrawButtonAsHighlighted) return baseColour.contrasting (0.1f);
-//
-//        return baseColour;
-//    }
-//
-//    static TextLayout OrbishLookAndFeel::layoutTooltipText (const String& text, Colour colour) noexcept
-//    {
-//        const float tooltipFontSize = 13.0f;
-//        const int maxToolTipWidth = 400;
-//
-//        AttributedString s;
-//        s.setJustification (Justification::topLeft);
-//        s.append (text, Font (tooltipFontSize, Font::bold), colour);
-//
-//        TextLayout tl;
-//        tl.createLayoutWithBalancedLineLengths (s, (float) maxToolTipWidth);
-//        return tl;
-//    }
-//}
-
 OrbishLookAndFeel::OrbishLookAndFeel() {
-    // colours
-    auto deepDarkGrey = juce::Colour(0xff161616);
-    auto darkGrey = juce::Colour(0xff262626);
-    auto lightGrey = juce::Colour(0xff707070);
-    auto yellow = juce::Colour(0xfffed70f);
-    auto sliderLowerHalf = juce::Colour(0xff333333);
-    
-    // background
-    setColour(juce::ResizableWindow::backgroundColourId, darkGrey);
+    setDefaultSansSerifTypefaceName("Bahnschrift");
+    applyTheme(OrbishThemeId::ObsidianGold);
+}
+
+void OrbishLookAndFeel::applyTheme(OrbishThemeId themeId) {
+    auto t = orbishThemeColours(themeId);
+
+    auto bgOuter  = t.backgroundOuter;
+    auto bgInner  = t.backgroundInner;
+    auto panel    = t.panelSurface;
+    auto btnSurf  = t.buttonSurface;
+    auto text     = t.textPrimary;
+    auto textDim  = t.textSecondary;
+    auto accent   = t.accent;
+    auto divider  = t.divider;
+    auto track    = t.sliderTrack;
+
+    // background - use outer as the main window bg
+    setColour(juce::ResizableWindow::backgroundColourId, bgOuter);
 
     // text
-    setColour(juce::Label::textColourId, lightGrey);
-    setColour(juce::Slider::backgroundColourId, lightGrey);
+    setColour(juce::Label::textColourId, textDim);
 
-    setDefaultSansSerifTypefaceName("Bahnschrift");
+    // buttons - accent is used for active/on state border, not fill
+    setColour(juce::TextButton::ColourIds::textColourOffId, text);
+    setColour(juce::TextButton::ColourIds::textColourOnId, accent);
+    setColour(juce::TextButton::ColourIds::buttonColourId, btnSurf);
+    setColour(juce::TextButton::ColourIds::buttonOnColourId, accent);
 
-    // buttons
-    setColour(juce::TextButton::ColourIds::textColourOffId, lightGrey);
-    setColour(juce::TextButton::ColourIds::textColourOnId, yellow);
-    setColour(juce::TextButton::ColourIds::buttonColourId, darkGrey);
-    setColour(juce::TextButton::ColourIds::buttonOnColourId, yellow);
-
-    setColour(DrawableButton::ColourIds::backgroundColourId, darkGrey);
-    setColour(DrawableButton::ColourIds::backgroundOnColourId, darkGrey);
+    setColour(DrawableButton::ColourIds::backgroundColourId, btnSurf);
+    setColour(DrawableButton::ColourIds::backgroundOnColourId, btnSurf);
 
     // tracks
-    setColour(TrackComponent::ColourIds::backgroundColourId, darkGrey);
-    setColour(TrackComponent::ColourIds::activeBackgroundColourId, lightGrey);
-    setColour(TrackComponent::ColourIds::outlineColourId, yellow);
+    setColour(TrackComponent::ColourIds::backgroundColourId, bgInner);
+    setColour(TrackComponent::ColourIds::activeBackgroundColourId, panel);
+    setColour(TrackComponent::ColourIds::outlineColourId, accent);
 
     // level meters
     setupDefaultMeterColours();
-    setColour(FFAU::LevelMeter::lmMeterGradientLowColour, juce::Colours::green);
-    setColour(FFAU::LevelMeter::lmBackgroundColour, darkGrey);
-    setColour(FFAU::LevelMeter::lmMeterBackgroundColour, lightGrey);
+    setColour(FFAU::LevelMeter::lmMeterGradientLowColour, t.accentDim);
+    setColour(FFAU::LevelMeter::lmBackgroundColour, bgOuter);
+    setColour(FFAU::LevelMeter::lmMeterBackgroundColour, t.meterBg);
 
     // combo boxes
-    setColour(juce::ComboBox::backgroundColourId, darkGrey);
-    setColour(juce::ComboBox::arrowColourId, lightGrey);
-    setColour(juce::ComboBox::textColourId, lightGrey);
-    setColour(juce::ComboBox::focusedOutlineColourId, yellow);
-    setColour(juce::ComboBox::buttonColourId, darkGrey);
-    setColour(juce::ComboBox::outlineColourId, deepDarkGrey);
+    setColour(juce::ComboBox::backgroundColourId, btnSurf);
+    setColour(juce::ComboBox::arrowColourId, textDim);
+    setColour(juce::ComboBox::textColourId, text);
+    setColour(juce::ComboBox::focusedOutlineColourId, accent);
+    setColour(juce::ComboBox::buttonColourId, btnSurf);
+    setColour(juce::ComboBox::outlineColourId, divider);
 
-    // menu bar
-    setColour(juce::PopupMenu::ColourIds::backgroundColourId, darkGrey);
-    setColour(juce::PopupMenu::ColourIds::highlightedBackgroundColourId, lightGrey);
-    setColour(juce::PopupMenu::ColourIds::textColourId, lightGrey);
-    setColour(juce::PopupMenu::ColourIds::highlightedTextColourId, yellow);
+    // menu bar / popup menus
+    setColour(juce::PopupMenu::ColourIds::backgroundColourId, panel);
+    setColour(juce::PopupMenu::ColourIds::highlightedBackgroundColourId, accent.withAlpha(0.15f));
+    setColour(juce::PopupMenu::ColourIds::textColourId, text);
+    setColour(juce::PopupMenu::ColourIds::highlightedTextColourId, accent);
 
     // sliders
-    setColour(juce::Slider::backgroundColourId, lightGrey);
-    setColour(juce::Slider::trackColourId, sliderLowerHalf);
-    setColour(juce::Slider::thumbColourId, yellow);
-    setColour(juce::Slider::textBoxOutlineColourId, darkGrey);
+    setColour(juce::Slider::backgroundColourId, track);
+    setColour(juce::Slider::trackColourId, accent.withAlpha(0.4f));
+    setColour(juce::Slider::thumbColourId, accent);
+    setColour(juce::Slider::textBoxOutlineColourId, btnSurf);
 
-    
     // progress bars
-    setColour(juce::ProgressBar::ColourIds::backgroundColourId, juce::Colour(0xff42403a));
-    setColour(juce::ProgressBar::ColourIds::foregroundColourId, yellow);
+    setColour(juce::ProgressBar::ColourIds::backgroundColourId, bgInner);
+    setColour(juce::ProgressBar::ColourIds::foregroundColourId, accent);
 
     // scroll bars
-    setColour(juce::ScrollBar::ColourIds::trackColourId, yellow);
-    setColour(juce::ScrollBar::ColourIds::thumbColourId, darkGrey);
-    setColour(juce::ScrollBar::ColourIds::backgroundColourId, lightGrey);
+    setColour(juce::ScrollBar::ColourIds::trackColourId, bgInner);
+    setColour(juce::ScrollBar::ColourIds::thumbColourId, textDim.withAlpha(0.3f));
+    setColour(juce::ScrollBar::ColourIds::backgroundColourId, bgOuter);
 }
 
 OrbishLookAndFeel::~OrbishLookAndFeel() {
-
 }
 
+//==============================================================================
+// Button rendering - uniform, restrained
+//==============================================================================
 
+static void drawCodeButton(juce::Graphics& g, juce::Button& button,
+                           juce::Colour fillColour, juce::Colour borderColour,
+                           float borderWidth, float cornerRadius) {
+    auto bounds = button.getLocalBounds().toFloat().reduced(1.5f);
+    g.setColour(fillColour);
+    g.fillRoundedRectangle(bounds, cornerRadius);
+    if (borderWidth > 0.0f) {
+        g.setColour(borderColour);
+        g.drawRoundedRectangle(bounds.reduced(borderWidth * 0.5f), cornerRadius, borderWidth);
+    }
+}
 
-void OrbishLookAndFeel::drawButtonBackground(juce::Graphics& g, juce::Button& button, const juce::Colour& backgroundColour, bool isHovering, bool isButtonDown) {
-    g.setColour(juce::Colour(0xff262626));
+void OrbishLookAndFeel::drawButtonBackground(juce::Graphics& g, juce::Button& button,
+                                              const juce::Colour& backgroundColour,
+                                              bool isHovering, bool isButtonDown) {
+    auto bgOuter = findColour(juce::ResizableWindow::backgroundColourId);
+    auto btnSurf = findColour(juce::TextButton::ColourIds::buttonColourId);
+    auto accent  = findColour(juce::TextButton::ColourIds::buttonOnColourId);
+    auto text    = findColour(juce::TextButton::ColourIds::textColourOffId);
+
+    bool isSquare = isSquareButton(&button);
+    float corner = isSquare ? 5.0f : 7.0f;
+
+    // Clear bg behind button
+    g.setColour(bgOuter);
     g.fillRect(button.getLocalBounds());
 
-    auto buttonShape = isSquareButton(&button) ? ButtonShape::SQUARE : ButtonShape::RECTANGULAR;
-
-    if (isPushButton(&button)){
-        if (isHovering) {
-            button.setColour(TextButton::textColourOffId, Colours::whitesmoke);
-            button.setColour(TextButton::textColourOnId, Colours::whitesmoke);
+    if (isPushButton(&button)) {
+        if (isButtonDown) {
+            drawCodeButton(g, button, btnSurf.contrasting(0.08f), accent.withAlpha(0.5f), 0.5f, corner);
+        } else if (isHovering) {
+            drawCodeButton(g, button, btnSurf.contrasting(0.06f), text.withAlpha(0.12f), 0.5f, corner);
+        } else {
+            drawCodeButton(g, button, btnSurf, text.withAlpha(0.08f), 0.5f, corner);
         }
-        else {
-            button.setColour(TextButton::textColourOffId, findColour(TextButton::textColourOffId));
-            button.setColour(TextButton::textColourOnId, findColour(TextButton::textColourOffId));
+    } else {
+        // Toggle button
+        bool on = button.getToggleState();
+        if (on && isButtonDown) {
+            drawCodeButton(g, button, accent.withAlpha(0.12f), accent.withAlpha(0.7f), 0.5f, corner);
+        } else if (isButtonDown) {
+            drawCodeButton(g, button, btnSurf.contrasting(0.08f), accent.withAlpha(0.5f), 0.5f, corner);
+        } else if (on && isHovering) {
+            drawCodeButton(g, button, accent.withAlpha(0.10f), accent, 0.5f, corner);
+        } else if (isHovering) {
+            drawCodeButton(g, button, btnSurf.contrasting(0.06f), text.withAlpha(0.12f), 0.5f, corner);
+        } else if (on) {
+            drawCodeButton(g, button, accent.withAlpha(0.06f), accent, 0.5f, corner);
+        } else {
+            drawCodeButton(g, button, btnSurf, text.withAlpha(0.08f), 0.5f, corner);
         }
-        drawPushButton(g, button, backgroundColour, isHovering, isButtonDown, buttonShape);
-    }
-    else{
-        if (isHovering) {
-            button.setColour(TextButton::textColourOffId, Colours::whitesmoke);
-            button.setColour(TextButton::textColourOnId, Colours::whitesmoke);
-        }
-        else {
-            button.setColour(TextButton::textColourOffId, findColour(TextButton::textColourOffId));
-            button.setColour(TextButton::textColourOnId, findColour(TextButton::textColourOnId));
-        }
-        drawToggleButton(g, button, backgroundColour, isHovering, isButtonDown, buttonShape);
     }
 }
 
@@ -165,7 +166,6 @@ void OrbishLookAndFeel::drawProgressBar(Graphics& g, ProgressBar& progressBar, i
     }
     else
     {
-        // spinning bar..
         g.setColour(background);
 
         auto stripeWidth = height * 2;
@@ -200,41 +200,8 @@ void OrbishLookAndFeel::drawProgressBar(Graphics& g, ProgressBar& progressBar, i
     }
 }
 
-void OrbishLookAndFeel::drawPushButton(juce::Graphics& g, juce::Button& button, const juce::Colour& backgroundColour, bool isHovering, bool isButtonDown, ButtonShape shape){
-    Image image;
-    if (isButtonDown) {
-        image = getImageForButton(shape, ButtonState::CLICKED);
-    }
-    else if (isHovering) {
-        image = getImageForButton(shape, ButtonState::HOVERING);
-    }
-    else {
-        image = getImageForButton(shape, ButtonState::BASE);
-    }
-    auto bounds = button.getLocalBounds();
-    g.drawImageWithin(image, 0, 0, bounds.getWidth(), bounds.getHeight(), RectanglePlacement(), false);
-}
-
-void OrbishLookAndFeel::drawToggleButton(juce::Graphics& g, juce::Button& button, const juce::Colour& backgroundColour, bool isHovering, bool isButtonDown, ButtonShape shape) {
-    Image image;
-    if ((button.getToggleState() && isButtonDown)) {
-        image = getImageForButton(shape, ButtonState::HOVERING);
-    }
-    else if (isButtonDown || (button.getToggleState() && isHovering)) {
-        image = getImageForButton(shape, ButtonState::CLICKED);
-    }
-    else if (isHovering) {
-        image = getImageForButton(shape, ButtonState::HOVERING);
-    }
-    else if (button.getToggleState()) {
-        image = getImageForButton(shape, ButtonState::ACTIVE);
-    }
-    else {
-        image = getImageForButton(shape, ButtonState::BASE);
-    }
-    auto bounds = button.getLocalBounds();
-    g.drawImageWithin(image, 0, 0, bounds.getWidth(), bounds.getHeight(), RectanglePlacement(), false);
-}
+void OrbishLookAndFeel::drawPushButton(juce::Graphics&, juce::Button&, const juce::Colour&, bool, bool, ButtonShape) {}
+void OrbishLookAndFeel::drawToggleButton(juce::Graphics&, juce::Button&, const juce::Colour&, bool, bool, ButtonShape) {}
 
 bool OrbishLookAndFeel::isPushButton(juce::Button* button){
     if (auto orbishButton = dynamic_cast<CustomButton*>(button)) {
@@ -254,111 +221,69 @@ bool OrbishLookAndFeel::isSquareButton(juce::Button* button) {
     return false;
 }
 
-Image OrbishLookAndFeel::getImageForButton(ButtonShape shape, ButtonState state){
-    if (shape == ButtonShape::SQUARE){
-        switch (state) {
-            case ButtonState::BASE: return ImageFileFormat::loadFrom(BinaryData::squarebuttonbase_png, BinaryData::squarebuttonbase_pngSize);
-            case ButtonState::HOVERING: return ImageFileFormat::loadFrom(BinaryData::squarebuttonbasehover_png, BinaryData::squarebuttonbasehover_pngSize);
-            case ButtonState::CLICKED: return ImageFileFormat::loadFrom(BinaryData::squarebuttonbaseclicked_png, BinaryData::squarebuttonbaseclicked_pngSize);
-            case ButtonState::ACTIVE: return ImageFileFormat::loadFrom(BinaryData::squarebuttonbaseactive_png, BinaryData::squarebuttonbaseactive_pngSize);
-        }
-    }
-    else{
-        switch (state) {
-        case ButtonState::BASE: return ImageFileFormat::loadFrom(BinaryData::buttonbase_png, BinaryData::buttonbase_pngSize);
-        case ButtonState::HOVERING: return ImageFileFormat::loadFrom(BinaryData::buttonbasehover_png, BinaryData::buttonbasehover_pngSize);
-        case ButtonState::CLICKED: return ImageFileFormat::loadFrom(BinaryData::buttonbaseclicked_png, BinaryData::buttonbaseclicked_pngSize);
-        case ButtonState::ACTIVE: return ImageFileFormat::loadFrom(BinaryData::buttonbaseactive_png, BinaryData::buttonbaseactive_pngSize);
-        }
-    }
-    return ImageFileFormat::loadFrom(BinaryData::buttonbase_png, BinaryData::buttonbase_pngSize);
+Image OrbishLookAndFeel::getImageForButton(ButtonShape, ButtonState){
+    return {};
 }
+
+//==============================================================================
+// Slider rendering
+//==============================================================================
 
 int OrbishLookAndFeel::getSliderPopupPlacement (Slider&)
 {
     return BubbleComponent::below;
 }
 
-void OrbishLookAndFeel::drawLinearSliderThumb (Graphics & g, int x, int y, int width, int height, float sliderPos, float minSliderPos, float maxSliderPos, const Slider::SliderStyle style, Slider & slider) {
-    Image image;
-    int w, h;
-    float ratio;
-    if(width==0 || height == 0)return;
-    if(style == Slider::LinearBarVertical ){
-        image = ImageFileFormat::loadFrom(BinaryData::sliderhandle_png, BinaryData::sliderhandle_pngSize);
-        ratio = image.getWidth() / (width>1?width:1);
-        image = image.rescaled(width, (image.getHeight()>ratio?image.getHeight()/ratio:1));
-        y = sliderPos - image.getHeight() * .5f;
-        w = width;
-        h = image.getHeight();
-    }else if (style == Slider::LinearHorizontal){
-        image = ImageFileFormat::loadFrom(BinaryData::sliderhandle90_png, BinaryData::sliderhandle90_pngSize);
-        ratio = image.getHeight() / height;
-        image = image.rescaled(image.getWidth()/ratio, height);
-        x = sliderPos - image.getWidth() * .5f;
-        w = image.getWidth();
-        h = height;
-    }else{
-        w = width;
-        h = height;
+void OrbishLookAndFeel::drawLinearSliderThumb(Graphics& g, int x, int y, int width, int height,
+                                               float sliderPos, float minSliderPos, float maxSliderPos,
+                                               const Slider::SliderStyle style, Slider& slider) {
+    if (width == 0 || height == 0) return;
+
+    auto thumbColour = slider.findColour(Slider::thumbColourId);
+    const float dotRadius = 3.5f;
+
+    if (style == Slider::LinearBarVertical) {
+        float cx = (float)x + (float)width * 0.5f;
+        g.setColour(thumbColour);
+        g.fillEllipse(cx - dotRadius, sliderPos - dotRadius, dotRadius * 2.0f, dotRadius * 2.0f);
+    } else if (style == Slider::LinearHorizontal) {
+        float cy = (float)y + (float)height * 0.5f;
+        g.setColour(thumbColour);
+        g.fillEllipse(sliderPos - dotRadius, cy - dotRadius, dotRadius * 2.0f, dotRadius * 2.0f);
     }
-
-
-    g.drawImageWithin(image
-                      , x
-                      , y
-                      , w, h, RectanglePlacement(), false);
 }
 
-//==============================================================================
 void OrbishLookAndFeel::drawLinearSliderBackground (Graphics& g, int x, int y, int width, int height,
                                                  float sliderPos,
                                                  float minSliderPos,
                                                  float maxSliderPos,
                                                  const Slider::SliderStyle style, Slider& slider)
 {
-    auto sliderRadius = (float) (getSliderThumbRadius (slider) - 2);
- //   auto gradCol1 = trackColour.overlaidWith (Colours::black.withAlpha (slider.isEnabled() ? 0.25f : 0.13f));
- //   auto gradCol2 = trackColour.overlaidWith (Colour (0x14000000));
+    auto trackBg = slider.findColour(Slider::backgroundColourId);
+    auto trackFill = slider.findColour(Slider::trackColourId);
+    const float trackThickness = 2.0f;
 
-    Path emptyBarPart;
-    Path fullBarPart;
-    
-    const float ix = (float) x + (float) width * 0.5f - sliderRadius * 0.5f;
-    const float iw = sliderRadius;
-    const float iy = (float) x + (float) height * 0.5f - sliderRadius * 0.5f;
-    const float ih = sliderRadius;
-
- //       g.setGradientFill (ColourGradient::horizontal (gradCol1, ix, gradCol2, ix + iw));
-    if(style == Slider::LinearBarVertical ){
-        emptyBarPart.addRoundedRectangle (ix
-                                        , (float) y - sliderRadius * 0.5f
-                                        ,iw
-                                        , (float) sliderPos
-                                        , 5.0f);
-        fullBarPart.addRoundedRectangle (ix
-                                         , sliderPos
-                                         , iw
-                                         , (float) height - sliderPos
-                                         , 5.0f);
-    }else if (style == Slider::LinearHorizontal){
-        emptyBarPart.addRoundedRectangle ((float) x - sliderRadius * 0.5f
-                                          , iy
-                                          , (float) sliderPos
-                                          , ih
-                                          , 5.0f);
-        fullBarPart.addRoundedRectangle (sliderPos
-                                         , iy
-                                         ,(float) width - sliderPos
-                                         , ih
-                                         , 5.0f);
+    if (style == Slider::LinearBarVertical) {
+        float cx = (float)x + (float)width * 0.5f;
+        float top = (float)y;
+        float bottom = (float)(y + height);
+        // Empty (above thumb)
+        g.setColour(trackBg);
+        g.fillRoundedRectangle(cx - trackThickness * 0.5f, top, trackThickness, sliderPos - top, 1.0f);
+        // Filled (below thumb)
+        g.setColour(trackFill);
+        g.fillRoundedRectangle(cx - trackThickness * 0.5f, sliderPos, trackThickness, bottom - sliderPos, 1.0f);
+    } else if (style == Slider::LinearHorizontal) {
+        float cy = (float)y + (float)height * 0.5f;
+        float left = (float)x;
+        float right = (float)(x + width);
+        // Filled (left of thumb)
+        g.setColour(trackFill);
+        g.fillRoundedRectangle(left, cy - trackThickness * 0.5f, sliderPos - left, trackThickness, 1.0f);
+        // Empty (right of thumb)
+        g.setColour(trackBg);
+        g.fillRoundedRectangle(sliderPos, cy - trackThickness * 0.5f, right - sliderPos, trackThickness, 1.0f);
     }
-
-    g.setColour(slider.findColour(Slider::backgroundColourId));
-    g.fillPath (emptyBarPart);
-    g.setColour(slider.findColour(Slider::trackColourId));
-    g.fillPath (fullBarPart);
-
 }
 
 
@@ -366,21 +291,18 @@ void OrbishLookAndFeel::drawLinearSlider (Graphics& g, int x, int y, int width, 
                                        float sliderPos, float minSliderPos, float maxSliderPos,
                                        const Slider::SliderStyle style, Slider& slider)
 {
-
         drawLinearSliderBackground (g, x, y, width, height, sliderPos, minSliderPos, maxSliderPos, style, slider);
-        drawLinearSliderThumb (g, x
-                               , y
-                               , (float) width
-                               , (float) height
-                               , sliderPos, minSliderPos, maxSliderPos, style, slider);
+        drawLinearSliderThumb (g, x, y, width, height, sliderPos, minSliderPos, maxSliderPos, style, slider);
 }
 
 int OrbishLookAndFeel::getSliderThumbRadius (Slider& slider)
 {
-    return jmin (7,
-                 slider.getHeight() / 2,
-                 slider.getWidth() / 2) + 2;
+    return 4;
 }
+
+//==============================================================================
+// Popup menu overrides
+//==============================================================================
 
 int OrbishLookAndFeel::getPopupMenuColumnSeparatorWidthWithOptions(PopupMenu::Options const&)
 {
@@ -411,7 +333,6 @@ void OrbishLookAndFeel::drawPopupMenuSectionHeaderWithOptions(juce::Graphics&, j
 
 void OrbishLookAndFeel::drawPopupMenuItemWithOptions(juce::Graphics& g, juce::Rectangle<int> const& r, bool b, juce::PopupMenu::Item const& item, juce::PopupMenu::Options const& options)
 {
-	//LookAndFeel_V2::drawPopupMenuItemWithOptions(g, r, b, item, options);
 	const auto colour = item.colour != Colour() ? &item.colour : nullptr;
 	const auto hasSubMenu = item.subMenu != nullptr
 		&& (item.itemID == 0 || item.subMenu->getNumItems() > 0);
@@ -428,9 +349,6 @@ void OrbishLookAndFeel::drawPopupMenuItemWithOptions(juce::Graphics& g, juce::Re
 		item.image.get(),
 		colour);
 }
-//Font LookAndFeel_V2::getPopupMenuFont() {
-//	return Font(getLabelFont())
-//}
 
 void OrbishLookAndFeel::drawMenuBarItem(Graphics& g, int width, int height,
 	int itemIndex,
@@ -447,11 +365,21 @@ void OrbishLookAndFeel::drawPopupMenuBackgroundWithOptions(juce::Graphics& g, in
 	LookAndFeel_V2::drawPopupMenuBackgroundWithOptions(g, x, y, options);
 }
 
-//void OrbishLookAndFeel::drawBubble (Graphics& g, BubbleComponent& b,
-//                         const Point<float>& positionOfTip,
-//                                            const Rectangle<float>& body) {
-//    if (!b.isCurrentlyModal()) {
-//        b.enterModalState();
-//    }
-//}
+//==============================================================================
+// Shiny button fallback (required by LookAndFeel_V3)
+//==============================================================================
 
+void OrbishLookAndFeel::drawShinyButtonShape(Graphics& g,
+    float x, float y, float w, float h, float maxCornerSize,
+    const Colour& baseColour, float strokeWidth,
+    bool flatOnLeft, bool flatOnRight, bool flatOnTop, bool flatOnBottom) noexcept
+{
+    auto bounds = Rectangle<float>(x, y, w, h).reduced(1.0f);
+    float corner = jmin(maxCornerSize, bounds.getWidth() * 0.5f, bounds.getHeight() * 0.5f);
+    g.setColour(baseColour);
+    g.fillRoundedRectangle(bounds, corner);
+    if (strokeWidth > 0.0f) {
+        g.setColour(baseColour.darker(0.2f));
+        g.drawRoundedRectangle(bounds, corner, strokeWidth);
+    }
+}

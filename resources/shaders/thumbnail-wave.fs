@@ -4,6 +4,7 @@ uniform float  totalScope;
 uniform float windowForLog;
 uniform vec2  resolution;
 uniform vec2  origin;
+uniform vec3  waveColour;
 
 uniform float audioSampleData[1000];
 
@@ -49,5 +50,19 @@ void main()
     }else{
         intensity = 0;
     }
-     gl_FragColor = vec4 (0.9921875, 0.8398438 - (.45-coeff *.8) , 0.0585938  , intensity);
+    // Horizontal gradient fade: soft edges at left/right extremities
+    float nx = pixelLocal.x / resolution.x; // 0..1 across width
+    float fadeIn  = smoothstep(0.0, 0.15, nx);       // 0→1 over first 15%
+    float fadeOut = smoothstep(0.0, 0.15, 1.0 - nx); // 1→0 over last 15%
+    float hFade = fadeIn * fadeOut * 0.85 + 0.15;     // range: 0.15 .. 1.0
+
+    // Rounded corner mask (10px radius)
+    float radius = 10.0;
+    vec2 p = pixelLocal;
+    vec2 sz = resolution;
+    vec2 q = abs(p - sz * 0.5) - (sz * 0.5 - vec2(radius));
+    float dist = length(max(q, 0.0)) - radius;
+    float cornerAlpha = 1.0 - smoothstep(-1.0, 1.0, dist);
+
+    gl_FragColor = vec4(waveColour.r, waveColour.g - (.45-coeff *.8), waveColour.b, intensity * hFade * cornerAlpha);
 }

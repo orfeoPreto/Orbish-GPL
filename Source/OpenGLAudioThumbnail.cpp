@@ -9,6 +9,7 @@
 */
 #include "OpenGLAudioThumbnail.h"
 #include "Orbish.h"
+#include "OrbishTheme.h"
 #include <JuceHeader.h>
 
 using namespace juce::gl;
@@ -24,7 +25,7 @@ OpenGLAudioThumbnail::OpenGLAudioThumbnail (std::atomic<float> &offset, bool fra
 
     shaderThumbnailWave = nullptr;
     readBuffer = std::make_unique<AudioSampleBuffer>(2,0);
-    bgColour = juce::Colour{0xff000011};
+    bgColour = juce::Colour{0xff0b0b0f}; // outer bg - inner bg drawn with rounding in shader
 //    auto grbl = std::make_unique<OpenGLShaderProgram> (*openGLContext);
 
 //    setAlpha(0);
@@ -65,6 +66,11 @@ void OpenGLAudioThumbnail::setUniforms(){
     }else{
         shader->uniforms->reverse->set (true);
     }
+    // Pass inner background color for rounded-rect fill in playhead shader
+    if (shader->uniforms->bgColour) {
+        shader->uniforms->bgColour->set(
+            innerBgColour.getFloatRed(), innerBgColour.getFloatGreen(), innerBgColour.getFloatBlue());
+    }
 }
 
 OpenGLAudioThumbnail::~OpenGLAudioThumbnail(){
@@ -72,22 +78,43 @@ OpenGLAudioThumbnail::~OpenGLAudioThumbnail(){
 }
 
 void OpenGLAudioThumbnail::activate(){
-    OpenGLComponent::bgColour = Colour{0xff000000};
+    if (orbishContext) {
+        auto theme = orbishThemeColours(static_cast<OrbishThemeId>(orbishContext->themeId.load(std::memory_order_relaxed)));
+        innerBgColour = theme.thumbnailBgActive;
+        bgColour = theme.backgroundOuter; // clear with outer bg for rounded corners
+    } else {
+        innerBgColour = Colour{0xff070709};
+    }
 }
 void OpenGLAudioThumbnail::deactivate(){
-    OpenGLComponent::bgColour = Colour{0xff565656};
+    if (orbishContext) {
+        auto theme = orbishThemeColours(static_cast<OrbishThemeId>(orbishContext->themeId.load(std::memory_order_relaxed)));
+        innerBgColour = theme.thumbnailBgInactive;
+        bgColour = theme.backgroundOuter;
+    } else {
+        innerBgColour = Colour{0xff16161c};
+    }
 }
 
 void OpenGLAudioThumbnail::prepareActivation() {
-	//logMessage("prepare activation");
-
-	OpenGLComponent::bgColour = Colour{ 0xff333300 + OpenGLComponent::bgColour.getARGB() };
+	if (orbishContext) {
+	    auto theme = orbishThemeColours(static_cast<OrbishThemeId>(orbishContext->themeId.load(std::memory_order_relaxed)));
+	    auto tinted = theme.thumbnailBgInactive.interpolatedWith(theme.thumbnailBgActive, 0.5f);
+	    innerBgColour = tinted;
+	    bgColour = theme.backgroundOuter;
+	} else {
+	    innerBgColour = Colour{ 0xff333300 + innerBgColour.getARGB() };
+	}
 }
 
 void OpenGLAudioThumbnail::unPrepareActivation() {
-	//logMessage("unprepare activation");
-
-	OpenGLComponent::bgColour = Colour{ OpenGLComponent::bgColour.getARGB() - 0xff333300 };
+	if (orbishContext) {
+	    auto theme = orbishThemeColours(static_cast<OrbishThemeId>(orbishContext->themeId.load(std::memory_order_relaxed)));
+	    innerBgColour = theme.thumbnailBgInactive;
+	    bgColour = theme.backgroundOuter;
+	} else {
+	    innerBgColour = Colour{ innerBgColour.getARGB() - 0xff333300 };
+	}
 }
 
 
@@ -110,6 +137,11 @@ void OpenGLAudioThumbnail::renderOpenGL() {
             shaderThumbnailWave->use();
             // set up the uniforms for use in shader
             shaderThumbnailWave->uniforms->resolution->set ((GLfloat) width, (GLfloat) height);
+            if (shaderThumbnailWave->uniforms->waveColour) {
+                auto theme = orbishContext ? orbishThemeColours(static_cast<OrbishThemeId>(orbishContext->themeId.load(std::memory_order_relaxed)))
+                                           : orbishThemeColours(OrbishThemeId::ObsidianGold);
+                shaderThumbnailWave->uniforms->waveColour->set(theme.waveR, theme.waveG, theme.waveB);
+            }
             if (!reverse) {
                 for(auto i=0;i<BUFFER_READ_SIZE;++i){
                     flattenedVisualizationBuffer[i] = sourceLoop->flattenedVisualizationBuffer[BUFFER_READ_SIZE-(i+1)];
@@ -145,6 +177,11 @@ void OpenGLAudioThumbnail::renderOpenGL() {
                     shaderThumbnailWave->use();
                     // set up the uniforms for use in shader
                     shaderThumbnailWave->uniforms->resolution->set ((GLfloat) width, (GLfloat) height);
+                    if (shaderThumbnailWave->uniforms->waveColour) {
+                        auto theme = orbishContext ? orbishThemeColours(static_cast<OrbishThemeId>(orbishContext->themeId.load(std::memory_order_relaxed)))
+                                                   : orbishThemeColours(OrbishThemeId::ObsidianGold);
+                        shaderThumbnailWave->uniforms->waveColour->set(theme.waveR, theme.waveG, theme.waveB);
+                    }
                     shaderThumbnailWave->uniforms->audioSampleData->set (vb, BUFFER_READ_SIZE);
                     shaderThumbnailWave->uniforms->origin->set ((GLfloat) x, (GLfloat) y);
                     float coeff = 0;

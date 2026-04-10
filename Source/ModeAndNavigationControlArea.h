@@ -13,6 +13,7 @@
 #include <JuceHeader.h>
 #include "ModeControlArea.h"
 #include "NavigationControlArea.h"
+#include "exu/Label.hpp"
 
 //==============================================================================
 /*
@@ -26,6 +27,7 @@ public:
     void paint (juce::Graphics&) override;
     void resized() override;
 
+    juce::Label titleLabel{ "Mode & Nav" };
     NavigationControlArea navigationControlArea{};
     ModeControlArea modeControlArea{};
 

@@ -2,7 +2,7 @@
 
 SettingsPage::SettingsPage() {}
 
-SettingsPage::SettingsPage(bool monitoring, bool loggingActive, int maxHistory, int tracksPerRow, int latency, int numVisibleLayers) {
+SettingsPage::SettingsPage(bool monitoring, bool loggingActive, int maxHistory, int tracksPerRow, int latency, int numVisibleLayers, int themeId) {
 	addAndMakeVisible(settingsCentre);
 	activateLoggingButton.setClickingTogglesState(true);
 	activateLoggingButton.addListener(this);
@@ -83,6 +83,14 @@ SettingsPage::SettingsPage(bool monitoring, bool loggingActive, int maxHistory, 
 	settingsCentre.addAndMakeVisible(activateLoggingLabel);
     monitoringLabel.setText("Post Mix Monitoring: ", NotificationType::dontSendNotification);
     settingsCentre.addAndMakeVisible(monitoringLabel);
+
+    themeLabel.setText("Theme: ", NotificationType::dontSendNotification);
+    settingsCentre.addAndMakeVisible(themeLabel);
+    for (int i = 0; i < static_cast<int>(OrbishThemeId::COUNT); ++i)
+        themeCombo.addItem(orbishThemeName(static_cast<OrbishThemeId>(i)), i + 1);
+    themeCombo.setSelectedId(themeId + 1, NotificationType::dontSendNotification);
+    themeCombo.addListener(this);
+    settingsCentre.addAndMakeVisible(themeCombo);
 }
 SettingsPage::~SettingsPage() {
 }
@@ -91,9 +99,10 @@ void SettingsPage::addListener(Listener* l) { settingsPageListeners.add(l); }
 void SettingsPage::removeListener(Listener* l) { settingsPageListeners.remove(l); }
 
 void SettingsPage::paint(Graphics& g){
-	RectangleList<float> rects;
+	auto themeIdx = static_cast<OrbishThemeId>(themeCombo.getSelectedId() - 1);
+	auto theme = orbishThemeColours(themeIdx);
 
-	g.setColour(Colour(0xA0ffffff));
+	g.setColour(theme.settingsOverlay);
 	g.fillRect(right.getBounds());
 	g.fillRect(left.getBounds());
 	g.fillRect(top.getBounds());
@@ -121,7 +130,9 @@ maxUndoHistorySlider.setBounds(200, 70, 100, 15);
     activateLoggingButton.setBounds(200,172,100,30);
     monitoringLabel.setBounds(20, 205, 150, 15);
     monitoringButton.setBounds(200,202,100,30);
-    
+    themeLabel.setBounds(20, 245, 150, 15);
+    themeCombo.setBounds(200, 242, 150, 24);
+
 }
 void SettingsPage::buttonClicked(Button* button){
 	for (auto i = 0;i < settingsPageListeners.size();++i) {
@@ -131,6 +142,11 @@ void SettingsPage::buttonClicked(Button* button){
 void SettingsPage::sliderValueChanged(Slider* slider) {
 	for (auto i = 0;i < settingsPageListeners.size();++i) {
 		settingsPageListeners.call([this, slider](Listener& l) { l.sliderChanged(slider); });
+	}
+}
+void SettingsPage::comboBoxChanged(ComboBox* comboBox) {
+	for (auto i = 0; i < settingsPageListeners.size(); ++i) {
+		settingsPageListeners.call([this, comboBox](Listener& l) { l.comboChanged(comboBox); });
 	}
 }
 void SettingsPage::changeListenerCallback(ChangeBroadcaster* source){

@@ -26,12 +26,15 @@ public:
     bool isIconButton();
     
     void setIcon(Image icon);
-    
+    void setIconOff(Image icon);
+
     void paintButton(Graphics&, bool, bool) override;
-    
+
 private:
     bool pushButton = false;
     bool squareButton = false;
     bool iconButton = false;
     Image icon;
+    Image iconOff;
+    bool hasIconOff = false;
 };

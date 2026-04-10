@@ -4,6 +4,7 @@
 #include "Orbish.h"
 //#include "Loop.h"
 #endif
+#include "OrbishTheme.h"
 
 #define DEBUG_MODE 1
 //#include <thread>
@@ -114,6 +115,7 @@ public:
     float maxDelta = 0.1;
     bool skipAlign = false;
     int numVisibleLayers = 5;
+    std::atomic<int> themeId{0}; // OrbishThemeId cast to int
     
     inline double quartersToSamples(double position)
     {

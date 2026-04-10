@@ -60,10 +60,7 @@ OutputControlArea::~OutputControlArea(){
 }
 
 void OutputControlArea::paint (juce::Graphics& g){
-    g.fillAll (getLookAndFeel().findColour (juce::ResizableWindow::backgroundColourId));   // clear the background
-
-    g.setColour (juce::Colours::black);
-    g.drawRoundedRectangle(getLocalBounds().reduced(5).toFloat(), 4.0f, 1.0f);   // draw an outline around the component
+    // Panel background drawn by parent ButtonControlArea
 }
 
 void OutputControlArea::resized(){

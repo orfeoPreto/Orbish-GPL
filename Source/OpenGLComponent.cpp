@@ -28,7 +28,7 @@ vertices{
     shader = nullptr;
     setOpaque(true);
     setAlpha(255);
-    bgColour = Colour{0xff262626};
+    bgColour = Colour{0xff0b0b0f};
 //    bgColour = getLookAndFeel().findColour (ResizableWindow::backgroundColourId);
 }
 
@@ -178,6 +178,11 @@ void OpenGLComponent::setUniforms(){
     shader->uniforms->resolution->set ((GLfloat) width, (GLfloat) height);
     shader->uniforms->offset->set ((GLfloat) fractionOfTotal? (float)offset.get() * getTotalLength(): (float)offset.get());
     shader->uniforms->origin->set ((GLfloat) x, (GLfloat) y);
+    if (shader->uniforms->waveColour) {
+        auto theme = orbishContext ? orbishThemeColours(static_cast<OrbishThemeId>(orbishContext->themeId.load(std::memory_order_relaxed)))
+                                   : orbishThemeColours(OrbishThemeId::ObsidianGold);
+        shader->uniforms->waveColour->set(theme.waveR, theme.waveG, theme.waveB);
+    }
 }
 
 void OpenGLComponent::setOffset(std::reference_wrapper<std::atomic<float>> position){
@@ -190,6 +195,10 @@ bool OpenGLComponent::isInitialized(){
 
 void OpenGLComponent::setContext(std::shared_ptr<OrbishContext> ctxt) {
 	orbishContext = ctxt;
+	if (orbishContext) {
+	    auto theme = orbishThemeColours(static_cast<OrbishThemeId>(orbishContext->themeId.load(std::memory_order_relaxed)));
+	    bgColour = theme.backgroundOuter;
+	}
 }
 
 void OpenGLComponent::logMessage(String message) {

@@ -28,7 +28,8 @@ void InfoAndControlArea::paint (juce::Graphics&){
 
 void InfoAndControlArea::resized(){
     auto bounds = getLocalBounds();
-    infoArea.setBounds(bounds.removeFromLeft(150));
+    // InfoArea sidebar hidden - its data is shown in the header bar instead
+    infoArea.setBounds(0, 0, 0, 0);
     controlArea.setBounds(bounds);
 }
 
