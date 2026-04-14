@@ -29,6 +29,11 @@ ButtonControlArea::ButtonControlArea(){
     addAndMakeVisible(globalControlArea.pitchDownButton);
     addAndMakeVisible(globalControlArea.pitchUpButton);
     addAndMakeVisible(globalControlArea.pitchReadout);
+    addAndMakeVisible(globalControlArea.tsLabel);
+    addAndMakeVisible(globalControlArea.tsNumeratorButton);
+    addAndMakeVisible(globalControlArea.tsPrimeButton);
+    addAndMakeVisible(globalControlArea.tsDenominatorButton);
+    addAndMakeVisible(globalControlArea.tsReadout);
     addAndMakeVisible(globalControlArea.midiLearnButton);
 }
 
@@ -61,9 +66,9 @@ void ButtonControlArea::paint (juce::Graphics& g){
     auto drawPanel = [&](juce::Rectangle<int> area) {
         if (area.isEmpty()) return;
         auto panelBounds = area.reduced(4).toFloat();
-        g.setColour(btnSurf.withAlpha(0.25f));
+        g.setColour(btnSurf.withAlpha(0.35f));
         g.fillRoundedRectangle(panelBounds, 10.0f);
-        g.setColour(accent.withAlpha(0.08f));
+        g.setColour(accent.withAlpha(0.12f));
         g.drawRoundedRectangle(panelBounds, 10.0f, 0.5f);
     };
 
@@ -87,6 +92,24 @@ void ButtonControlArea::paint (juce::Graphics& g){
         g.fillRoundedRectangle(utilBounds, 8.0f);
         g.setColour(accent.withAlpha(0.06f));
         g.drawRoundedRectangle(utilBounds, 8.0f, 0.5f);
+    }
+
+    // Time signature group highlight
+    if (!tsGroupBounds.isEmpty()) {
+        auto tsRect = tsGroupBounds.toFloat();
+        g.setColour(btnSurf.withAlpha(0.25f));
+        g.fillRoundedRectangle(tsRect, 6.0f);
+        g.setColour(accent.withAlpha(0.15f));
+        g.drawRoundedRectangle(tsRect, 6.0f, 0.5f);
+
+        // Draw the common time icon at the label position
+        if (globalControlArea.tsLabelIcon.isValid()) {
+            auto labelBounds = globalControlArea.tsLabel.getBoundsInParent();
+            auto iconBounds = labelBounds.reduced(2).toFloat();
+            g.setColour(findColour(juce::TextButton::ColourIds::textColourOffId).withAlpha(0.7f));
+            g.drawImage(globalControlArea.tsLabelIcon, iconBounds,
+                        RectanglePlacement::centred, true);
+        }
     }
 }
 
@@ -143,6 +166,19 @@ void ButtonControlArea::resized(){
     globalControlArea.pitchDownButton.setBounds(strip.removeFromLeft(btnW).reduced(1, 2));
     globalControlArea.pitchReadout.setBounds(strip.removeFromLeft(44).reduced(0, 2));
     globalControlArea.pitchUpButton.setBounds(strip.removeFromLeft(btnW).reduced(1, 2));
+    strip.removeFromLeft(8);
+
+    // Time signature group: label | numerator | prime | readout | denominator
+    auto tsGroupStart = strip.getX();
+    globalControlArea.tsLabel.setBounds(strip.removeFromLeft(24).reduced(0, 2));
+    strip.removeFromLeft(2);
+    globalControlArea.tsNumeratorButton.setBounds(strip.removeFromLeft(btnW).reduced(1, 2));
+    globalControlArea.tsPrimeButton.setBounds(strip.removeFromLeft(btnW).reduced(1, 2));
+    globalControlArea.tsReadout.setBounds(strip.removeFromLeft(36).reduced(0, 2));
+    globalControlArea.tsDenominatorButton.setBounds(strip.removeFromLeft(btnW).reduced(1, 2));
+    auto tsGroupEnd = strip.getX();
+    tsGroupBounds = juce::Rectangle<int>(tsGroupStart - 4, utilityBounds.getY() + 2,
+                                          tsGroupEnd - tsGroupStart + 8, utilityBounds.getHeight() - 4);
 
     // Right side: Layout toggles + MIDI Learn
     globalControlArea.midiLearnButton.setBounds(strip.removeFromRight(btnW + 30).reduced(1, 2));

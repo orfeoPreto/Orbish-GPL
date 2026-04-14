@@ -41,6 +41,30 @@ void ThumbnailAndGroupArea::paint (juce::Graphics& g){
     g.drawRoundedRectangle(containerBounds, 10.0f, 0.5f);
 }
 
+void ThumbnailAndGroupArea::paintOverChildren(juce::Graphics& g){
+    // Draw a rounded-corner frame that masks the sharp edges of the GL thumbnail
+    auto bounds = getLocalBounds().toFloat();
+    auto containerBounds = bounds.reduced(2.0f);
+    float radius = 10.0f;
+    float frameWidth = 6.0f; // enough to cover the thumbnail edges
+
+    auto bg = getLookAndFeel().findColour(juce::ResizableWindow::backgroundColourId);
+    auto accent = findColour(juce::TextButton::ColourIds::buttonOnColourId);
+
+    // Create a path that is the full bounds minus the rounded rect interior
+    juce::Path frame;
+    frame.addRectangle(bounds);
+    frame.addRoundedRectangle(containerBounds.reduced(frameWidth * 0.5f), radius);
+    frame.setUsingNonZeroWinding(false);
+
+    g.setColour(bg);
+    g.fillPath(frame);
+
+    // Redraw the accent border on top
+    g.setColour(accent.withAlpha(0.08f));
+    g.drawRoundedRectangle(containerBounds, radius, 0.5f);
+}
+
 void ThumbnailAndGroupArea::resized(){
     auto bounds = getLocalBounds();
     thumbnailArea.setBounds(bounds.reduced(4));

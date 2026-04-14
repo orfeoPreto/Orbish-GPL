@@ -77,29 +77,31 @@ void NavigationControlArea::paint (juce::Graphics& g){
 void NavigationControlArea::resized(){
     auto bounds = getLocalBounds();
 
+    auto layoutSection = [](juce::Rectangle<int> area, exu::Label& label, exu::Label& activeLabel,
+                            CustomButton& prevBtn, CustomButton& nextBtn,
+                            CustomButton& addBtn, CustomButton& removeBtn) {
+        auto section = area.reduced(8, 4);
+        label.setBounds(section.removeFromTop(15));
+        section.removeFromTop(2);
+        auto row1 = section.removeFromTop(section.getHeight() / 2);
+        auto row2 = section;
+        auto bw = row1.getWidth() / 3;
+        prevBtn.setBounds(row1.removeFromLeft(bw));
+        activeLabel.setBounds(row1.removeFromLeft(bw));
+        nextBtn.setBounds(row1);
+        addBtn.setBounds(row2.removeFromLeft(row2.getWidth() / 2));
+        removeBtn.setBounds(row2);
+    };
+
     // Loop navigation
-    auto loopButtonArea = bounds.removeFromLeft(bounds.getWidth() / 2).reduced(12);
-    auto loopNavArea = loopButtonArea.removeFromLeft(loopButtonArea.getWidth() * 3 / 5);
-    loopLabel.setBounds(loopNavArea.removeFromTop(15));
-    auto buttonWidth = loopNavArea.getWidth() / 3;
-    previousLoopButton.setBounds(loopNavArea.removeFromLeft(buttonWidth));
-    activeLoopLabel.setBounds(loopNavArea.removeFromLeft(buttonWidth));
-    nextLoopButton.setBounds(loopNavArea);
-    newLoopButton.setBounds(loopButtonArea.removeFromTop(loopButtonArea.getHeight()/2));
-    removeLoopButton.setBounds(loopButtonArea);
+    auto loopArea = bounds.removeFromLeft(bounds.getWidth() / 2);
+    layoutSection(loopArea, loopLabel, activeLoopLabel,
+                  previousLoopButton, nextLoopButton, newLoopButton, removeLoopButton);
 
     // Track navigation
-    auto trackButtonArea = bounds.reduced(12);
-    auto trackNavArea = trackButtonArea.removeFromLeft(trackButtonArea.getWidth() * 3 / 5);
     trackLabel.setText("Track", NotificationType::sendNotification);
-    trackLabel.setBounds(trackNavArea.removeFromTop(15));
-    buttonWidth = trackNavArea.getWidth() / 3;
-    previousTrackButton.setBounds(trackNavArea.removeFromLeft(buttonWidth));
-    activeTrackLabel.setBounds(trackNavArea.removeFromLeft(buttonWidth));
-    nextTrackButton.setBounds(trackNavArea);
-    newTrackButton.setBounds(trackButtonArea.removeFromTop(trackButtonArea.getHeight() / 2));
-    removeTrackButton.setBounds(trackButtonArea);
-
+    layoutSection(bounds, trackLabel, activeTrackLabel,
+                  previousTrackButton, nextTrackButton, newTrackButton, removeTrackButton);
 }
 
 void NavigationControlArea::setActiveLoop(String loopNumber){

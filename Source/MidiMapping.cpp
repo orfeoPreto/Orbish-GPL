@@ -17,6 +17,7 @@ static const char* const kParamIDs[] = {
     "snap", "mode", "selectGroup", "trackSelect", "loopSelect", "fixed",
     // Non-param actions - nullptr
     nullptr, nullptr, nullptr, nullptr,
+    nullptr, nullptr, nullptr,
 };
 
 const char* midiActionToParamID(MidiAction action)
@@ -39,6 +40,7 @@ static const char* const kDisplayNames[] = {
     "Global Mix", "Click Level", "Input Level", "Output Level", "Latency",
     "Snap", "Mode", "Select Group", "Track Select", "Loop Select", "Fixed",
     "Tempo Up", "Tempo Down", "Pitch Up", "Pitch Down",
+    "Previous Group", "Next Group", "Toggle Layout",
 };
 
 const char* midiActionDisplayName(MidiAction action)

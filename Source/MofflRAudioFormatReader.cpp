@@ -7,18 +7,4 @@
 //
 
 #include "MofflRAudioFormatReader.h"
-/*
-MofflRAudioFormatReader::MofflRAudioFormatReader() : AudioFormatReader(nullptr, "")
-{
-
-}
-*/
-
-bool MofflRAudioFormatReader::readSamples (int** destChannels,
-                                              int numDestChannels,
-                                              int startOffsetInDestBuffer,
-                                              int64 startSampleInFile,
-                                              int numSamples){
-    // I'm not implementing this
-    return false;
-}
+// readSamples is defined inline in the header

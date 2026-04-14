@@ -24,6 +24,7 @@ enum class MidiAction : uint16_t
 
     // --- Non-parameter actions (processor methods) ---
     TempoUp, TempoDown, PitchUp, PitchDown,
+    PreviousGroup, NextGroup, ToggleLayout,
 
     COUNT  // sentinel - total number of actions
 };

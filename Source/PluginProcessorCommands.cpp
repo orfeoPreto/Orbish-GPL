@@ -36,7 +36,7 @@ void OrbishAudioProcessor::parameterChanged(const String& parameterID, float new
         processNewTrack();
     }
     if (parameterID == "click") {
-        processClickToggle();
+        context->clickEnabled = (newValue >= 0.5f);
     }
     if (parameterID == "removeTrack") {
         processRemoveTrack(tracks.size() - 1);
@@ -134,9 +134,6 @@ void OrbishAudioProcessor::processNewTrack() {
     }
 }
 
-void OrbishAudioProcessor::processClickToggle() {
-    context->clickEnabled = !context->clickEnabled;
-}
 
 void OrbishAudioProcessor::processRemoveTrack(int trackNumber) {
     if (trackNumber > 0 && trackNumber < tracks.size()) {

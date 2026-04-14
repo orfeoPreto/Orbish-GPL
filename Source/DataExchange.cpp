@@ -1,12 +1,2 @@
 #include "DataExchange.h"
-
-
-
-DataExchange::DataExchange()
-{
-}
-
-
-DataExchange::~DataExchange()
-{
-}
+// Constructor and destructor are defined inline in the header

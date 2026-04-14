@@ -333,6 +333,7 @@ void OrbishAudioProcessorEditor::showSettingsPage() {
     settingsPage = std::make_shared<SettingsPage>(processor.context->postMixMonitoring, processor.context->loggingActive, processor.context->maxUndoHistory, nbrTracksInARow, processor.context->delayCompensation, processor.context->numVisibleLayers, processor.context->themeId.load() );
     settingsPage->addListener(this);
     settingsPage->setLookAndFeel(&getLookAndFeel());
+    settingsPage->closeSettingsButton.midiLearnExcluded = true;
     addAndMakeVisible(*settingsPage);
     resized();
 }
@@ -612,6 +613,8 @@ bool OrbishAudioProcessorEditor::openFile(const File& file) {
 
 OrbishAudioProcessorEditor::~OrbishAudioProcessorEditor(){
     stopTimer();
+    CustomButton::midiLearnClickHandler = nullptr;
+    CustomButton::midiLearnHighlightedButton = nullptr;
     processor.context->observer = nullptr;
     processor.guiAlive = false;
     Thread::sleep(200);
@@ -828,7 +831,7 @@ void OrbishAudioProcessorEditor::paint (Graphics& g){
     
     auto transportControlArea = &infoAndControlArea->controlArea.buttonControlArea.transportControlArea;
     
-    if(processor.activeTrack != nullptr && activeTrackIdx < tracks.size()) {
+    if(processor.activeTrack != nullptr && activeTrackIdx < tracks.size() && !midiLearnMode) {
         if(processor.activeTrack->Playing){
             if(processor.activeTrack->isPlayArmed()){
                 if(!transportControlArea->playButton.getToggleState()) {
@@ -853,6 +856,55 @@ void OrbishAudioProcessorEditor::paint (Graphics& g){
     if (tracksDirty) {
         trackArea.repaint();
         tracksDirty = false;
+    }
+
+    // File drag overlay
+    if (fileDragActive) {
+        auto accent = findColour(juce::TextButton::ColourIds::buttonOnColourId);
+        g.setColour(accent.withAlpha(0.08f));
+        g.fillAll();
+        g.setColour(accent.withAlpha(0.4f));
+        g.drawRect(getLocalBounds(), 2);
+    }
+
+    // MIDI map mode overlay
+    if (midiLearnMode) {
+        auto accent = findColour(juce::TextButton::ColourIds::buttonOnColourId);
+
+        // Tinted border around entire editor
+        g.setColour(accent.withAlpha(0.3f));
+        g.drawRect(getLocalBounds(), 2);
+
+        // Status banner at top
+        auto bannerBounds = getLocalBounds().removeFromTop(22).toFloat();
+        g.setColour(accent.withAlpha(0.85f));
+        g.fillRect(bannerBounds);
+        g.setColour(Colours::black);
+        g.setFont(juce::Font(12.0f, juce::Font::bold));
+        bool hasSelection = CustomButton::midiLearnHighlightedButton != nullptr
+                          || midiLearnHighlightedSlider != nullptr;
+        auto msg = hasSelection
+            ? "MIDI MAP MODE - Send a MIDI CC or Note to map the selected control"
+            : "MIDI MAP MODE - Click a control to select it for mapping";
+        g.drawText(msg, bannerBounds, juce::Justification::centred);
+
+        // Draw accent borders around mappable sliders
+        for (auto& [slider, action] : midiLearnSliderMap) {
+            if (slider->isShowing()) {
+                auto sliderBounds = getLocalArea(slider, slider->getLocalBounds()).toFloat();
+                if (slider == midiLearnHighlightedSlider) {
+                    // Currently learning: bright accent fill + strong border
+                    g.setColour(accent.withAlpha(0.25f));
+                    g.fillRoundedRectangle(sliderBounds.reduced(1.0f), 4.0f);
+                    g.setColour(accent.withAlpha(0.8f));
+                    g.drawRoundedRectangle(sliderBounds.reduced(1.0f), 4.0f, 2.0f);
+                } else {
+                    // Mappable: subtle border
+                    g.setColour(accent.withAlpha(0.35f));
+                    g.drawRoundedRectangle(sliderBounds.reduced(1.0f), 4.0f, 1.0f);
+                }
+            }
+        }
     }
     } catch (const std::exception& e) {
         DBG("Exception in paint: " + String(e.what()));
@@ -1110,6 +1162,10 @@ void OrbishAudioProcessorEditor::comboChanged(ComboBox* combo) {
 void OrbishAudioProcessorEditor::buttonClicked(Button* button){
     g_currentCallback = "buttonClicked";
     try {
+    // In MIDI learn mode, block normal button actions (except settings close)
+    if (midiLearnMode && button != &settingsPage->closeSettingsButton) {
+        return;
+    }
     auto navigationControlArea = &infoAndControlArea->controlArea.buttonControlArea.modeAndNavigationControlArea.navigationControlArea;
     if (button == &settingsPage->closeSettingsButton) {
         closeSettingsPage();
@@ -1164,6 +1220,21 @@ void OrbishAudioProcessorEditor::sliderValueChanged(Slider* ){
 void OrbishAudioProcessorEditor::mouseDown(const MouseEvent &event) {
     g_currentCallback = "mouseDown";
     try {
+    // MIDI Learn: check if click is on a slider overlay
+    if (midiLearnMode && !midiLearnSliderMap.empty()) {
+        auto* comp = event.eventComponent;
+        auto* parent = comp->getParentComponent();
+        auto it = midiLearnSliderMap.find(parent);
+        if (it != midiLearnSliderMap.end()) {
+            CustomButton::midiLearnHighlightedButton = nullptr;
+            midiLearnHighlightedSlider = parent;
+            startMidiLearnForAction(it->second);
+            DBG("MIDI Learn: selected " + String(midiActionDisplayName(it->second)) + " (slider)");
+            repaint();
+            return;
+        }
+    }
+
     for (auto track : tracks) {
         if(event.eventComponent->getParentComponent() == track){
             for (auto loop  : track->Loops) {
@@ -1187,31 +1258,26 @@ void OrbishAudioProcessorEditor::mouseDown(const MouseEvent &event) {
 void OrbishAudioProcessorEditor::mouseDrag(const MouseEvent& event) {
     g_currentCallback = "mouseDrag";
     try {
+    if (externalDragInProgress) return;
+
     for (auto track : tracks) {
         if (event.eventComponent->getParentComponent() == track) {
             if (activeLoop < 0 || activeLoop >= track->Loops.size()) continue;
-            auto l = track->Loops[activeLoop];
-            if (!this->isDragAndDropActive()) {
-                this->startDragging("track", l, Image(), true);
-            }
-            auto s = saveBufferFromLoop(track->getIndex(), l->getIndex());
-            if (s.length() == 0){
-                return;
-            }
-            StringArray files = { s };
-            performExternalDragDropOfFiles({ s }, false, {  });
+            auto s = saveBufferFromLoop(track->getIndex(), track->Loops[activeLoop]->getIndex());
+            if (s.isEmpty()) return;
+            externalDragInProgress = true;
+            performExternalDragDropOfFiles({ s }, false, this,
+                [this]() { externalDragInProgress = false; });
+            return;
         }
-        for (auto loop  : track->Loops) {
+        for (auto loop : track->Loops) {
             if (event.eventComponent->getParentComponent() == loop) {
-                if (!this->isDragAndDropActive()) {
-                    this->startDragging("loop", loop, Image(), true);
-                }
                 auto s = saveBufferFromLoop(track->getIndex(), loop->getIndex());
-                if (s.length() == 0){
-                    return;
-                }
-                StringArray files = { s };
-                performExternalDragDropOfFiles({ s }, false, {  });
+                if (s.isEmpty()) return;
+                externalDragInProgress = true;
+                performExternalDragDropOfFiles({ s }, false, this,
+                    [this]() { externalDragInProgress = false; });
+                return;
             }
         }
     }
@@ -1222,8 +1288,120 @@ void OrbishAudioProcessorEditor::mouseDrag(const MouseEvent& event) {
     }
 }
 
+// --- File Drag & Drop ---
 
+bool OrbishAudioProcessorEditor::isInterestedInFileDrag(const StringArray& files) {
+    for (auto& f : files)
+        if (AudioImporter::isAudioFile(f))
+            return true;
+    return false;
+}
 
+void OrbishAudioProcessorEditor::fileDragEnter(const StringArray&, int, int) {
+    fileDragActive = true;
+    repaint();
+}
+
+void OrbishAudioProcessorEditor::fileDragExit(const StringArray&) {
+    fileDragActive = false;
+    repaint();
+}
+
+void OrbishAudioProcessorEditor::filesDropped(const StringArray& files, int x, int y) {
+    fileDragActive = false;
+    repaint();
+
+    // Find first valid audio file
+    File audioFile;
+    for (auto& f : files) {
+        if (AudioImporter::isAudioFile(f)) {
+            audioFile = File(f);
+            break;
+        }
+    }
+    if (!audioFile.existsAsFile()) return;
+
+    // Hit-test to find which track was dropped on
+    int targetTrack = activeTrackIdx;
+    int targetLoop = activeLoop;
+
+    auto localPoint = juce::Point<int>(x, y);
+    for (auto* tc : tracks) {
+        auto tcBounds = tc->getBoundsInParent();
+        // TrackComponents are inside tracksViewport → trackArea
+        auto tcScreenBounds = tc->getScreenBounds();
+        auto editorScreenPos = getScreenPosition();
+        auto tcRelative = tcScreenBounds.translated(-editorScreenPos.x, -editorScreenPos.y);
+
+        if (tcRelative.contains(localPoint)) {
+            targetTrack = tc->getIndex();
+            targetLoop = tc->getActiveLoopIdx();
+            break;
+        }
+    }
+
+    importAudioFile(audioFile, targetTrack, targetLoop);
+}
+
+void OrbishAudioProcessorEditor::importAudioFile(const File& file, int trackIdx, int loopIdx) {
+    if (trackIdx < 0 || trackIdx >= processor.tracks.size()) {
+        juce::AlertWindow::showMessageBoxAsync(juce::AlertWindow::WarningIcon,
+            "Import Error", "No valid track to import to.");
+        return;
+    }
+
+    auto* track = processor.tracks[trackIdx];
+    if (loopIdx < 0 || loopIdx >= track->loops.size()) {
+        juce::AlertWindow::showMessageBoxAsync(juce::AlertWindow::WarningIcon,
+            "Import Error", "No valid loop to import to.");
+        return;
+    }
+
+    auto* loop = track->loops[loopIdx];
+    int numChannels = juce::jmax(1, (int)processor.context->audioInputsCount);
+    double sampleRate = processor.context->sampleRate;
+    bool loopIsEmpty = (loop->LoopDuration <= 0 || loop->Layers->empty());
+
+    // Load with or without crop
+    int maxSamples = loopIsEmpty ? -1 : loop->LoopDuration;
+    auto result = AudioImporter::loadAndPrepare(file, sampleRate, numChannels, maxSamples);
+
+    if (!result.success) {
+        juce::AlertWindow::showMessageBoxAsync(juce::AlertWindow::WarningIcon,
+            "Import Error", result.errorMessage);
+        return;
+    }
+
+    if (loopIsEmpty) {
+        loop->LoopDuration = result.buffer.getNumSamples();
+    }
+
+    // Add a new layer
+    loop->AddLayer(true, processor.context);
+    int newLayerIdx = (int)loop->Layers->size() - 1;
+    if (newLayerIdx < 0) {
+        juce::AlertWindow::showMessageBoxAsync(juce::AlertWindow::WarningIcon,
+            "Import Error", "Could not allocate a new layer.");
+        return;
+    }
+
+    auto layer = (*loop->Layers)[newLayerIdx];
+    layer->Buffer->setSize(result.buffer.getNumChannels(), result.buffer.getNumSamples());
+    for (int ch = 0; ch < result.buffer.getNumChannels(); ++ch)
+        layer->Buffer->copyFrom(ch, 0, result.buffer, ch, 0, result.buffer.getNumSamples());
+
+    layer->makeVisualizationBuffer(loop->LoopDuration);
+    loop->setActivePlaybackLayer(layer);
+    layer->dirty = true;
+
+    loop->updateFlattenedVisualizationBuffer();
+
+    // Register loop pointers on the track
+    track->RegisterLoop(loopIdx);
+
+    // Trigger UI refresh
+    markActiveTrackForRefresh(true);
+}
 
 
 void OrbishAudioProcessorEditor::updateTrackBounds(){
@@ -1749,16 +1927,36 @@ void OrbishAudioProcessorEditor::pitchDown(){
 // ---- MIDI Learn ----
 
 void OrbishAudioProcessorEditor::toggleMidiLearn(){
+    auto& globalArea = infoAndControlArea->controlArea.buttonControlArea.globalControlArea;
+
     if (midiLearnMode) {
-        // Cancel learn mode
+        // Exit learn mode
         midiLearnMode = false;
         cancelMidiLearn();
-        auto& globalArea = infoAndControlArea->controlArea.buttonControlArea.globalControlArea;
+        CustomButton::midiLearnClickHandler = nullptr;
+        CustomButton::midiLearnHighlightedButton = nullptr;
+        midiLearnHighlightedSlider = nullptr;
         globalArea.setMidiLearnActive(false);
+        exitSliderLearnMode();
+        reattachButtonAttachments();
+        repaint();
         return;
     }
 
-    // Show popup menu with all mappable actions
+    // Enter learn mode: detach APVTS so button clicks can't change parameters
+    detachButtonAttachments();
+    enterSliderLearnMode();
+    midiLearnMode = true;
+    buildMidiLearnButtonMap();
+    CustomButton::midiLearnHighlightedButton = nullptr;
+    CustomButton::midiLearnClickHandler = [this](CustomButton* btn) -> bool {
+        return handleMidiLearnButtonClick(btn);
+    };
+    globalArea.setMidiLearnActive(true);
+    repaint();
+}
+
+void OrbishAudioProcessorEditor::showMidiLearnMenu(){
     PopupMenu menu;
     PopupMenu learnSubmenu;
     PopupMenu clearSubmenu;
@@ -1767,7 +1965,6 @@ void OrbishAudioProcessorEditor::toggleMidiLearn(){
         auto action = static_cast<MidiAction>(i);
         String name = midiActionDisplayName(action);
 
-        // Check if this action already has a mapping
         String suffix;
         int count = processor.midiMappings.count.load(std::memory_order_acquire);
         for (int j = 0; j < count; ++j) {
@@ -1798,8 +1995,14 @@ void OrbishAudioProcessorEditor::toggleMidiLearn(){
             DBG("MIDI Learn: all mappings cleared");
         } else if (result >= 1000 && result < 2000) {
             auto action = static_cast<MidiAction>(result - 1000);
+            detachButtonAttachments();
+            enterSliderLearnMode();
             midiLearnMode = true;
             infoAndControlArea->controlArea.buttonControlArea.globalControlArea.setMidiLearnActive(true);
+            CustomButton::midiLearnClickHandler = [this](CustomButton* btn) -> bool {
+                return handleMidiLearnButtonClick(btn);
+            };
+            buildMidiLearnButtonMap();
             startMidiLearnForAction(action);
         }
     });
@@ -1840,14 +2043,12 @@ void OrbishAudioProcessorEditor::pollMidiLearn(){
         + " #" + String(entry.number) + " ch " + String(entry.channel)
         + " -> " + String(midiActionDisplayName(static_cast<MidiAction>(entry.action))));
 
-    // Reset learn state
+    // Reset learn state but stay in learn mode for next control
     learn.active.store(0, std::memory_order_relaxed);
     learn.captured.store(0, std::memory_order_relaxed);
-
-    // Exit learn mode after successful mapping
-    midiLearnMode = false;
-    auto& globalArea = infoAndControlArea->controlArea.buttonControlArea.globalControlArea;
-    globalArea.setMidiLearnActive(false);
+    CustomButton::midiLearnHighlightedButton = nullptr;
+    midiLearnHighlightedSlider = nullptr;
+    repaint();
 }
 
 void OrbishAudioProcessorEditor::clearMidiMappingForAction(MidiAction action){
@@ -1858,4 +2059,191 @@ void OrbishAudioProcessorEditor::clearMidiMappingForAction(MidiAction action){
             table.remove(i);
         }
     }
+}
+
+bool OrbishAudioProcessorEditor::handleMidiLearnButtonClick(CustomButton* button){
+    if (!midiLearnMode) return false;
+    auto it = midiLearnButtonMap.find(button);
+    if (it == midiLearnButtonMap.end()) return false;
+
+    CustomButton::midiLearnHighlightedButton = button;
+    midiLearnHighlightedSlider = nullptr;
+    startMidiLearnForAction(it->second);
+    DBG("MIDI Learn: selected " + String(midiActionDisplayName(it->second)) + " - waiting for MIDI...");
+    repaint();
+    return true;
+}
+
+void OrbishAudioProcessorEditor::buildMidiLearnButtonMap(){
+    midiLearnButtonMap.clear();
+
+    auto& transport = infoAndControlArea->controlArea.buttonControlArea.transportControlArea;
+    midiLearnButtonMap[&transport.recordButton]      = MidiAction::Record;
+    midiLearnButtonMap[&transport.playButton]         = MidiAction::Play;
+    midiLearnButtonMap[&transport.stopButton]         = MidiAction::Stop;
+    midiLearnButtonMap[&transport.clearButton]        = MidiAction::Reset;
+    midiLearnButtonMap[&transport.muteButton]         = MidiAction::Mute;
+    midiLearnButtonMap[&transport.soloButton]         = MidiAction::Solo;
+    midiLearnButtonMap[&transport.monitorButton]      = MidiAction::Monitor;
+    midiLearnButtonMap[&transport.reverseButton]      = MidiAction::Reverse;
+    midiLearnButtonMap[&transport.undoButton]         = MidiAction::Undo;
+    midiLearnButtonMap[&transport.redoButton]         = MidiAction::Redo;
+    midiLearnButtonMap[&transport.bounceButton]       = MidiAction::Bounce;
+    midiLearnButtonMap[&transport.autoTriggerButton]  = MidiAction::Trigger;
+
+    auto& nav = infoAndControlArea->controlArea.buttonControlArea.modeAndNavigationControlArea.navigationControlArea;
+    midiLearnButtonMap[&nav.previousLoopButton]   = MidiAction::PreviousLoop;
+    midiLearnButtonMap[&nav.nextLoopButton]        = MidiAction::NextLoop;
+    midiLearnButtonMap[&nav.newLoopButton]         = MidiAction::NewLoop;
+    midiLearnButtonMap[&nav.removeLoopButton]      = MidiAction::RemoveLoop;
+    midiLearnButtonMap[&nav.previousTrackButton]   = MidiAction::PreviousTrack;
+    midiLearnButtonMap[&nav.nextTrackButton]       = MidiAction::NextTrack;
+    midiLearnButtonMap[&nav.newTrackButton]        = MidiAction::NewTrack;
+    midiLearnButtonMap[&nav.removeTrackButton]     = MidiAction::RemoveTrack;
+
+    auto& global = infoAndControlArea->controlArea.buttonControlArea.globalControlArea;
+    midiLearnButtonMap[&global.muteAllButton]   = MidiAction::MuteAll;
+    midiLearnButtonMap[&global.stopAllButton]   = MidiAction::StopAll;
+    midiLearnButtonMap[&global.startAllButton]  = MidiAction::StartAll;
+    midiLearnButtonMap[&global.pauseAllButton]  = MidiAction::PauseAll;
+    midiLearnButtonMap[&global.clearAllButton]  = MidiAction::ResetAll;
+    midiLearnButtonMap[&global.tempoDownButton] = MidiAction::TempoDown;
+    midiLearnButtonMap[&global.tempoUpButton]   = MidiAction::TempoUp;
+    midiLearnButtonMap[&global.pitchDownButton] = MidiAction::PitchDown;
+    midiLearnButtonMap[&global.pitchUpButton]   = MidiAction::PitchUp;
+    midiLearnButtonMap[&global.tracksLayoutLeft]  = MidiAction::ToggleLayout;
+    midiLearnButtonMap[&global.tracksLayoutRight] = MidiAction::ToggleLayout;
+
+    auto& group = infoAndControlArea->controlArea.groupControlArea;
+    midiLearnButtonMap[&group.addToGroupButton]      = MidiAction::AddToGroup;
+    midiLearnButtonMap[&group.removeFromGroupButton] = MidiAction::RemoveFromGroup;
+    midiLearnButtonMap[&group.previousGroupButton]   = MidiAction::PreviousGroup;
+    midiLearnButtonMap[&group.nextGroupButton]       = MidiAction::NextGroup;
+
+    midiLearnButtonMap[&infoAndControlArea->infoArea.clickButton] = MidiAction::Click;
+}
+
+void OrbishAudioProcessorEditor::detachButtonAttachments(){
+    recordAttachment.reset();
+    playAttachment.reset();
+    stopAttachment.reset();
+    clearAttachment.reset();
+    muteAttachment.reset();
+    soloAttachment.reset();
+    monitorAttachment.reset();
+    reverseAttachment.reset();
+    undoAttachment.reset();
+    redoAttachment.reset();
+    bounceAttachment.reset();
+    triggerAttachment.reset();
+    clickAttachment.reset();
+
+    previousLoopAttachment.reset();
+    nextLoopAttachment.reset();
+    newLoopAttachment.reset();
+    removeLoopAttachment.reset();
+    previousTrackAttachment.reset();
+    nextTrackAttachment.reset();
+    newTrackAttachment.reset();
+    removeTrackAttachment.reset();
+
+    muteAllAttachment.reset();
+    stopAllAttachment.reset();
+    startAllAttachment.reset();
+    pauseAllAttachment.reset();
+    clearAllAttachment.reset();
+
+    addToGroupAttachment.reset();
+    removeFromGroupAttachment.reset();
+
+    inputLevelAttachment.reset();
+    outputLevelAttachment.reset();
+    globalMixAttachment.reset();
+    clickLevelAttachment.reset();
+}
+
+void OrbishAudioProcessorEditor::reattachButtonAttachments(){
+    auto& transport = infoAndControlArea->controlArea.buttonControlArea.transportControlArea;
+    recordAttachment.reset(new ButtonAttachment(valueTreeState, "record", transport.recordButton));
+    playAttachment.reset(new ButtonAttachment(valueTreeState, "play", transport.playButton));
+    stopAttachment.reset(new ButtonAttachment(valueTreeState, "stop", transport.stopButton));
+    clearAttachment.reset(new ButtonAttachment(valueTreeState, "reset", transport.clearButton));
+    muteAttachment.reset(new ButtonAttachment(valueTreeState, "mute", transport.muteButton));
+    soloAttachment.reset(new ButtonAttachment(valueTreeState, "solo", transport.soloButton));
+    monitorAttachment.reset(new ButtonAttachment(valueTreeState, "monitor", transport.monitorButton));
+    reverseAttachment.reset(new ButtonAttachment(valueTreeState, "reverse", transport.reverseButton));
+    undoAttachment.reset(new ButtonAttachment(valueTreeState, "undo", transport.undoButton));
+    redoAttachment.reset(new ButtonAttachment(valueTreeState, "redo", transport.redoButton));
+    bounceAttachment.reset(new ButtonAttachment(valueTreeState, "bounce", transport.bounceButton));
+    triggerAttachment.reset(new ButtonAttachment(valueTreeState, "trigger", transport.autoTriggerButton));
+    clickAttachment.reset(new ButtonAttachment(valueTreeState, "click", infoAndControlArea->infoArea.clickButton));
+
+    auto& nav = infoAndControlArea->controlArea.buttonControlArea.modeAndNavigationControlArea.navigationControlArea;
+    previousLoopAttachment.reset(new ButtonAttachment(valueTreeState, "previousLoop", nav.previousLoopButton));
+    nextLoopAttachment.reset(new ButtonAttachment(valueTreeState, "nextLoop", nav.nextLoopButton));
+    newLoopAttachment.reset(new ButtonAttachment(valueTreeState, "newLoop", nav.newLoopButton));
+    removeLoopAttachment.reset(new ButtonAttachment(valueTreeState, "removeLoop", nav.removeLoopButton));
+    previousTrackAttachment.reset(new ButtonAttachment(valueTreeState, "previousTrack", nav.previousTrackButton));
+    nextTrackAttachment.reset(new ButtonAttachment(valueTreeState, "nextTrack", nav.nextTrackButton));
+    newTrackAttachment.reset(new ButtonAttachment(valueTreeState, "newTrack", nav.newTrackButton));
+    removeTrackAttachment.reset(new ButtonAttachment(valueTreeState, "removeTrack", nav.removeTrackButton));
+
+    auto& global = infoAndControlArea->controlArea.buttonControlArea.globalControlArea;
+    muteAllAttachment.reset(new ButtonAttachment(valueTreeState, "muteAll", global.muteAllButton));
+    stopAllAttachment.reset(new ButtonAttachment(valueTreeState, "stopAll", global.stopAllButton));
+    startAllAttachment.reset(new ButtonAttachment(valueTreeState, "startAll", global.startAllButton));
+    pauseAllAttachment.reset(new ButtonAttachment(valueTreeState, "pauseAll", global.pauseAllButton));
+    clearAllAttachment.reset(new ButtonAttachment(valueTreeState, "resetAll", global.clearAllButton));
+
+    auto& group = infoAndControlArea->controlArea.groupControlArea;
+    addToGroupAttachment.reset(new ButtonAttachment(valueTreeState, "addToGroup", group.addToGroupButton));
+    removeFromGroupAttachment.reset(new ButtonAttachment(valueTreeState, "removeFromGroup", group.removeFromGroupButton));
+
+    auto& input = infoAndControlArea->controlArea.buttonControlArea.inputControlArea;
+    auto& output = infoAndControlArea->controlArea.buttonControlArea.outputControlArea;
+    inputLevelAttachment.reset(new SliderAttachment(valueTreeState, "inputLevel", input.inputLevelSlider));
+    outputLevelAttachment.reset(new SliderAttachment(valueTreeState, "outputLevel", output.outputLevelSlider));
+    globalMixAttachment.reset(new SliderAttachment(valueTreeState, "globalMix", output.globalVolumeSlider));
+    clickLevelAttachment.reset(new SliderAttachment(valueTreeState, "clickLevel", infoAndControlArea->infoArea.clickLevelSlider));
+}
+
+void OrbishAudioProcessorEditor::enterSliderLearnMode(){
+    midiLearnSliderMap.clear();
+    sliderLearnOverlays.clear();
+    auto& input = infoAndControlArea->controlArea.buttonControlArea.inputControlArea;
+    auto& output = infoAndControlArea->controlArea.buttonControlArea.outputControlArea;
+
+    midiLearnSliderMap[&input.inputLevelSlider]    = MidiAction::InputLevel;
+    midiLearnSliderMap[&output.outputLevelSlider]  = MidiAction::OutputLevel;
+    midiLearnSliderMap[&output.globalVolumeSlider] = MidiAction::GlobalMix;
+    midiLearnSliderMap[&infoAndControlArea->infoArea.clickLevelSlider] = MidiAction::ClickLevel;
+
+    // Place a transparent overlay on top of each slider to block interaction
+    // and route clicks to the editor via mouse listener
+    for (auto& [slider, action] : midiLearnSliderMap) {
+        auto overlay = std::make_unique<Component>();
+        overlay->setBounds(slider->getLocalBounds());
+        overlay->setInterceptsMouseClicks(true, false);
+        overlay->addMouseListener(this, false);
+        slider->addChildComponent(overlay.get());
+        overlay->setVisible(true);
+        overlay->toFront(false);
+        sliderLearnOverlays.push_back(std::move(overlay));
+        slider->setAlpha(0.5f);
+    }
+}
+
+void OrbishAudioProcessorEditor::exitSliderLearnMode(){
+    // Remove overlays before clearing the map
+    for (auto& overlay : sliderLearnOverlays) {
+        overlay->removeMouseListener(this);
+        if (auto* parent = overlay->getParentComponent())
+            parent->removeChildComponent(overlay.get());
+    }
+    sliderLearnOverlays.clear();
+
+    for (auto& [slider, action] : midiLearnSliderMap) {
+        slider->setAlpha(1.0f);
+    }
+    midiLearnSliderMap.clear();
 }

@@ -22,7 +22,7 @@ HeaderArea::HeaderArea(){
     addAndMakeVisible(menuBar.get());
 
     // Brand logo
-    auto logoImage = juce::ImageFileFormat::loadFrom(BinaryData::logo_orbish_x_small_png, BinaryData::logo_orbish_x_small_pngSize);
+    auto logoImage = juce::ImageFileFormat::loadFrom(BinaryData::orbishlogowebdown_png, BinaryData::orbishlogowebdown_pngSize);
     brandLogo.setImage(logoImage, juce::RectanglePlacement::centred | juce::RectanglePlacement::onlyReduceInSize);
     brandLogo.setInterceptsMouseClicks(false, false);
     addAndMakeVisible(brandLogo);
@@ -116,10 +116,11 @@ void HeaderArea::resized()
     // Readout row below menu
     auto readoutRow = bounds;
 
-    // Brand logo + project name stacked vertically
-    auto brandCol = readoutRow.removeFromLeft(80);
-    brandLogo.setBounds(brandCol.removeFromTop(brandCol.getHeight() - 14).reduced(4, 2));
-    projectNameLabel.setBounds(brandCol.reduced(2, 0));
+    // Brand logo + project name to its right
+    auto brandCol = readoutRow.removeFromLeft(200);
+    brandLogo.setBounds(brandCol.reduced(0, 1));
+    auto projNameCol = readoutRow.removeFromLeft(80);
+    projectNameLabel.setBounds(projNameCol.withTrimmedTop(projNameCol.getHeight() - 16).reduced(2, 0));
     readoutRow.removeFromLeft(6);
 
     // Readout columns: Tempo, Meter, Position

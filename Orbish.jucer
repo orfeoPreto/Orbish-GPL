@@ -57,6 +57,8 @@
           <FILE id="rMHg93" name="undo-icon.png" compile="0" resource="1" file="resources/Bases/button-icons/undo-icon.png"/>
           <FILE id="mxHknc" name="ungroup-icon.png" compile="0" resource="1"
                 file="resources/Bases/button-icons/ungroup-icon.png"/>
+          <FILE id="cT1m3X" name="c-time.png" compile="0" resource="1"
+                file="resources/Bases/button-icons/c-time.png"/>
         </GROUP>
         <GROUP id="{BD718B04-2107-227F-693C-404D10211C8B}" name="LayoutChange">
           <FILE id="hKuBdX" name="layout-change-left-active.png" compile="0"

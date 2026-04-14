@@ -95,7 +95,6 @@ public:
     void processAddToGroup(int);
     void processRemoveFromGroup(int);
     void printBuffer(AudioBuffer<float> *buffer, String name);
-    void processClickToggle();
     void handleRecordBlock(int start, int stop);
     void handlePlaybackBlock(int start, int stop);
     void addTrack(bool);

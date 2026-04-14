@@ -42,6 +42,7 @@ public:
 	Label activateLoggingLabel;
         CustomButton monitoringButton{"Post Mix", false};
     Label monitoringLabel;
+        Label settingsTitle;
         CustomButton closeSettingsButton{"Close", false};
 	Label latencyLabel;
     OrbishSlider latencySlider;

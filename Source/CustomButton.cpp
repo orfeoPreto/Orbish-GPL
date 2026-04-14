@@ -10,6 +10,9 @@
 
 #include "CustomButton.h"
 
+std::function<bool(CustomButton*)> CustomButton::midiLearnClickHandler = nullptr;
+CustomButton* CustomButton::midiLearnHighlightedButton = nullptr;
+
 CustomButton::CustomButton(const String& name, bool isPushButton) : TextButton(name) {
     pushButton = isPushButton;
     setToggleState(false, NotificationType::sendNotification);
@@ -48,6 +51,19 @@ void CustomButton::setIconOff(Image iconImage){
     hasIconOff = true;
 }
 
+void CustomButton::mouseDown(const MouseEvent& e) {
+    if (midiLearnClickHandler && !midiLearnExcluded) {
+        midiLearnClickHandler(this);
+        return; // Block ALL mouse-down processing in learn mode
+    }
+    TextButton::mouseDown(e);
+}
+
+void CustomButton::mouseUp(const MouseEvent& e) {
+    if (midiLearnClickHandler && !midiLearnExcluded) return;
+    TextButton::mouseUp(e);
+}
+
 void CustomButton::paintButton(Graphics& g, bool shouldDrawButtonAsHighlighted, bool shouldDrawButtonAsDown){
     auto& lf = getLookAndFeel();
 
@@ -79,5 +95,24 @@ void CustomButton::paintButton(Graphics& g, bool shouldDrawButtonAsHighlighted, 
     }
     else {
         lf.drawButtonText(g, *this, shouldDrawButtonAsHighlighted, shouldDrawButtonAsDown);
+    }
+
+    // MIDI Learn visual overlays
+    if (midiLearnClickHandler) {
+        auto accent = findColour(TextButton::ColourIds::buttonOnColourId);
+        auto bounds = getLocalBounds().toFloat();
+        if (this == midiLearnHighlightedButton) {
+            // Currently learning: bright accent fill + strong border
+            g.setColour(accent.withAlpha(0.25f));
+            g.fillRoundedRectangle(bounds.reduced(1.0f), 4.0f);
+            g.setColour(accent.withAlpha(0.8f));
+            g.drawRoundedRectangle(bounds.reduced(1.0f), 4.0f, 2.0f);
+        } else {
+            // Mappable: dimmed overlay + dashed-style border
+            g.setColour(Colours::black.withAlpha(0.15f));
+            g.fillRoundedRectangle(bounds, 4.0f);
+            g.setColour(accent.withAlpha(0.35f));
+            g.drawRoundedRectangle(bounds.reduced(1.0f), 4.0f, 1.0f);
+        }
     }
 }

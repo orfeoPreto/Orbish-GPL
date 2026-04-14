@@ -76,7 +76,7 @@ inline OrbishThemeColours orbishThemeColours(OrbishThemeId id) {
         default:
             return {
                 // backgroundOuter, backgroundInner, panelSurface, buttonSurface
-                C(0xff0b0b0f), C(0xff070709), C(0xff0d0d13), C(0xff16161c),
+                C(0xff08080c), C(0xff050507), C(0xff111118), C(0xff1c1c24),
                 // textPrimary, textSecondary, textTertiary
                 C(0xffe8e6dc), C(0xff8a877a), C(0xff6b6960),
                 // accent, accentBright, accentDim
@@ -104,29 +104,29 @@ inline OrbishThemeColours orbishThemeColours(OrbishThemeId id) {
         case OrbishThemeId::PorcelainInk:
             return {
                 // backgroundOuter, backgroundInner, panelSurface, buttonSurface
-                C(0xfff4f1ea), C(0xffebe7dd), C(0xfff4f1ea), C(0xffffffff),
+                C(0xfff8f6f1), C(0xffe8e4da), C(0xfff0ece4), C(0xfffaf9f6),
                 // textPrimary, textSecondary, textTertiary
-                C(0xff1a1a22), C(0xff8a857a), C(0xffb0ab9f),
+                C(0xff1a1a22), C(0xff5c584e), C(0xff8a857a),
                 // accent, accentBright, accentDim
-                C(0xff1a1a22), C(0xff2a2a36), C(0xff4a4a56),
+                C(0xff3a3632), C(0xff1a1a22), C(0xff6b6560),
                 // recordAccent, playhead, divider
-                C(0xffc94a3d), C(0xffc94a3d), C(0x201a1a22),
+                C(0xffc94a3d), C(0xffc94a3d), C(0x381a1a22),
                 // waveR, waveG, waveB (ink/dark)
                 0.102f, 0.102f, 0.133f,
                 // thumbnailBgActive, thumbnailBgInactive
-                C(0xffebe7dd), C(0xfff4f1ea),
+                C(0xffdedad0), C(0xffe8e4da),
                 // loops: active-current fg/bg, active-other fg/bg
-                C(0xff1a1a22), C(0xffdedad0),
-                C(0xff8a857a), C(0xffebe7dd),
+                C(0xff1a1a22), C(0xffc8c3b8),
+                C(0xff6b6560), C(0xffdedad0),
                 // loops: inactive-current fg/bg, inactive-other fg/bg
-                C(0xff8a857a), C(0xffebe7dd),
-                C(0xffb0ab9f), C(0xffebe7dd),
+                C(0xff6b6560), C(0xffdedad0),
+                C(0xff8a857a), C(0xffe4e0d6),
                 // meterBg
-                C(0xffdedad0),
+                C(0xffc8c3b8),
                 // settingsOverlay
-                C(0xd0f4f1ea),
+                C(0xd0f0ece4),
                 // sliderTrack
-                C(0xffdedad0)
+                C(0xffc8c3b8)
             };
     }
 }

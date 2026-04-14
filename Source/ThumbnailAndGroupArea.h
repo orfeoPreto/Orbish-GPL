@@ -24,6 +24,7 @@ public:
     ~ThumbnailAndGroupArea() override;
 
     void paint (juce::Graphics&) override;
+    void paintOverChildren (juce::Graphics&) override;
     void resized() override;
 
     void updateTimeDisplay(const juce::String& positionTime, const juce::String& totalTime);

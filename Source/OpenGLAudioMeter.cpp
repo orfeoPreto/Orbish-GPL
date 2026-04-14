@@ -38,9 +38,9 @@ void OpenGLAudioMeter::renderOpenGL() {
 
 void OpenGLAudioMeter::updateScale(){
     OpenGLComponent::updateScale();
-    width = roundToInt(width * 0.4);
+    width = roundToInt(width * 0.2);
         if (channelNumber == 0){
-            x += width * 1.4;
+            x += width * 2.5;
         }
 }
 

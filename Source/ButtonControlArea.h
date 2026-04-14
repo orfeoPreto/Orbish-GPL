@@ -45,6 +45,8 @@ public:
     InputControlArea inputControlArea{};
 
 private:
+    juce::Rectangle<int> tsGroupBounds;
+
     // Adopted controls (owned elsewhere)
     OpenGLClickWitness* clickWitness = nullptr;
     CustomButton* clickButton = nullptr;

@@ -148,6 +148,8 @@ void OrbishAudioProcessor::initBlock(AudioBuffer<float>& buffer, MidiBuffer& mid
             // Standalone: enable click on first block
             if (syncState.standaloneSamplePosition == 0) {
                 context->clickEnabled = true;
+                if (auto* p = parameters.getParameter("click"))
+                    p->setValueNotifyingHost(1.0f);
             }
             // Standalone: advance beat clock based on accumulated samples
             syncState.standaloneSamplePosition += context->maxBlockSize;
@@ -318,7 +320,9 @@ void OrbishAudioProcessor::processBlock(AudioBuffer<float>& buffer, MidiBuffer& 
         printBuffer(&buffer, "system buffer");
         printBuffer((context->inputBuffer).get(), "context->inputBuffer");
         printBuffer((context->buffer).get(), "context->buffer");
-        printBuffer((activeTrack->getActivePlaybackLayer()->Buffer).get(), "context->buffer");
+        auto dbgLayer = activeTrack->getActivePlaybackLayer();
+        if (dbgLayer && dbgLayer->Buffer)
+            printBuffer(dbgLayer->Buffer.get(), "activePlaybackLayer->Buffer");
         context->firstRun = false;
     }
 #endif

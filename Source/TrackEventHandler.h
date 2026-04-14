@@ -63,12 +63,9 @@ public:
         //    int diff = context->maxBlockSize - context->samplesPerBlock;
         if (!trackToSync->Recording && trackToSync->isRecordingArmed())
             {
-            if((trackToSync->getSnapMode() == kSnapNone
-                && trackToSync->isAutoTrigger())){
-                if (!trackToSync->Triggered) {
-                    e.startRecordingSample = -1;
-                }
-            }else{
+            if(trackToSync->isAutoTrigger() && !trackToSync->Triggered){
+                e.startRecordingSample = -1;
+            }else if(trackToSync->getSnapMode() != kSnapNone){
                 e.startRecordingSample = nextSyncPoint;
             }
             }

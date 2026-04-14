@@ -123,9 +123,38 @@ GlobalControlArea::GlobalControlArea(){
     addAndMakeVisible(pitchUpButton);
 
     midiLearnButton.addListener(this);
-    midiLearnButton.setTooltip("Toggle MIDI Learn mode - click a button then send a MIDI CC/Note to map it");
+    midiLearnButton.setTooltip("Left-click: enter MIDI map mode. Right-click: manage mappings.");
     midiLearnButton.setClickingTogglesState(true);
+    midiLearnButton.midiLearnExcluded = true;
+    midiLearnButton.addMouseListener(this, false);
     addAndMakeVisible(midiLearnButton);
+
+    // Time signature controls
+    // Load common time icon from BinaryData
+    tsLabelIcon = ImageFileFormat::loadFrom(BinaryData::ctime_png, BinaryData::ctime_pngSize);
+    tsLabel.setInterceptsMouseClicks(false, false);
+    addAndMakeVisible(tsLabel);
+
+    tsNumeratorButton.addListener(this);
+    tsNumeratorButton.setTooltip("Cycle time signature numerator (1-13)");
+    tsNumeratorButton.setClickingTogglesState(false);
+    addAndMakeVisible(tsNumeratorButton);
+
+    tsPrimeButton.addListener(this);
+    tsPrimeButton.setTooltip("Cycle subdivision (prime series: 2-31)");
+    tsPrimeButton.setClickingTogglesState(false);
+    addAndMakeVisible(tsPrimeButton);
+
+    tsDenominatorButton.addListener(this);
+    tsDenominatorButton.setTooltip("Cycle time signature denominator (1, 2, 4, 8, 16)");
+    tsDenominatorButton.setClickingTogglesState(false);
+    addAndMakeVisible(tsDenominatorButton);
+
+    tsReadout.setJustificationType(Justification::centred);
+    tsReadout.setFont(Font(11.0f, Font::plain));
+    tsReadout.setInterceptsMouseClicks(false, false);
+    addAndMakeVisible(tsReadout);
+    updateTimeSigReadout();
 
     createTracksLayoutButton();
 }
@@ -212,9 +241,13 @@ void GlobalControlArea::createTracksLayoutButton(){
 }
 
 void GlobalControlArea::buttonClicked(Button* button){
-    if (editor == nullptr ){
+    if (editor == nullptr) return;
+
+    // In MIDI learn mode, block all normal actions except the MIDI Learn button itself
+    if (editor->isMidiLearnActive() && button != &midiLearnButton) {
         return;
     }
+
     if (button == &muteAllButton) {
         toggleMuteAll((bool)muteAllButton.getToggleStateValue().getValue());
     }
@@ -258,12 +291,63 @@ void GlobalControlArea::buttonClicked(Button* button){
     if (button == &midiLearnButton) {
         editor->toggleMidiLearn();
     }
+    if (button == &tsNumeratorButton) {
+        tsNumeratorIndex = (tsNumeratorIndex + 1) % 13;
+        int val = kTsNumerators[tsNumeratorIndex];
+        auto ctx = editor->getProcessor()->context;
+        ctx->timeSigTop = val;
+        AudioPlayHead::TimeSignature sig;
+        sig.numerator = val;
+        sig.denominator = ctx->timeSigBottom;
+        ctx->info->setTimeSignature(sig);
+        updateTimeSigReadout();
+    }
+    if (button == &tsPrimeButton) {
+        tsPrimeIndex = (tsPrimeIndex + 1) % 11;
+        int val = kTsPrimes[tsPrimeIndex];
+        auto ctx = editor->getProcessor()->context;
+        ctx->timeSigTop = val;
+        AudioPlayHead::TimeSignature sig;
+        sig.numerator = val;
+        sig.denominator = ctx->timeSigBottom;
+        ctx->info->setTimeSignature(sig);
+        updateTimeSigReadout();
+    }
+    if (button == &tsDenominatorButton) {
+        tsDenominatorIndex = (tsDenominatorIndex + 1) % 5;
+        int val = kTsDenominators[tsDenominatorIndex];
+        auto ctx = editor->getProcessor()->context;
+        ctx->timeSigBottom = val;
+        AudioPlayHead::TimeSignature sig;
+        sig.numerator = ctx->timeSigTop;
+        sig.denominator = val;
+        ctx->info->setTimeSignature(sig);
+        updateTimeSigReadout();
+    }
 }
 
 void GlobalControlArea::setMidiLearnActive(bool active) {
     midiLearnButton.setToggleState(active, NotificationType::dontSendNotification);
 }
 
+void GlobalControlArea::mouseDown(const MouseEvent& e) {
+    if (e.eventComponent == &midiLearnButton && e.mods.isPopupMenu()) {
+        if (editor) editor->showMidiLearnMenu();
+    }
+}
+
 void GlobalControlArea::toggleMuteAll(bool) {
     muteAllButton.setState(Button::buttonNormal);
+}
+
+void GlobalControlArea::updateTimeSigReadout() {
+    int num = kTsNumerators[tsNumeratorIndex];
+    int den = kTsDenominators[tsDenominatorIndex];
+    int prime = kTsPrimes[tsPrimeIndex];
+    tsNumeratorButton.setButtonText(String(num));
+    tsPrimeButton.setButtonText(String(prime));
+    tsDenominatorButton.setButtonText(String(den));
+    // Show the actual current numerator from context (set by either button)
+    int activeNum = (editor != nullptr) ? editor->getProcessor()->context->timeSigTop : num;
+    tsReadout.setText(String(activeNum) + "/" + String(den), NotificationType::dontSendNotification);
 }

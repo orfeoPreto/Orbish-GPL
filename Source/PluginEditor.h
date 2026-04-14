@@ -33,6 +33,7 @@
 #include <chrono>
 #include "TrackLoader.h"
 #include "MidiMapping.h"
+#include "AudioImporter.h"
 
 //==============================================================================
 /**
@@ -82,8 +83,9 @@ class OrbishAudioProcessorEditor : public AudioProcessorEditor,
 	public ChangeListener,
 	public SettingsPage::Listener,
 	private Timer,
-	public DragAndDropContainer
-    ,public OpenGLRenderer
+	public DragAndDropContainer,
+    public FileDragAndDropTarget,
+    public OpenGLRenderer
 
 
 {
@@ -190,13 +192,25 @@ public:
     void removeReference(OpenGLComponent*);
     void totalReset();
 
+    // File drag & drop
+    bool isInterestedInFileDrag(const StringArray& files) override;
+    void filesDropped(const StringArray& files, int x, int y) override;
+    void fileDragEnter(const StringArray& files, int x, int y) override;
+    void fileDragExit(const StringArray& files) override;
+    void importAudioFile(const File& file, int trackIdx, int loopIdx);
+
     // MIDI Learn
     void toggleMidiLearn();
+    void showMidiLearnMenu();
     bool isMidiLearnActive() const;
     void startMidiLearnForAction(MidiAction action);
     void cancelMidiLearn();
     void pollMidiLearn();
     void clearMidiMappingForAction(MidiAction action);
+    bool handleMidiLearnButtonClick(CustomButton* button);
+    void buildMidiLearnButtonMap();
+    void detachButtonAttachments();
+    void reattachButtonAttachments();
 
 
 private:
@@ -299,6 +313,14 @@ private:
     std::mutex renderingTargetsLock;
     ReadWriteLock lock{};
     bool midiLearnMode = false;
+    std::unordered_map<Button*, MidiAction> midiLearnButtonMap;
+    std::unordered_map<Component*, MidiAction> midiLearnSliderMap;
+    void enterSliderLearnMode();
+    void exitSliderLearnMode();
+    std::vector<std::unique_ptr<Component>> sliderLearnOverlays;
+    Component* midiLearnHighlightedSlider = nullptr;
+    bool fileDragActive = false;
+    bool externalDragInProgress = false;
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (OrbishAudioProcessorEditor)
 };
 

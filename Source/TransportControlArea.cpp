@@ -15,7 +15,7 @@
 //==============================================================================
 TransportControlArea::TransportControlArea(){
     activeLabel.setText("ACTIVE TRACK", NotificationType::dontSendNotification);
-    activeLabel.setFont(juce::Font(14.0f, juce::Font::bold));
+    activeLabel.setFont(juce::Font(15.0f, juce::Font::bold));
     activeLabel.setColour(juce::Label::textColourId, juce::Colour(0xffd4af37));
     addAndMakeVisible(activeLabel);
 
@@ -55,6 +55,7 @@ TransportControlArea::TransportControlArea(){
     
     monitorButton.addListener(this);
     monitorButton.setTooltip("Listen to input audio when this track is active");
+    monitorButton.setIcon(ImageFileFormat::loadFrom(BinaryData::monitoricon_png, BinaryData::monitoricon_pngSize));
     addAndMakeVisible(monitorButton);
 
     reverseButton.addListener(this);
@@ -88,23 +89,25 @@ void TransportControlArea::paint (juce::Graphics& g){
 
 void TransportControlArea::resized(){
 
-    auto bounds = getLocalBounds().reduced(14, 10);
+    auto bounds = getLocalBounds().reduced(14, 12);
 
-    // Header row: "ACTIVE TRACK" label + info label side by side
-    auto headerRow = bounds.removeFromTop(26);
-    activeLabel.setBounds(headerRow.removeFromLeft(120));
-    infoLabel.setBounds(headerRow);
+    // Title row
+    activeLabel.setBounds(bounds.removeFromTop(20));
     bounds.removeFromTop(4);
+    // Info row below title
+    infoLabel.setBounds(bounds.removeFromTop(16));
+    // Gap to align first button row with record mode combo in Mode & Nav
+    bounds.removeFromTop(22);
 
     juce::Grid grid;
     using Track = juce::Grid::TrackInfo;
     using Fr = juce::Grid::Fr;
     using Px = juce::Grid::Px;
 
-    grid.rowGap = Px(3);
-    grid.columnGap = Px(3);
+    grid.rowGap = Px(4);
+    grid.columnGap = Px(4);
 
-    // Compact rows
+    // Match nav button height (~Fr based, same as loop prev/next)
     grid.templateRows = { Track(Fr(1)), Track(Fr(1)), Track(Fr(1)) };
     grid.templateColumns = { Track(Fr(1)), Track(Fr(1)), Track(Fr(1)), Track(Fr(1)), Track(Fr(1)) };
 
@@ -124,9 +127,13 @@ void TransportControlArea::resized(){
 }
 
 void TransportControlArea::buttonClicked(Button* button){
-    if (editor == nullptr ){
+    if (editor == nullptr) return;
+
+    // In MIDI learn mode, block all normal button actions
+    if (editor->isMidiLearnActive()) {
         return;
     }
+
     if (button == &recordButton) {
         editor->toggleRecord();
     }

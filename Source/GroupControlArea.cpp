@@ -68,9 +68,12 @@ void GroupControlArea::setEditor(OrbishAudioProcessorEditor* pluginEditor){
 }
 
 void GroupControlArea::buttonClicked(Button* button){
-    if (editor == nullptr){
+    if (editor == nullptr) return;
+
+    if (editor->isMidiLearnActive()) {
         return;
     }
+
     if (button == &previousGroupButton) {
         auto current = groupCombo.getSelectedId();
         if (current > 1)
