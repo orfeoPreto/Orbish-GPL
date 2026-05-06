@@ -2,5 +2,5 @@
             varying vec2 outUV;
             void main()
             {
-                gl_FragColor = texture(tex, outUV);
+                gl_FragColor = texture2D(tex, outUV);
             }

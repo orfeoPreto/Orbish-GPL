@@ -486,14 +486,6 @@ void Track::StartResetAfter(){
         (context->observer->*(context->observer->updatePlayPosition)) (0, Reverse);
     }
     realignment->setRealigned(true);
-    // Reset stretcher to clear stale buffered audio
-    if (timeStretcher) {
-        timeStretcher->prepare(context->sampleRate, context->audioInputsCount,
-                               context->samplesPerBlock);
-        timeStretcher->primeWithSilence();
-        stretcherStartDelay = timeStretcher->getStartDelay();
-        stretcherDelayConsumed = 0;
-    }
     originalTempo = 0.0;
 }
 

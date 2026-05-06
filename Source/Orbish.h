@@ -17,7 +17,6 @@
 #include <string>
 #include <thread>
 #include "JuceHeader.h"
-//#include <rubberband/RubberBandStretcher.h>
 
 enum InputParamsIndexes
 {

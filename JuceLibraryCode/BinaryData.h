@@ -11,6 +11,12 @@ namespace BinaryData
     extern const char*   viewport_background_png;
     const int            viewport_background_pngSize = 737935;
 
+    extern const char*   low_dry_click_aif;
+    const int            low_dry_click_aifSize = 19698;
+
+    extern const char*   high_dry_click_aif;
+    const int            high_dry_click_aifSize = 7290;
+
     extern const char*   Low_click_aif;
     const int            Low_click_aifSize = 11316;
 
@@ -18,7 +24,7 @@ namespace BinaryData
     const int            High_Click_aifSize = 13362;
 
     extern const char*   circle_fs;
-    const int            circle_fsSize = 608;
+    const int            circle_fsSize = 607;
 
     extern const char*   circle_vs;
     const int            circle_vsSize = 82;
@@ -30,19 +36,19 @@ namespace BinaryData
     const int            meterBar_vsSize = 82;
 
     extern const char*   render_fs;
-    const int            render_fsSize = 171;
+    const int            render_fsSize = 173;
 
     extern const char*   render_vs;
     const int            render_vsSize = 242;
 
     extern const char*   thumbnailplayhead_fs;
-    const int            thumbnailplayhead_fsSize = 949;
+    const int            thumbnailplayhead_fsSize = 1767;
 
     extern const char*   thumbnailplayhead_vs;
     const int            thumbnailplayhead_vsSize = 82;
 
     extern const char*   thumbnailwave_fs;
-    const int            thumbnailwave_fsSize = 1660;
+    const int            thumbnailwave_fsSize = 2361;
 
     extern const char*   thumbnailwave_vs;
     const int            thumbnailwave_vsSize = 82;
@@ -64,6 +70,9 @@ namespace BinaryData
 
     extern const char*   orbishlogowebdown_png;
     const int            orbishlogowebdown_pngSize = 295190;
+
+    extern const char*   monitoricon_png;
+    const int            monitoricon_pngSize = 9896;
 
     extern const char*   clearicon_png;
     const int            clearicon_pngSize = 495;
@@ -97,9 +106,6 @@ namespace BinaryData
 
     extern const char*   ctime_png;
     const int            ctime_pngSize = 3345;
-
-    extern const char*   monitoricon_png;
-    const int            monitoricon_pngSize = 9896;
 
     extern const char*   layoutchangeleftactive_png;
     const int            layoutchangeleftactive_pngSize = 4266;
@@ -150,7 +156,7 @@ namespace BinaryData
     const int            squarebuttonbase_pngSize = 2503;
 
     // Number of elements in the namedResourceList and originalFileNames arrays.
-    const int namedResourceListSize = 47;
+    const int namedResourceListSize = 49;
 
     // Points to the start of a list of resource names.
     extern const char* namedResourceList[];

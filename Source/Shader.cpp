@@ -71,10 +71,11 @@ void Shader::loadFile(const char* fn, std::string &str, GLuint mode){
     auto shaderResource = BinaryData::getNamedResource(CFullName, size);
     is = std::make_unique<MemoryInputStream> (shaderResource,size, false); 
     str.clear();
-    while (! is->isExhausted()) // [3]
+    while (! is->isExhausted())
            {
                auto line = is->readNextLine();
                str.append(line.toStdString());
+               str.append("\n");
            }
 #else
     fullName += "." + extension;

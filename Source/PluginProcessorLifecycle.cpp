@@ -92,17 +92,6 @@ void OrbishAudioProcessor::askLoopChange(int loopNumber) {
 void OrbishAudioProcessor::addTrack(bool active) {
     auto track = new Track(tracks.size(), active, parameters, context, guiAlive);
     context->progress.add(track->Progress);
-    // Initialize time stretcher for new track
-    if (context->sampleRate > 0 && context->audioInputsCount > 0) {
-        track->timeStretcher = std::make_unique<TimeStretchRubberBand>();
-        track->timeStretcher->prepare(context->sampleRate, context->audioInputsCount,
-                                       context->samplesPerBlock);
-        track->timeStretcher->primeWithSilence();
-        track->stretcherStartDelay = track->timeStretcher->getStartDelay();
-        track->stretcherDelayConsumed = 0;
-        track->stretchInputBuffer = std::make_unique<AudioBuffer<float>>(
-            int(context->audioInputsCount), context->samplesPerBlock * 4);
-    }
     tracks.add(track);
 }
 
@@ -157,15 +146,6 @@ void OrbishAudioProcessor::prepareToPlay(double sampleRate, int samplesPerBlock)
             track->BeginFadeOffset = min(samplesPerBlock, track->BeginFadeOffset);
             track->realignment->setBlockSize(samplesPerBlock);
             track->realignment->setRealigned(true);
-            // Initialize or re-initialize the time stretcher
-            if (!track->timeStretcher)
-                track->timeStretcher = std::make_unique<TimeStretchRubberBand>();
-            track->timeStretcher->prepare(int(sampleRate), int(context->audioInputsCount), samplesPerBlock);
-            track->timeStretcher->primeWithSilence();
-            track->stretcherStartDelay = track->timeStretcher->getStartDelay();
-            track->stretcherDelayConsumed = 0;
-            track->stretchInputBuffer = std::make_unique<AudioBuffer<float>>(
-                int(context->audioInputsCount), samplesPerBlock * 4);
         }
         context->xchange->resetBuffers = true;
     }
@@ -197,7 +177,6 @@ void OrbishAudioProcessor::init(){
     if (guiAlive) {
         (context->observer->*(context->observer->trackRemoval)) (-1);
     }
-   // stretcher = make_unique<RubberBandStretcher>(context->sampleRate, context->audioOutputsCount, RubberBandStretcher::OptionProcessRealTime | RubberBandStretcher::OptionTransientsCrisp);
     //context->fadeTime = int(context->samplesPerBlock * .05);
     //context->buffer->setSize(context->audioInputsCount, samplesPerBlock);
 

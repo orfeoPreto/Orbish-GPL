@@ -125,7 +125,6 @@ public:
     std::shared_ptr<OrbishContext> context;
     TrackGroup* CurrentGroup;
 	TrackGroup* SelectedGroup;
-    //std::unique_ptr<RubberBand::RubberBandStretcher> stretcher;
     void initParams();
     Track* activeTrack = nullptr;
 	AudioProcessorEditor* editor;

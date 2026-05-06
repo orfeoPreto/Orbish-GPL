@@ -252,16 +252,9 @@ void OrbishAudioProcessor::processRemoveFromGroup(int track) {
 }
 
 void OrbishAudioProcessor::processTempoChange(double bpm) {
-    for (auto track : tracks) {
-        if (!track->timeStretcher) continue;
-        // Only stretch tracks that have a recorded loop with a known original tempo
-        if (track->originalTempo > 0.0 && track->Layers && !track->Layers->empty()) {
-            double ratio = track->originalTempo / bpm;
-            track->timeStretcher->setTimeRatio(ratio);
-        }
-        // Always apply per-track pitch ratio (set from UI)
-        track->timeStretcher->setPitchRatio(track->perTrackPitchRatio);
-    }
+    // RubberBand time-stretching removed (GPL release).
+    // Tempo change is recorded but no longer drives a stretcher.
+    (void)bpm;
 }
 
 void OrbishAudioProcessor::initGroups() {

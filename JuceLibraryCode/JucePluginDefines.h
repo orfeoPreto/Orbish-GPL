@@ -77,13 +77,13 @@
  #define JucePlugin_EditorRequiresKeyboardFocus  0
 #endif
 #ifndef  JucePlugin_Version
- #define JucePlugin_Version                0.4.0
+ #define JucePlugin_Version                0.6.2
 #endif
 #ifndef  JucePlugin_VersionCode
- #define JucePlugin_VersionCode            0x400
+ #define JucePlugin_VersionCode            0x602
 #endif
 #ifndef  JucePlugin_VersionString
- #define JucePlugin_VersionString          "0.4.0"
+ #define JucePlugin_VersionString          "0.6.2"
 #endif
 #ifndef  JucePlugin_VSTUniqueID
  #define JucePlugin_VSTUniqueID            JucePlugin_PluginCode
@@ -155,7 +155,7 @@
  #define JucePlugin_ARAFactoryID           "com.exu.Orbish.factory"
 #endif
 #ifndef  JucePlugin_ARADocumentArchiveID
- #define JucePlugin_ARADocumentArchiveID   "com.exu.Orbish.aradocumentarchive.0.4.0"
+ #define JucePlugin_ARADocumentArchiveID   "com.exu.Orbish.aradocumentarchive.0.6.2"
 #endif
 #ifndef  JucePlugin_ARACompatibleArchiveIDs
  #define JucePlugin_ARACompatibleArchiveIDs  ""

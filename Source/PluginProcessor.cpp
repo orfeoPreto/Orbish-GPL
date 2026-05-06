@@ -708,28 +708,7 @@ void OrbishAudioProcessor::handlePlaybackBlock(int start, int stop) {
             && *track->LoopDuration > 0
             && track->Layers->size() > 0)
         {
-            // Determine stretcher state from the stretcher's actual ratios.
-            // Time ratio is set externally (testTempoChange / processTempoChange).
-            // Pitch ratio is updated here from the GUI-facing perTrackPitchRatio.
-            bool stretchActive = false;
-            double timeRatio = 1.0;
-            if (track->timeStretcher && track->stretchInputBuffer) {
-                track->timeStretcher->setPitchRatio(track->perTrackPitchRatio);
-                timeRatio = track->timeStretcher->getTimeRatio();
-                double pitchScale = track->timeStretcher->getPitchScale();
-                stretchActive = (std::abs(timeRatio - 1.0) > 0.001
-                                 || std::abs(pitchScale - 1.0) > 0.001);
-                // On bypass→active transition, mark startup delay as fully
-                // consumed so we don't discard real audio output.
-                if (stretchActive && !track->stretcherWasActive) {
-                    track->stretcherDelayConsumed = track->stretcherStartDelay;
-                }
-                track->stretcherWasActive = stretchActive;
-            }
-            int sourceSamples = stretchActive
-                ? jmin(track->stretchInputBuffer->getNumSamples(),
-                       jmax(1, (int)std::ceil((double)context->maxBlockSize / timeRatio)))
-                : context->maxBlockSize;
+            int sourceSamples = context->maxBlockSize;
             int samplesToRead = sourceSamples;
 
             auto reSync = track->realignment;
@@ -780,10 +759,6 @@ void OrbishAudioProcessor::handlePlaybackBlock(int start, int stop) {
                 // determine number of samples to read
                 samplesToRead = jmax(0,stop - start);
                 
-                // Clear accumulation buffer when stretching
-                if (stretchActive && track->stretchInputBuffer) {
-                    track->stretchInputBuffer->clear();
-                }
                 //                                                //context->logMessage("sourceIndex: " + String(sourceIndex));
                 //                                                //context->logMessage("LoopDuration: " + String(*track->LoopDuration));
                 //                                                //context->logMessage("CurrentPlayingIndex: " + String(*track->CurrentPlayingIndex));
@@ -803,14 +778,12 @@ void OrbishAudioProcessor::handlePlaybackBlock(int start, int stop) {
                         start0 = Time::getHighResolutionTicks();
                         
                         shared_ptr<AudioBuffer<float> > temp = nullptr;
-                        if(context->xchange->readBufferQueue->read_available() > 0
-                           && (!stretchActive || sourceSamples <= context->maxBlockSize)){
+                        if(context->xchange->readBufferQueue->read_available() > 0){
                             temp = context->xchange->readBufferQueue->front();
                             context->xchange->readBufferQueue->pop();
                         }else{
-                            int tempSize = stretchActive ? sourceSamples : context->maxBlockSize;
                             auto b = make_unique<AudioBuffer<float> >();
-                            b->setSize(context->audioInputsCount, tempSize);
+                            b->setSize(context->audioInputsCount, context->maxBlockSize);
                             b->clear();
                             temp = std::move(b);
                         }
@@ -894,7 +867,7 @@ void OrbishAudioProcessor::handlePlaybackBlock(int start, int stop) {
                         }
                         // read beginning of the loop to tail of the output buffer
                         if (tail>0) {
-                            int tailOffset = stretchActive ? sourceSamples - tail : context->maxBlockSize - tail;
+                            int tailOffset = context->maxBlockSize - tail;
                             for (uint32 c = 0; c < context->audioInputsCount;++c) {
                                 temp->addFrom(c
                                               , tailOffset
@@ -903,76 +876,16 @@ void OrbishAudioProcessor::handlePlaybackBlock(int start, int stop) {
                             }
                         }
                         
-                        int blockSize = stretchActive ? sourceSamples : context->maxBlockSize;
-                        if (stretchActive && track->stretchInputBuffer) {
-                            // Accumulate into stretch buffer (no volume yet)
-                            for (uint32 c = 0; c < context->audioInputsCount;++c) {
-                                if (track->Reverse) {
-                                    temp->reverse(c, 0, blockSize);
-                                }
-                                if(temp->getReadPointer(c) != nullptr){
-                                    track->stretchInputBuffer->addFrom(c, 0, temp->getReadPointer(c), samplesToRead + tail);
-                                }
+                        for (uint32 c = 0; c < context->audioInputsCount;++c) {
+                            if (track->Reverse) {
+                                temp->reverse(c, 0, context->maxBlockSize);
                             }
-                        } else {
-                            // Original path: smoothVolume directly to output
-                            for (uint32 c = 0; c < context->audioInputsCount;++c) {
-                                if (track->Reverse) {
-                                    temp->reverse(c, 0, blockSize);
-                                }
-                                if(temp->getReadPointer(c) != nullptr){
-                                    smoothVolume(track->PreviousOutputLevel, track->getOutputLevel(), samplesToRead+tail, temp.get(), context->buffer.get(), c);
-                                }
+                            if(temp->getReadPointer(c) != nullptr){
+                                smoothVolume(track->PreviousOutputLevel, track->getOutputLevel(), samplesToRead+tail, temp.get(), context->buffer.get(), c);
                             }
                         }
                     }
                     
-                    // Stretcher pass: process accumulated audio and write to output
-                    if (stretchActive && track->timeStretcher && track->stretchInputBuffer) {
-                        const float* inPtrs[32];
-                        float* outPtrs[32];
-                        int numCh = (int)context->audioInputsCount;
-                        for (int c = 0; c < numCh; ++c) {
-                            inPtrs[c] = track->stretchInputBuffer->getReadPointer(c);
-                        }
-                        
-                        // Feed accumulated source audio into stretcher
-                        track->timeStretcher->process(inPtrs, samplesToRead + tail, false);
-                        
-                        int avail = track->timeStretcher->available();
-                        
-                        // Handle startup delay (skip initial latency samples)
-                        // Reuse stretchInputBuffer (input already consumed by process())
-                        if (track->stretcherDelayConsumed < track->stretcherStartDelay && avail > 0) {
-                            int toSkip = jmin(avail,
-                                              (int)(track->stretcherStartDelay - track->stretcherDelayConsumed));
-                            toSkip = jmin(toSkip, track->stretchInputBuffer->getNumSamples());
-                            if (toSkip > 0) {
-                                for (int c = 0; c < numCh; ++c)
-                                    outPtrs[c] = track->stretchInputBuffer->getWritePointer(c);
-                                track->timeStretcher->retrieve(outPtrs, toSkip);
-                                track->stretcherDelayConsumed += (size_t)toSkip;
-                                avail = track->timeStretcher->available();
-                            }
-                        }
-                        
-                        int toRetrieve = jmin(avail, context->maxBlockSize);
-                        if (toRetrieve > 0) {
-                            // Reuse stretchInputBuffer for output (input already consumed)
-                            track->stretchInputBuffer->clear();
-                            for (int c = 0; c < numCh; ++c) {
-                                outPtrs[c] = track->stretchInputBuffer->getWritePointer(c);
-                            }
-                            int retrieved = track->timeStretcher->retrieve(outPtrs, toRetrieve);
-                            
-                            // Apply output volume and write to context buffer
-                            for (int c = 0; c < numCh; ++c) {
-                                smoothVolume(track->PreviousOutputLevel, track->getOutputLevel(),
-                                            retrieved, track->stretchInputBuffer.get(),
-                                            context->buffer.get(), c);
-                            }
-                        }
-                    }
                 }
             }
             // update playback index while playing

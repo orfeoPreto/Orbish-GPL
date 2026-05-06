@@ -119,10 +119,6 @@ void Realignment::realign(std::shared_ptr<OrbishContext> context, OwnedArray<Tra
         && (df < context->fadeTime)) {
         if (!hostHasPlayed)hostHasPlayed = true;
         for(auto track:*tracks){
-            // Skip realignment for tracks being time-stretched: the stretcher
-            // intentionally advances the source position at a different rate,
-            // which the realignment system would misinterpret as drift.
-            if (track->timeStretcher && track->timeStretcher->isActive()) continue;
             if (track->IsPlaying() && !track->Reverse && track->getSnapMode() != kSnapNone){
                 auto currentPosition = *track->CurrentPlayingIndex;
                 double currentPosInQuarters =0;

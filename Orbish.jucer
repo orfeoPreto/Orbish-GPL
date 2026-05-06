@@ -5,7 +5,7 @@
               pluginFormats="buildAU,buildStandalone,buildVST3" displaySplashScreen="1"
               jucerFormatVersion="1" aaxIdentifier="Exu" pluginChannelConfigs="{1,1},{2,2}"
               pluginAAXCategory="8192" bundleIdentifier="exu.Orbish" companyName="exu"
-              version="0.5.0" companyWebsite="www.orbish-audio.com" companyEmail="info@orbish-audio.com"
+              version="0.6.2" companyWebsite="www.orbish-audio.com" companyEmail="info@orbish-audio.com"
               pluginAUMainType="'aufx'" pluginName="Orbish" pluginDesc="Audio Looper Plugin">
   <MAINGROUP id="MOZJJ5" name="Orbish">
     <GROUP id="{40BAF4D8-7324-156C-E5E8-0098A128DC2C}" name="resources">
@@ -15,6 +15,10 @@
             file="resources/Bases/low_dry_click.aif"/>
       <FILE id="aIsMVP" name="high_dry_click.aif" compile="0" resource="1"
             file="resources/Bases/high_dry_click.aif"/>
+      <FILE id="WraKKW" name="Low click.aif" compile="0" resource="1"
+            file="resources/Bases/Low click.aif"/>
+      <FILE id="PV5wSR" name="High Click.aif" compile="0" resource="1"
+            file="resources/Bases/High Click.aif"/>
       <GROUP id="{326E6A86-688F-EE95-6795-579693EE4BF4}" name="shaders">
         <FILE id="ch7gIY" name="circle.fs" compile="0" resource="1" file="resources/shaders/circle.fs"/>
         <FILE id="ANk3C1" name="circle.vs" compile="0" resource="1" file="resources/shaders/circle.vs"/>
@@ -46,6 +50,8 @@
             file="resources/orbish-logo-web-down.png"/>
       <GROUP id="{DD2D5306-C731-51D8-E32F-F8D89EB36CF7}" name="buttons">
         <GROUP id="{D752B9EC-EB18-9EC9-ABD3-38AC98EE5785}" name="Icons">
+          <FILE id="VTs5Fe" name="monitor-icon.png" compile="0" resource="1"
+                file="resources/Bases/button-icons/monitor-icon.png"/>
           <FILE id="u0Ngzt" name="clear-icon.png" compile="0" resource="1" file="resources/Bases/button-icons/clear-icon.png"/>
           <FILE id="GX6tvQ" name="group-icon.png" compile="0" resource="1" file="resources/Bases/button-icons/group-icon.png"/>
           <FILE id="H2FFO6" name="mute-icon.png" compile="0" resource="1" file="resources/Bases/button-icons/mute-icon.png"/>
@@ -57,8 +63,7 @@
           <FILE id="rMHg93" name="undo-icon.png" compile="0" resource="1" file="resources/Bases/button-icons/undo-icon.png"/>
           <FILE id="mxHknc" name="ungroup-icon.png" compile="0" resource="1"
                 file="resources/Bases/button-icons/ungroup-icon.png"/>
-          <FILE id="cT1m3X" name="c-time.png" compile="0" resource="1"
-                file="resources/Bases/button-icons/c-time.png"/>
+          <FILE id="cT1m3X" name="c-time.png" compile="0" resource="1" file="resources/Bases/button-icons/c-time.png"/>
         </GROUP>
         <GROUP id="{BD718B04-2107-227F-693C-404D10211C8B}" name="LayoutChange">
           <FILE id="hKuBdX" name="layout-change-left-active.png" compile="0"
@@ -109,12 +114,35 @@
           <FILE id="qSSAPH" name="Track.h" compile="0" resource="0" file="Source/Track.h"/>
           <FILE id="JMO7d5" name="Loop.h" compile="0" resource="0" file="Source/Loop.h"/>
           <FILE id="AhY6on" name="TrackGroup.cpp" compile="1" resource="0" file="Source/TrackGroup.cpp"/>
+          <FILE id="trkFwd" name="Track.fwd.h" compile="0" resource="0" file="Source/Track.fwd.h"/>
+          <FILE id="trkEvH" name="TrackEventHandler.h" compile="0" resource="0"
+                file="Source/TrackEventHandler.h"/>
         </GROUP>
         <GROUP id="{22DCEE7F-13AE-5D9D-0375-D4532E937BFB}" name="Utility">
           <FILE id="uQ6DWV" name="GainModifier.h" compile="0" resource="0" file="Source/GainModifier.h"/>
           <FILE id="Z1ZKnC" name="DataExchange.h" compile="0" resource="0" file="Source/DataExchange.h"/>
           <FILE id="jSQiuu" name="GainModifier.cpp" compile="1" resource="0"
                 file="Source/GainModifier.cpp"/>
+          <FILE id="dExCpp" name="DataExchange.cpp" compile="1" resource="0"
+                file="Source/DataExchange.cpp"/>
+          <FILE id="aImpCp" name="AudioImporter.cpp" compile="1" resource="0"
+                file="Source/AudioImporter.cpp"/>
+          <FILE id="aImpHd" name="AudioImporter.h" compile="0" resource="0" file="Source/AudioImporter.h"/>
+          <FILE id="mflRCp" name="MofflRAudioFormatReader.cpp" compile="1" resource="0"
+                file="Source/MofflRAudioFormatReader.cpp"/>
+          <FILE id="mflRHd" name="MofflRAudioFormatReader.h" compile="0" resource="0"
+                file="Source/MofflRAudioFormatReader.h"/>
+          <FILE id="olgCpp" name="OrbishLogger.cpp" compile="1" resource="0"
+                file="Source/OrbishLogger.cpp"/>
+          <FILE id="olgHdr" name="OrbishLogger.h" compile="0" resource="0" file="Source/OrbishLogger.h"/>
+          <FILE id="clkGen" name="ClickGenerator.h" compile="0" resource="0"
+                file="Source/ClickGenerator.h"/>
+          <FILE id="prcStt" name="ProcessorState.h" compile="0" resource="0"
+                file="Source/ProcessorState.h"/>
+          <FILE id="prmDCp" name="ParameterDefinitions.cpp" compile="1" resource="0"
+                file="Source/ParameterDefinitions.cpp"/>
+          <FILE id="prmDHd" name="ParameterDefinitions.h" compile="0" resource="0"
+                file="Source/ParameterDefinitions.h"/>
         </GROUP>
         <GROUP id="{4D8965A9-2AB8-2A6F-58E7-3164FD5FDD47}" name="Sync">
           <FILE id="IEInKO" name="InternalSynchronizer.cpp" compile="1" resource="0"
@@ -137,11 +165,25 @@
               file="Source/PluginProcessor.cpp"/>
         <FILE id="FHesF4" name="PluginProcessor.h" compile="0" resource="0"
               file="Source/PluginProcessor.h"/>
+        <FILE id="ppLife" name="PluginProcessorLifecycle.cpp" compile="1" resource="0"
+              file="Source/PluginProcessorLifecycle.cpp"/>
+        <FILE id="ppCmds" name="PluginProcessorCommands.cpp" compile="1" resource="0"
+              file="Source/PluginProcessorCommands.cpp"/>
+        <FILE id="ppEvts" name="PluginProcessorEvents.cpp" compile="1" resource="0"
+              file="Source/PluginProcessorEvents.cpp"/>
+        <FILE id="ppMidi" name="PluginProcessorMidiMapping.cpp" compile="1"
+              resource="0" file="Source/PluginProcessorMidiMapping.cpp"/>
+        <FILE id="alcTCp" name="AllocatorThread.cpp" compile="1" resource="0"
+              file="Source/AllocatorThread.cpp"/>
+        <FILE id="alcTHd" name="AllocatorThread.h" compile="0" resource="0"
+              file="Source/AllocatorThread.h"/>
+        <FILE id="mdMapC" name="MidiMapping.cpp" compile="1" resource="0" file="Source/MidiMapping.cpp"/>
+        <FILE id="mdMapH" name="MidiMapping.h" compile="0" resource="0" file="Source/MidiMapping.h"/>
       </GROUP>
       <GROUP id="{B1708198-2297-7033-0C5C-79B08021FDA1}" name="ApplicationView">
-        <FILE id="TC5Zjp" name="ImageViewPort.cpp" compile="1" resource="0"
-              file="Source/ImageViewPort.cpp"/>
-        <FILE id="oRwshT" name="ImageViewPort.h" compile="0" resource="0" file="Source/ImageViewPort.h"/>
+        <FILE id="TC5Zjp" name="ImageViewport.cpp" compile="1" resource="0"
+              file="Source/ImageViewport.cpp"/>
+        <FILE id="oRwshT" name="ImageViewport.h" compile="0" resource="0" file="Source/ImageViewport.h"/>
         <FILE id="N0lOPc" name="OrbishLevelMeter.h" compile="0" resource="0"
               file="Source/OrbishLevelMeter.h"/>
         <FILE id="g9Vf3i" name="OrbishLevelMeter.cpp" compile="1" resource="0"
@@ -190,6 +232,7 @@
         <FILE id="TYjYdy" name="MenuManager.h" compile="0" resource="0" file="Source/MenuManager.h"/>
         <FILE id="odi1jK" name="PluginEditor.cpp" compile="1" resource="0"
               file="Source/PluginEditor.cpp"/>
+        <FILE id="orbThm" name="OrbishTheme.h" compile="0" resource="0" file="Source/OrbishTheme.h"/>
         <FILE id="wp5pn0" name="SettingsPage.cpp" compile="1" resource="0"
               file="Source/SettingsPage.cpp"/>
         <FILE id="NBLXqf" name="SettingsPage.h" compile="0" resource="0" file="Source/SettingsPage.h"/>
@@ -292,20 +335,21 @@
       </CONFIGURATIONS>
       <MODULEPATHS>
         <MODULEPATH id="ff_meters" path="."/>
-        <MODULEPATH id="juce_gui_basics" path="../../../../Downloads/JUCE/modules"/>
-        <MODULEPATH id="juce_audio_devices" path="../../../../Downloads/JUCE/modules"/>
-        <MODULEPATH id="juce_audio_basics" path="../../../../JUCE/modules"/>
-        <MODULEPATH id="juce_audio_formats" path="../../../../Downloads/JUCE/modules"/>
-        <MODULEPATH id="juce_audio_plugin_client" path="../../../../Downloads/JUCE/modules"/>
-        <MODULEPATH id="juce_audio_processors" path="../../../../Downloads/JUCE/modules"/>
-        <MODULEPATH id="juce_audio_utils" path="../../../../Downloads/JUCE/modules"/>
-        <MODULEPATH id="juce_opengl" path="../../../../Downloads/JUCE/modules"/>
-        <MODULEPATH id="juce_cryptography" path="../../../../Downloads/JUCE/modules"/>
-        <MODULEPATH id="juce_data_structures" path="../../../../Downloads/JUCE/modules"/>
-        <MODULEPATH id="juce_events" path="../../../../Downloads/JUCE/modules"/>
-        <MODULEPATH id="juce_graphics" path="../../../../Downloads/JUCE/modules"/>
-        <MODULEPATH id="juce_gui_extra" path="../../../../Downloads/JUCE/modules"/>
-        <MODULEPATH id="juce_core"/>
+        <MODULEPATH id="juce_gui_basics" path="/Users/orfeopreto/Dev/JUCE/modules"/>
+        <MODULEPATH id="juce_audio_devices" path="/Users/orfeopreto/Dev/JUCE/modules"/>
+        <MODULEPATH id="juce_audio_basics" path="/Users/orfeopreto/Dev/JUCE/modules"/>
+        <MODULEPATH id="juce_audio_formats" path="/Users/orfeopreto/Dev/JUCE/modules"/>
+        <MODULEPATH id="juce_audio_plugin_client" path="/Users/orfeopreto/Dev/JUCE/modules"/>
+        <MODULEPATH id="juce_audio_processors" path="/Users/orfeopreto/Dev/JUCE/modules"/>
+        <MODULEPATH id="juce_audio_utils" path="/Users/orfeopreto/Dev/JUCE/modules"/>
+        <MODULEPATH id="juce_opengl" path="/Users/orfeopreto/Dev/JUCE/modules"/>
+        <MODULEPATH id="juce_cryptography" path="/Users/orfeopreto/Dev/JUCE/modules"/>
+        <MODULEPATH id="juce_data_structures" path="/Users/orfeopreto/Dev/JUCE/modules"/>
+        <MODULEPATH id="juce_events" path="/Users/orfeopreto/Dev/JUCE/modules"/>
+        <MODULEPATH id="juce_graphics" path="/Users/orfeopreto/Dev/JUCE/modules"/>
+        <MODULEPATH id="juce_gui_extra" path="/Users/orfeopreto/Dev/JUCE/modules"/>
+        <MODULEPATH id="juce_core" path="/Users/orfeopreto/Dev/JUCE/modules"/>
+        <MODULEPATH id="juce_audio_processors_headless" path="../JUCE/modules"/>
       </MODULEPATHS>
     </XCODE_MAC>
     <VS2019 targetFolder="Builds/VisualStudio2019">
@@ -329,26 +373,29 @@
         <MODULEPATH id="juce_audio_devices" path="../../juce"/>
         <MODULEPATH id="juce_audio_basics" path="../../juce"/>
         <MODULEPATH id="ff_meters" path="."/>
+        <MODULEPATH id="juce_audio_processors_headless" path="../JUCE/modules"/>
       </MODULEPATHS>
     </VS2019>
   </EXPORTFORMATS>
   <MODULES>
     <MODULE id="ff_meters" showAllCode="1" useLocalCopy="0" useGlobalPath="0"/>
-    <MODULE id="juce_audio_basics" showAllCode="1" useLocalCopy="0" useGlobalPath="1"/>
-    <MODULE id="juce_audio_devices" showAllCode="1" useLocalCopy="0" useGlobalPath="1"/>
-    <MODULE id="juce_audio_formats" showAllCode="1" useLocalCopy="0" useGlobalPath="1"/>
+    <MODULE id="juce_audio_basics" showAllCode="1" useLocalCopy="0" useGlobalPath="0"/>
+    <MODULE id="juce_audio_devices" showAllCode="1" useLocalCopy="0" useGlobalPath="0"/>
+    <MODULE id="juce_audio_formats" showAllCode="1" useLocalCopy="0" useGlobalPath="0"/>
     <MODULE id="juce_audio_plugin_client" showAllCode="1" useLocalCopy="0"
-            useGlobalPath="1"/>
-    <MODULE id="juce_audio_processors" showAllCode="1" useLocalCopy="0" useGlobalPath="1"/>
-    <MODULE id="juce_audio_utils" showAllCode="1" useLocalCopy="0" useGlobalPath="1"/>
-    <MODULE id="juce_core" showAllCode="1" useLocalCopy="0" useGlobalPath="1"/>
-    <MODULE id="juce_cryptography" showAllCode="1" useLocalCopy="0" useGlobalPath="1"/>
-    <MODULE id="juce_data_structures" showAllCode="1" useLocalCopy="0" useGlobalPath="1"/>
-    <MODULE id="juce_events" showAllCode="1" useLocalCopy="0" useGlobalPath="1"/>
-    <MODULE id="juce_graphics" showAllCode="1" useLocalCopy="0" useGlobalPath="1"/>
-    <MODULE id="juce_gui_basics" showAllCode="1" useLocalCopy="0" useGlobalPath="1"/>
-    <MODULE id="juce_gui_extra" showAllCode="1" useLocalCopy="0" useGlobalPath="1"/>
-    <MODULE id="juce_opengl" showAllCode="1" useLocalCopy="0" useGlobalPath="1"/>
+            useGlobalPath="0"/>
+    <MODULE id="juce_audio_processors" showAllCode="1" useLocalCopy="0" useGlobalPath="0"/>
+    <MODULE id="juce_audio_processors_headless" showAllCode="1" useLocalCopy="0"
+            useGlobalPath="0"/>
+    <MODULE id="juce_audio_utils" showAllCode="1" useLocalCopy="0" useGlobalPath="0"/>
+    <MODULE id="juce_core" showAllCode="1" useLocalCopy="0" useGlobalPath="0"/>
+    <MODULE id="juce_cryptography" showAllCode="1" useLocalCopy="0" useGlobalPath="0"/>
+    <MODULE id="juce_data_structures" showAllCode="1" useLocalCopy="0" useGlobalPath="0"/>
+    <MODULE id="juce_events" showAllCode="1" useLocalCopy="0" useGlobalPath="0"/>
+    <MODULE id="juce_graphics" showAllCode="1" useLocalCopy="0" useGlobalPath="0"/>
+    <MODULE id="juce_gui_basics" showAllCode="1" useLocalCopy="0" useGlobalPath="0"/>
+    <MODULE id="juce_gui_extra" showAllCode="1" useLocalCopy="0" useGlobalPath="0"/>
+    <MODULE id="juce_opengl" showAllCode="1" useLocalCopy="0" useGlobalPath="0"/>
   </MODULES>
   <LIVE_SETTINGS>
     <OSX buildEnabled="1" headerPath="../../..&#10;../..&#10;..&#10;../../JuceLibraryCode"/>

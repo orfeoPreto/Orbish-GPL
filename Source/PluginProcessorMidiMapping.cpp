@@ -14,12 +14,6 @@ void OrbishAudioProcessor::executeTempoUp()
     if (newBpm > 200.0) newBpm = 200.0;
 
     context->bpm = newBpm;
-    for (auto track : tracks) {
-        if (track->timeStretcher && track->originalTempo > 0.0) {
-            double ratio = track->originalTempo / newBpm;
-            track->timeStretcher->setTimeRatio(ratio);
-        }
-    }
     DBG("Tempo changed to " + String(newBpm) + " BPM");
 }
 
@@ -30,12 +24,6 @@ void OrbishAudioProcessor::executeTempoDown()
     if (newBpm < 30.0) newBpm = 30.0;
 
     context->bpm = newBpm;
-    for (auto track : tracks) {
-        if (track->timeStretcher && track->originalTempo > 0.0) {
-            double ratio = track->originalTempo / newBpm;
-            track->timeStretcher->setTimeRatio(ratio);
-        }
-    }
     DBG("Tempo changed to " + String(newBpm) + " BPM");
 }
 
