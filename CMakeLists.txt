@@ -22,6 +22,8 @@ juce_add_plugin(Orbish
     COPY_PLUGIN_AFTER_BUILD FALSE
 )
 
+juce_generate_juce_header(Orbish)
+
 target_compile_features(Orbish PUBLIC cxx_std_17)
 
 target_sources(Orbish
@@ -143,4 +145,5 @@ target_include_directories(Orbish
     PRIVATE
         Source
         exu
+        ${CMAKE_CURRENT_SOURCE_DIR}
 )

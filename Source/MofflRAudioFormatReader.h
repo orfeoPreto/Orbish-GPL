@@ -10,7 +10,7 @@
 #define MofflRAudioFormatReader_h
 
 #include <stdio.h>
-#include "../JuceLibraryCode/JuceHeader.h"
+#include <JuceHeader.h>
 
 
 class MofflRAudioFormatReader : public AudioFormatReader

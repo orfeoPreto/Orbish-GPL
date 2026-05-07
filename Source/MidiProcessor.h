@@ -10,7 +10,7 @@
 #define MidiProcessor_h
 
 #include <stdio.h>
-#include "../JuceLibraryCode/JuceHeader.h"
+#include <JuceHeader.h>
 
 
 class MidiProcessor:public MessageListener
