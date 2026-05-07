@@ -1,0 +1,26 @@
+Third-Party Software Notices
+============================
+
+Orbish uses the following open-source libraries:
+
+
+JUCE Framework
+--------------
+Copyright (c) Raw Material Software Limited
+License: AGPLv3 (used under GPLv3-compatible terms)
+Website: https://juce.com
+Source: https://github.com/juce-framework/JUCE
+
+
+ff_meters
+---------
+Copyright (c) 2017, Daniel Walz / Foleys Finest Audio Ltd
+License: BSD 3-Clause
+Source: https://github.com/ffAudio/ff_meters
+
+
+Boost (subset)
+--------------
+Copyright (c) various Boost contributors
+License: Boost Software License 1.0
+Website: https://www.boost.org
